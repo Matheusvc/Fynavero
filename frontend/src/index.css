@@ -1,0 +1,156 @@
+@import "tailwindcss";
+@import "./styles/tokens.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Remove a paleta, fontes, sombras, raios e escala de texto padrão do Tailwind:
+   só existem as utilidades geradas a partir dos tokens. */
+@theme {
+  --color-*: initial;
+  --font-*: initial;
+  --shadow-*: initial;
+  --radius-*: initial;
+  --text-*: initial;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-text: var(--primary-text);
+  --color-overlay: var(--overlay);
+  --color-series-income: var(--series-income);
+  --color-series-expense: var(--series-expense);
+  --color-series-invest: var(--series-invest);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-positive: var(--positive);
+  --color-positive-foreground: var(--positive-foreground);
+  --color-positive-subtle: var(--positive-subtle);
+  --color-negative: var(--negative);
+  --color-negative-foreground: var(--negative-foreground);
+  --color-negative-subtle: var(--negative-subtle);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-forecast: var(--forecast);
+  --color-forecast-subtle: var(--forecast-subtle);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-other: var(--chart-other);
+  --color-chart-grid: var(--chart-grid);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-sans: var(--font-family-sans);
+  --font-display: var(--font-family-display);
+  --font-numeric: var(--font-family-numeric);
+  --font-logo: var(--font-family-logo);
+
+  --text-xs: var(--type-xs);
+  --text-xs--line-height: var(--type-xs-lh);
+  --text-sm: var(--type-sm);
+  --text-sm--line-height: var(--type-sm-lh);
+  --text-base: var(--type-base);
+  --text-base--line-height: var(--type-base-lh);
+  --text-lg: var(--type-lg);
+  --text-lg--line-height: var(--type-lg-lh);
+  --text-xl: var(--type-xl);
+  --text-xl--line-height: var(--type-xl-lh);
+  --text-2xl: var(--type-2xl);
+  --text-2xl--line-height: var(--type-2xl-lh);
+  --text-3xl: var(--type-3xl);
+  --text-3xl--line-height: var(--type-3xl-lh);
+  --text-hero: var(--type-hero);
+  --text-hero--line-height: var(--type-hero-lh);
+
+  --font-weight-regular: var(--weight-regular);
+  --font-weight-medium: var(--weight-medium);
+  --font-weight-semibold: var(--weight-semibold);
+  --font-weight-bold: var(--weight-bold);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-full: 9999px;
+
+  --shadow-sm: var(--elevation-1);
+  --shadow-md: var(--elevation-2);
+  --shadow-lg: var(--elevation-3);
+
+  --spacing-touch: var(--touch-target);
+  --spacing-sidebar: var(--sidebar-width);
+  --spacing-bottom-nav: var(--bottom-nav-height);
+  --container-content: var(--content-max-width);
+
+  --ease-standard: var(--ease-standard);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+  /* Contém textos sr-only (posição absoluta) dentro de áreas com rolagem, sem esticar a página. */
+  .overflow-x-auto,
+  .overflow-y-auto,
+  .overflow-auto {
+    position: relative;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@utility tracking-logo {
+  letter-spacing: var(--logo-tracking);
+}
+
+@utility money {
+  font-family: var(--font-family-numeric);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

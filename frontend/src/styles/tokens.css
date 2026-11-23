@@ -1,0 +1,163 @@
+/*
+  Identidade visual Fynavero — ÚNICO lugar com valores visuais da plataforma.
+  Paleta da marca: Laranja #E85002 · Preto #000000 · Cinza escuro #333333 · Cinza #646464 · Branco #F9F9F9
+  Fonte única: Space Grotesk. Logotipo: Montserrat SemiBold, caixa alta, espaçamento largo.
+  Contraste conferido para WCAG 2.1 AA (texto ≥ 4,5:1; componentes e gráficos ≥ 3:1 sempre que possível).
+*/
+
+:root,
+.light {
+  color-scheme: light;
+
+  /* Superfícies e texto */
+  --background: #f9f9f9;
+  --foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+  --muted: #f0f0f0;
+  --muted-foreground: #646464; /* 5,6:1 sobre #F9F9F9 */
+  --border: #e3e3e3;
+  --input: #8a8a8a; /* borda de campo 3,3:1 */
+  --ring: #e85002;
+  --overlay: rgb(0 0 0 / 0.5);
+
+  /* Marca */
+  --primary: #e85002;
+  --primary-foreground: #000000; /* 5,6:1 sobre o laranja */
+  --primary-text: #b23c00; /* laranja para texto sobre fundo claro: 5,6:1 */
+  --secondary: #333333;
+  --secondary-foreground: #f9f9f9;
+  --accent: #fdebe1;
+  --accent-foreground: #000000;
+
+  /* Semânticas financeiras (fixas, nunca decorativas; sempre com sinal, ícone ou texto) */
+  --positive: #15803d;
+  --positive-foreground: #ffffff;
+  --positive-subtle: #e7f5ec;
+  --negative: #b91c1c;
+  --negative-foreground: #ffffff;
+  --negative-subtle: #fce8e8;
+  --warning: #9a3412;
+  --warning-foreground: #ffffff;
+  --forecast: #5b5b5b;
+  --forecast-subtle: #ececec;
+  --destructive: #b91c1c;
+  --destructive-foreground: #ffffff;
+
+  /* Gráficos: 6 categorias + "Outros" (a cor acompanha a categoria) */
+  --chart-1: #e85002;
+  --chart-2: #333333;
+  --chart-3: #f29b66;
+  --chart-4: #8a8a8a;
+  --chart-5: #8f3100;
+  --chart-6: #c4c4c4;
+  --chart-other: #dcdcdc;
+  --chart-grid: #e8e8e8;
+  --series-income: #333333;
+  --series-expense: #a7a7a7;
+  --series-invest: #e85002;
+
+  /* Tipografia */
+  --font-family-sans: "Space Grotesk", ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-family-display: var(--font-family-sans);
+  --font-family-numeric: var(--font-family-sans);
+  --font-family-logo: "Montserrat", var(--font-family-sans);
+  --logo-tracking: 0.12em;
+
+  --type-xs: 0.75rem;
+  --type-xs-lh: 1rem;
+  --type-sm: 0.875rem;
+  --type-sm-lh: 1.25rem;
+  --type-base: 1rem;
+  --type-base-lh: 1.5rem;
+  --type-lg: 1.125rem;
+  --type-lg-lh: 1.75rem;
+  --type-xl: 1.25rem;
+  --type-xl-lh: 1.75rem;
+  --type-2xl: 1.5rem;
+  --type-2xl-lh: 2rem;
+  --type-3xl: 1.875rem;
+  --type-3xl-lh: 2.25rem;
+  --type-hero: clamp(2.25rem, 9vw, 3.75rem);
+  --type-hero-lh: 1.05;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Forma */
+  --radius: 0.75rem;
+
+  /* Elevação */
+  --elevation-1: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --elevation-2: 0 4px 16px -4px rgb(0 0 0 / 0.1);
+  --elevation-3: 0 16px 40px -12px rgb(0 0 0 / 0.25);
+
+  /* Movimento */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Layout */
+  --touch-target: 44px;
+  --sidebar-width: 15.5rem;
+  --bottom-nav-height: 4.25rem;
+  --content-max-width: 72rem;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --background: #000000;
+  --foreground: #f9f9f9;
+  --card: #141414;
+  --card-foreground: #f9f9f9;
+  --popover: #1a1a1a;
+  --popover-foreground: #f9f9f9;
+  --muted: #1f1f1f;
+  --muted-foreground: #a7a7a7; /* 7,6:1 sobre #141414 */
+  --border: #2b2b2b;
+  --input: #646464;
+  --ring: #e85002;
+  --overlay: rgb(0 0 0 / 0.7);
+
+  --primary: #e85002;
+  --primary-foreground: #000000;
+  --primary-text: #f26b1d;
+  --secondary: #333333;
+  --secondary-foreground: #f9f9f9;
+  --accent: #2a1a10;
+  --accent-foreground: #f9f9f9;
+
+  --positive: #4ade80;
+  --positive-foreground: #000000;
+  --positive-subtle: #0f2a1a;
+  --negative: #f87171;
+  --negative-foreground: #000000;
+  --negative-subtle: #2e1212;
+  --warning: #fdba74;
+  --warning-foreground: #000000;
+  --forecast: #a7a7a7;
+  --forecast-subtle: #262626;
+  --destructive: #f87171;
+  --destructive-foreground: #000000;
+
+  --chart-1: #e85002;
+  --chart-2: #f9f9f9;
+  --chart-3: #f29b66;
+  --chart-4: #8a8a8a;
+  --chart-5: #c24400;
+  --chart-6: #5c5c5c;
+  --chart-other: #3d3d3d;
+  --chart-grid: #262626;
+  --series-income: #f9f9f9;
+  --series-expense: #646464;
+  --series-invest: #e85002;
+
+  --elevation-1: 0 1px 2px 0 rgb(0 0 0 / 0.6);
+  --elevation-2: 0 4px 16px -4px rgb(0 0 0 / 0.7);
+  --elevation-3: 0 16px 40px -12px rgb(0 0 0 / 0.8);
+}
