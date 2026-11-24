@@ -33,6 +33,8 @@ Os dois têm plano gratuito suficiente para começar (confira os limites atuais 
 
 O remetente de `MAIL_FROM` precisa ser do domínio verificado.
 
+**Brevo pela API (recomendado):** em vez das variáveis de SMTP, crie uma chave em *Settings › SMTP & API › API Keys* e defina só `BREVO_API_KEY` (mais `MAIL_FROM`). O envio passa a ser por HTTPS, que funciona mesmo quando a hospedagem bloqueia SMTP (caso de alguns planos grátis). Ao subir, o log mostra qual modo de envio está ativo ("E-mail: envio pela API do Brevo…").
+
 ## Passo 2 — Hospedagem
 
 ### Opção A: Render (recomendada para começar)
