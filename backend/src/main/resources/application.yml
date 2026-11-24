@@ -18,9 +18,26 @@ spring:
   servlet:
     multipart:
       max-file-size: 5MB
+  # Em desenvolvimento as sessões ficam na memória; o perfil "postgres" (produção) liga as sessões no banco.
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.session.SessionAutoConfiguration
+  session:
+    jdbc:
+      initialize-schema: never # tabelas criadas pelo Flyway (V5)
+      cleanup-cron: "0 */15 * * * *"
+  mail:
+    # SPRING_MAIL_HOST, SPRING_MAIL_PORT, SPRING_MAIL_USERNAME e SPRING_MAIL_PASSWORD ligam o envio (Brevo, Resend, SES…).
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.connectiontimeout: 10000
+      mail.smtp.timeout: 10000
+      mail.smtp.writetimeout: 10000
 
 server:
   port: ${PORT:8080}
+  # Atrás do proxy da hospedagem use "framework" para ler o IP real (X-Forwarded-For) e o HTTPS.
+  forward-headers-strategy: ${FORWARD_HEADERS_STRATEGY:none}
   error:
     include-message: never
   servlet:
@@ -32,6 +49,15 @@ server:
         same-site: lax
         secure: ${COOKIE_SECURE:false}
         max-age: 30d
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
 
 app:
   # URL pública do front-end (links mágicos e retorno do login com Google).
@@ -45,6 +71,7 @@ logging:
     org.hibernate.SQL: warn
 
 ---
+# Produção: PostgreSQL + sessões no banco. DATABASE_URL aceita jdbc:postgresql://… ou postgres://usuario:senha@host/banco.
 spring:
   config:
     activate:
@@ -53,5 +80,9 @@ spring:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/fynavero}
     username: ${DATABASE_USER:fynavero}
     password: ${DATABASE_PASSWORD:fynavero}
+    hikari:
+      maximum-pool-size: ${DATABASE_POOL_SIZE:5}
+  autoconfigure:
+    exclude: ""
 app:
   demo-data: ${DEMO_DATA:false}

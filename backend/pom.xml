@@ -49,6 +49,16 @@
       <artifactId>spring-boot-starter-mail</artifactId>
     </dependency>
     <dependency>
+      <!-- Sessões no banco em produção (perfil postgres): reiniciar o servidor não desconecta ninguém. -->
+      <groupId>org.springframework.session</groupId>
+      <artifactId>spring-session-jdbc</artifactId>
+    </dependency>
+    <dependency>
+      <!-- Só /actuator/health fica exposto: usado pela hospedagem para saber se o app subiu. -->
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.flywaydb</groupId>
       <artifactId>flyway-core</artifactId>
     </dependency>
@@ -85,6 +95,13 @@
     <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- PostgreSQL de verdade nos testes, sem precisar de Docker: confere migrações e sessões no banco. -->
+      <groupId>io.zonky.test</groupId>
+      <artifactId>embedded-postgres</artifactId>
+      <version>2.1.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

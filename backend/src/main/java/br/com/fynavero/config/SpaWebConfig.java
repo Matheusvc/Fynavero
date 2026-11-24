@@ -21,7 +21,7 @@ public class SpaWebConfig implements WebMvcConfigurer {
                     protected Resource getResource(String path, Resource location) throws IOException {
                         Resource r = location.createRelative(path);
                         if (r.exists() && r.isReadable()) return r;
-                        if (path.startsWith("api/") || path.contains(".")) return null;
+                        if (path.startsWith("api/") || path.startsWith("actuator/") || path.contains(".")) return null;
                         Resource index = location.createRelative("index.html");
                         return index.exists() ? index : null;
                     }

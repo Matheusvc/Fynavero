@@ -1,0 +1,60 @@
+name: Backup diário do banco
+
+# Todo dia às 3h (Brasília) faz um pg_dump do PostgreSQL de produção, criptografa com AES-256 e guarda
+# como artefato do GitHub por 30 dias. Só roda quando os dois segredos abaixo existirem no repositório
+# (Settings › Secrets and variables › Actions):
+#   DATABASE_BACKUP_URL  URL EXTERNA do banco (ex.: postgres://usuario:senha@host:5432/fynavero?sslmode=require)
+#   BACKUP_PASSPHRASE    frase longa usada para criptografar; guarde-a fora do GitHub (sem ela o backup não abre)
+# Restaurar: veja docs/LANCAMENTO.md › Backup e restauração.
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_BACKUP_URL: ${{ secrets.DATABASE_BACKUP_URL }}
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - name: Conferir segredos
+        id: check
+        run: |
+          if [ -z "$DATABASE_BACKUP_URL" ] || [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "Segredos de backup não configurados; nada a fazer."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Instalar cliente PostgreSQL 16
+        if: steps.check.outputs.skip != 'true'
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-16
+
+      - name: Gerar backup criptografado
+        if: steps.check.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          FILE="fynavero-$(date -u +%Y-%m-%d).dump.gpg"
+          /usr/lib/postgresql/16/bin/pg_dump --format=custom --no-owner --no-privileges "$DATABASE_BACKUP_URL" \
+            | gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase "$BACKUP_PASSPHRASE" -o "$FILE"
+          test -s "$FILE"
+          echo "FILE=$FILE" >> "$GITHUB_ENV"
+          ls -lh "$FILE"
+
+      - name: Guardar por 30 dias
+        if: steps.check.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.FILE }}
+          path: ${{ env.FILE }}
+          retention-days: 30
+          if-no-files-found: error

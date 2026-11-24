@@ -1,5 +1,13 @@
 spring:
   datasource:
     url: jdbc:h2:mem:fynavero-test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
+  # Este arquivo substitui o application.yml principal nos testes: as sessões ficam na memória (MockHttpSession).
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.session.SessionAutoConfiguration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
 app:
   demo-data: false

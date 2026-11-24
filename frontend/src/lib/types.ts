@@ -15,6 +15,7 @@ export type Me = {
   onboardingDone: boolean;
   contribution: Contribution;
   hasPassword: boolean;
+  emailVerified: boolean;
 };
 
 export type Providers = { google: boolean; magicLink: boolean };

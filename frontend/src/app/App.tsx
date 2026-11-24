@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ErrorState, Spinner } from "@/components/ui/feedback";
 import { errorMessage } from "@/lib/api";
 import { useMe } from "@/lib/queries";
-import { LoginPage, MagicLinkPage, RegisterPage } from "@/features/auth";
+import { ConfirmEmailPage, ForgotPasswordPage, LoginPage, MagicLinkPage, RegisterPage, ResetPasswordPage } from "@/features/auth";
 import { PrivacyPage, TermsPage } from "@/features/legal/LegalPages";
 import HomePage from "@/features/home/HomePage";
 import TransactionsPage from "@/features/transactions/TransactionsPage";
@@ -76,6 +76,9 @@ export default function App() {
         <Route path="/entrar" element={<PublicOnly><LoginPage /></PublicOnly>} />
         <Route path="/cadastro" element={<PublicOnly><RegisterPage /></PublicOnly>} />
         <Route path="/entrar/link" element={<MagicLinkPage />} />
+        <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
+        <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
+        <Route path="/confirmar-email" element={<ConfirmEmailPage />} />
         <Route path="/termos" element={<TermsPage />} />
         <Route path="/conta-paga" element={<BillActionPage />} />
         <Route path="/privacidade" element={<PrivacyPage />} />

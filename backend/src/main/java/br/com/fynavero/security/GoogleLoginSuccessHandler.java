@@ -40,9 +40,14 @@ public class GoogleLoginSuccessHandler implements AuthenticationSuccessHandler {
             p.email = email.toLowerCase(Locale.ROOT);
             p.name = google.getAttribute("given_name");
             p.termsAcceptedAt = Instant.now(); // aceite exibido junto ao botão "Continuar com Google"
+            p.emailVerifiedAt = Instant.now(); // o Google já confirmou o e-mail
             p.createdAt = Instant.now();
             return profiles.save(p);
         });
+        if (profile.emailVerifiedAt == null) {
+            profile.emailVerifiedAt = Instant.now();
+            profiles.save(profile);
+        }
         sessions.signIn(profile, req, res);
         res.sendRedirect(props.baseUrl() + "/");
     }

@@ -13,6 +13,10 @@ Também tem: etiquetas (#viagem) e busca no ano todo, limite de gasto por catego
 | Planilhas | SheetJS (.xlsx/.xls) e Papa Parse (.csv), lidos no navegador |
 | Exportação | Apache POI (Excel) e OpenPDF (PDF), gerados no back-end |
 
+## Colocar no ar
+
+O passo a passo (e-mail com Brevo ou Resend, hospedagem na Render ou Railway com PostgreSQL, domínio e backup diário) está em [docs/LANCAMENTO.md](docs/LANCAMENTO.md). O `Dockerfile` gera a imagem de produção.
+
 ## Rodar em desenvolvimento
 
 Pré-requisitos: **Java 21**, **Maven 3.9+** e **Node 20+**.
@@ -67,7 +71,7 @@ Todas são opcionais; `.env.example` lista cada uma com um exemplo.
 ## Testes
 
 ```bash
-cd backend && mvn test          # 15 testes do módulo de cálculo + 13 testes de aceite de ponta a ponta
+cd backend && mvn test          # cálculo, aceite de ponta a ponta e um teste num PostgreSQL de verdade (embutido)
 cd frontend && npm test         # 25 testes do leitor de planilhas
 cd frontend && npm run check:tokens   # garante que não há cor/fonte/sombra fixa fora dos tokens
 ```

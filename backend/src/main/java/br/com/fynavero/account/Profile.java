@@ -33,6 +33,8 @@ public class Profile {
     @Column(name = "notify_bills") public boolean notifyBills = true;
     @Column(name = "notify_limits") public boolean notifyLimits = true;
     @Column(name = "notify_summary") public boolean notifySummary = true;
+    /** Quando a pessoa confirmou o e-mail (nulo = ainda não confirmou). Avisos por e-mail só saem confirmados. */
+    @Column(name = "email_verified_at") public Instant emailVerifiedAt;
     @Column(name = "terms_accepted_at") public Instant termsAcceptedAt;
     @Column(name = "created_at") public Instant createdAt;
 

@@ -1,0 +1,35 @@
+# Blueprint da Render: cria o app (Docker) e o PostgreSQL de uma vez.
+# Na Render: New › Blueprint › escolha este repositório. Depois preencha as variáveis marcadas como sync: false.
+# Confira os planos em render.com/pricing antes de criar (os nomes abaixo eram os vigentes ao escrever).
+services:
+  - type: web
+    name: fynavero
+    runtime: docker
+    plan: starter
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: fynavero-db
+          property: connectionString
+      - key: APP_BASE_URL # ex.: https://fynavero.onrender.com ou https://app.seudominio.com.br
+        sync: false
+      - key: MAIL_FROM # ex.: Fynavero <nao-responda@seudominio.com.br>
+        sync: false
+      - key: SPRING_MAIL_HOST # Brevo: smtp-relay.brevo.com · Resend: smtp.resend.com
+        sync: false
+      - key: SPRING_MAIL_PORT
+        value: "587"
+      - key: SPRING_MAIL_USERNAME
+        sync: false
+      - key: SPRING_MAIL_PASSWORD
+        sync: false
+      - key: DEMO_DATA
+        value: "false"
+
+databases:
+  - name: fynavero-db
+    plan: basic-256mb
+    databaseName: fynavero
+    user: fynavero

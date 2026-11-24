@@ -24,6 +24,7 @@ import { useMe } from "@/lib/queries";
 import { useTheme } from "@/theme/theme";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "./NotificationBell";
+import { VerifyEmailBanner } from "./VerifyEmailBanner";
 
 type NavItem = { to: string; label: string; icon: LucideIcon; end?: boolean };
 
@@ -163,6 +164,7 @@ export function AppShell() {
           </div>
         </div>
       </header>
+      <VerifyEmailBanner />
 
       <main id="conteudo" tabIndex={-1} className="mx-auto max-w-content px-4 pt-5 pb-28 outline-none sm:px-6 lg:pb-10">
         <Outlet />

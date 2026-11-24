@@ -55,7 +55,7 @@ public class NotificationJobs {
 
     private void forEachProfile(String task, Consumer<Profile> action) {
         for (Profile p : profiles.findAll()) {
-            if (!p.onboardingDone) continue;
+            if (!p.onboardingDone || p.emailVerifiedAt == null) continue; // e-mail só para endereço confirmado
             try {
                 action.accept(p);
             } catch (RuntimeException e) {

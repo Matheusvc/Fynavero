@@ -32,15 +32,18 @@ public final class AccountDtos {
     public record ContributionDto(boolean enabled, @Min(1) @Max(10000) int bps, Long categoryId) {}
 
     public record Me(Long id, String name, String email, List<Objective> objectives, boolean onboardingDone,
-                     ContributionDto contribution, boolean hasPassword) {
+                     ContributionDto contribution, boolean hasPassword, boolean emailVerified) {
         public static Me of(Profile p) {
             return new Me(p.id, p.name, p.email, p.objectives(), p.onboardingDone,
                     new ContributionDto(p.contributionEnabled, p.contributionBps, p.contributionCategoryId),
-                    p.passwordHash != null);
+                    p.passwordHash != null, p.emailVerifiedAt != null);
         }
     }
 
     public record ProfileReq(@NotBlank @Size(max = 100) String name, @Size(max = 4) List<Objective> objectives) {}
+
+    /** Nova senha a partir do link de "Esqueci minha senha". */
+    public record ResetPasswordReq(@NotBlank @Size(max = 200) String token, @NotBlank @Size(min = 8, max = 72) String password) {}
 
     public record PasswordReq(String current, @NotBlank @Size(min = 8, max = 72) String next) {}
 

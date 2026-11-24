@@ -162,6 +162,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         p.name = name;
         p.passwordHash = encoder.encode(PASSWORD);
         p.termsAcceptedAt = Instant.now();
+        p.emailVerifiedAt = Instant.now();
         p.createdAt = Instant.now();
         return profiles.save(p).id;
     }

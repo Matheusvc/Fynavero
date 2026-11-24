@@ -70,6 +70,8 @@ public class MagicLinkService {
             throw badRequest("Link inválido ou expirado. Peça um novo.");
         }
         t.usedAt = Instant.now();
-        return profiles.findById(t.userId).orElseThrow(() -> notFound());
+        Profile p = profiles.findById(t.userId).orElseThrow(() -> notFound());
+        if (p.emailVerifiedAt == null) p.emailVerifiedAt = Instant.now(); // abrir o link prova que o e-mail é dela
+        return p;
     }
 }

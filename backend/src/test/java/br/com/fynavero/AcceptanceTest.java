@@ -1,6 +1,17 @@
 package br.com.fynavero;
 
+import br.com.fynavero.common.Mailer;
 import br.com.fynavero.ledger.TransactionRepository;
+import org.mockito.ArgumentCaptor;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
 import br.com.fynavero.notification.ActionService;
 import br.com.fynavero.notification.NotificationMailer;
 import br.com.fynavero.overview.MonthSummaryService;
@@ -34,6 +45,7 @@ class AcceptanceTest {
     @Autowired ActionService actionService;
     @Autowired TransactionRepository transactionRepository;
     @Autowired MonthSummaryService monthSummaryService;
+    @MockitoSpyBean Mailer mailer;
 
     private final LocalDate today = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
     private final String month = YearMonth.from(today).toString();
@@ -46,11 +58,35 @@ class AcceptanceTest {
         return text.isEmpty() ? null : json.readTree(text);
     }
 
+    /** Cada cadastro de teste vem de um "endereço" diferente, para não esbarrar no limite de contas por IP. */
+    private static RequestPostProcessor fromIp(String ip) {
+        return r -> {
+            r.setRemoteAddr(ip);
+            return r;
+        };
+    }
+
+    private static String randomIp() {
+        var rnd = java.util.concurrent.ThreadLocalRandom.current();
+        return "10." + rnd.nextInt(256) + "." + rnd.nextInt(256) + "." + rnd.nextInt(1, 255);
+    }
+
+    /** Último link enviado por e-mail que contém o caminho informado (ex.: "/redefinir-senha"). */
+    private String lastLinkToken(String to, String path) {
+        ArgumentCaptor<String> text = ArgumentCaptor.forClass(String.class);
+        verify(mailer, atLeastOnce()).send(eq(to), anyString(), text.capture(), any());
+        for (int i = text.getAllValues().size() - 1; i >= 0; i--) {
+            Matcher m = Pattern.compile(Pattern.quote(path) + "\\?token=([\\w-]+)").matcher(text.getAllValues().get(i));
+            if (m.find()) return m.group(1);
+        }
+        throw new AssertionError("nenhum link " + path + " enviado para " + to);
+    }
+
     /** Cria conta, conclui o onboarding e devolve a sessão. */
     private MockHttpSession newUser(String contributionJson) throws Exception {
         MockHttpSession s = new MockHttpSession();
         String email = "p" + UUID.randomUUID().toString().substring(0, 8) + "@teste.dev";
-        call(s, post("/api/auth/register"),
+        call(s, post("/api/auth/register").with(fromIp(randomIp())),
                 "{\"name\":\"Pessoa\",\"email\":\"" + email + "\",\"password\":\"senhaforte1\",\"acceptTerms\":true}", 200);
         JsonNode catalog = call(s, get("/api/catalog"), null, 200);
         long mercado = 0, dizimo = 0;
@@ -375,6 +411,59 @@ class AcceptanceTest {
         JsonNode prefs = call(s, get("/api/notifications/preferences"), null, 200);
         assertThat(prefs.get("limits").asBoolean()).isFalse();
         assertThat(prefs.get("bills").asBoolean()).isTrue();
+    }
+
+    // ------------------------------------------------------------------ lançamento: senha, e-mail e limites
+
+    @Test
+    void esqueciMinhaSenhaRedefineEEntra() throws Exception {
+        MockHttpSession s = newUser("null");
+        String email = call(s, get("/api/auth/me"), null, 200).get("email").asText();
+        MockHttpSession anon = new MockHttpSession();
+        call(anon, post("/api/auth/password/forgot").with(fromIp(randomIp())), "{\"email\":\"ninguem@teste.dev\"}", 204);
+        call(anon, post("/api/auth/password/forgot").with(fromIp(randomIp())), "{\"email\":\"" + email + "\"}", 204);
+        String token = lastLinkToken(email, "/redefinir-senha");
+
+        call(anon, post("/api/auth/password/reset"), "{\"token\":\"" + token + "\",\"password\":\"curta\"}", 400);
+        JsonNode me = call(anon, post("/api/auth/password/reset"), "{\"token\":\"" + token + "\",\"password\":\"novasenha99\"}", 200);
+        assertThat(me.get("email").asText()).isEqualTo(email);
+        call(new MockHttpSession(), post("/api/auth/password/reset"), "{\"token\":\"" + token + "\",\"password\":\"outrasenha1\"}", 400);
+
+        call(new MockHttpSession(), post("/api/auth/login"), "{\"email\":\"" + email + "\",\"password\":\"senhaforte1\"}", 401);
+        call(new MockHttpSession(), post("/api/auth/login"), "{\"email\":\"" + email + "\",\"password\":\"novasenha99\"}", 200);
+    }
+
+    @Test
+    void cadastroPedeConfirmacaoDeEmail() throws Exception {
+        MockHttpSession s = newUser("null");
+        JsonNode me = call(s, get("/api/auth/me"), null, 200);
+        assertThat(me.get("emailVerified").asBoolean()).isFalse();
+        String email = me.get("email").asText();
+
+        call(s, post("/api/auth/email/resend"), null, 204);
+        String token = lastLinkToken(email, "/confirmar-email");
+        JsonNode verified = call(new MockHttpSession(), post("/api/auth/email/verify"), "{\"token\":\"" + token + "\"}", 200);
+        assertThat(verified.get("emailVerified").asBoolean()).isTrue();
+        assertThat(call(s, get("/api/auth/me"), null, 200).get("emailVerified").asBoolean()).isTrue();
+        call(new MockHttpSession(), post("/api/auth/email/verify"), "{\"token\":\"" + token + "\"}", 400);
+    }
+
+    @Test
+    void limiteDeCadastrosPorRede() throws Exception {
+        String ip = randomIp();
+        for (int i = 0; i < 5; i++) {
+            String body = "{\"name\":\"Robô\",\"email\":\"r" + UUID.randomUUID().toString().substring(0, 8)
+                    + "@teste.dev\",\"password\":\"senhaforte1\",\"acceptTerms\":true}";
+            call(new MockHttpSession(), post("/api/auth/register").with(fromIp(ip)), body, 200);
+        }
+        JsonNode blocked = call(new MockHttpSession(), post("/api/auth/register").with(fromIp(ip)),
+                "{\"name\":\"Robô\",\"email\":\"r-extra@teste.dev\",\"password\":\"senhaforte1\",\"acceptTerms\":true}", 429);
+        assertThat(blocked.get("message").asText()).contains("Tente de novo em 1 hora");
+    }
+
+    @Test
+    void healthCheckParaAHospedagem() throws Exception {
+        mvc.perform(get("/actuator/health")).andExpect(status().isOk());
     }
 
     @Test

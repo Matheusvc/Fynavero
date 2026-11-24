@@ -60,6 +60,11 @@ export function LoginPage() {
         <Field label="Senha">
           <PasswordInput value={password} onChange={setPassword} autoComplete="current-password" />
         </Field>
+        <p className="-mt-2 text-right text-sm">
+          <Link to="/esqueci-senha" className="text-primary-text underline-offset-4 hover:underline">
+            Esqueci minha senha
+          </Link>
+        </p>
         {error && (
           <p role="alert" className="rounded-lg bg-negative-subtle px-3 py-2 text-sm text-negative">
             {error}
