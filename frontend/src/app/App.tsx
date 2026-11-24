@@ -18,6 +18,8 @@ const ReportsPage = lazy(() => import("@/features/reports/ReportsPage"));
 const ImportPage = lazy(() => import("@/features/import/ImportPage"));
 const SettingsPage = lazy(() => import("@/features/settings/SettingsPage"));
 const MorePage = lazy(() => import("@/features/settings/MorePage").then((m) => ({ default: m.MorePage })));
+const GoalsPage = lazy(() => import("@/features/goals/GoalsPage"));
+const BillActionPage = lazy(() => import("@/features/notifications/BillActionPage"));
 const DesignSystemPage = lazy(() => import("@/features/design-system/DesignSystemPage"));
 
 function Splash() {
@@ -75,6 +77,7 @@ export default function App() {
         <Route path="/cadastro" element={<PublicOnly><RegisterPage /></PublicOnly>} />
         <Route path="/entrar/link" element={<MagicLinkPage />} />
         <Route path="/termos" element={<TermsPage />} />
+        <Route path="/conta-paga" element={<BillActionPage />} />
         <Route path="/privacidade" element={<PrivacyPage />} />
         <Route path="/design-system" element={<DesignSystemPage />} />
         <Route path="/boas-vindas" element={<RequireAuth onboarding><OnboardingPage /></RequireAuth>} />
@@ -83,6 +86,7 @@ export default function App() {
           <Route path="lancamentos" element={<TransactionsPage />} />
           <Route path="parcelas" element={<InstallmentsPage />} />
           <Route path="investimentos" element={<InvestmentsPage />} />
+          <Route path="objetivos" element={<GoalsPage />} />
           <Route path="relatorios" element={<ReportsPage />} />
           <Route path="importar" element={<ImportPage />} />
           <Route path="configuracoes" element={<SettingsPage />} />

@@ -98,7 +98,7 @@ export function CategoriesSection() {
               <p className={c.hidden ? "truncate font-medium text-muted-foreground line-through" : "truncate font-medium"}>{c.name}</p>
               <p className="text-xs text-muted-foreground">
                 {c.kind === "DESPESA" ? c.group : KIND_LABEL[c.kind]}
-                {c.goalCents ? <> · meta <Money cents={c.goalCents} /></> : null}
+                {c.goalCents ? <> · {c.kind === "DESPESA" ? "limite" : "meta"} <Money cents={c.goalCents} />{c.kind === "DESPESA" && "/mês"}</> : null}
                 {c.hidden && <> · <Badge>Oculta</Badge></>}
               </p>
             </div>
@@ -138,8 +138,13 @@ export function CategoriesSection() {
                 </Select>
               </Field>
             )}
+            {draft.kind === "DESPESA" && (
+              <Field label="Limite por mês (opcional)" hint="Avisamos quando os gastos desta categoria chegarem a 80% e a 100% do limite.">
+                <CurrencyInput value={draft.goal} onChange={(goal) => setDraft({ ...draft, goal })} />
+              </Field>
+            )}
             {draft.kind === "INVESTIMENTO" && (
-              <Field label="Meta (opcional)">
+              <Field label="Meta (opcional)" hint="Para dar prazo e acompanhar o progresso, use a tela Objetivos.">
                 <CurrencyInput value={draft.goal} onChange={(goal) => setDraft({ ...draft, goal })} />
               </Field>
             )}

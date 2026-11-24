@@ -24,6 +24,11 @@ public final class Formats {
         return capitalize(m.getMonth().getDisplayName(TextStyle.FULL, PT_BR));
     }
 
+    /** "novembro", para o meio de uma frase. */
+    public static String monthInText(YearMonth m) {
+        return m.getMonth().getDisplayName(TextStyle.FULL, PT_BR);
+    }
+
     /** "Nov" */
     public static String monthShort(YearMonth m) {
         return capitalize(m.getMonth().getDisplayName(TextStyle.SHORT, PT_BR).replace(".", ""));

@@ -13,10 +13,12 @@ import { api, errorMessage } from "@/lib/api";
 import { addMonthsISO, centsToInput, defaultDateFor, formatBRL, monthLabel, parseMoneyInput, shiftMonth } from "@/lib/format";
 import { KIND_LABEL, PAYMENT_METHODS } from "@/lib/labels";
 import { useMonth } from "@/lib/month";
-import { invalidateFinance, useCategories, useTxMutations } from "@/lib/queries";
+import { invalidateFinance, useCategories, useTags, useTxMutations } from "@/lib/queries";
 import type { Category, Kind, PaymentMethod, Scope, Tx } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { TagInput } from "@/components/TagInput";
 import { InstallmentCountFields } from "./InstallmentCountFields";
+import { warnLimit } from "./limitWarning";
 
 export type NewOptions = { kind?: Kind; installments?: boolean; categoryId?: number };
 
@@ -55,6 +57,8 @@ export function TransactionSheet({
   const [description, setDescription] = useState(tx?.description ?? "");
   const [payment, setPayment] = useState<PaymentMethod | "">(tx?.paymentMethod ?? (opts.installments ? "CREDITO" : ""));
   const [note, setNote] = useState(tx?.note ?? "");
+  const [tags, setTags] = useState<string[]>(tx?.tags ?? []);
+  const tagSuggestions = useTags();
   const [repeat, setRepeat] = useState(false);
   const [parcelado, setParcelado] = useState(!!opts.installments);
   const [count, setCount] = useState("2");
@@ -142,6 +146,7 @@ export function TransactionSheet({
             note: note || undefined,
             count: n,
             installmentValue: valueMode === "parcela",
+            tags,
           },
         });
         invalidateFinance(qc);
@@ -159,6 +164,7 @@ export function TransactionSheet({
             description: description || undefined,
             paymentMethod: payment || null,
             note: note || undefined,
+            tags,
           },
         });
         if (isInstallment && Number(planCount) !== tx.installmentTotal) {
@@ -178,6 +184,7 @@ export function TransactionSheet({
           paymentMethod: payment || null,
           note: note || undefined,
           repeatMonthly: repeat,
+          tags,
           installments: effectiveParcel ? n : null,
           installmentValue: effectiveParcel && valueMode === "parcela",
           loan:
@@ -195,6 +202,7 @@ export function TransactionSheet({
                 : "Lançamento salvo",
         );
       }
+      if (kind === "DESPESA" && categoryId) void warnLimit(categoryId, date);
       onClose();
     } catch (err) {
       toast.error(errorMessage(err));
@@ -483,6 +491,9 @@ export function TransactionSheet({
               )}
               <Field label="Descrição">
                 <Input value={description} onChange={(e) => setDescription(e.target.value)} maxLength={120} placeholder="Ex.: Feira do sábado" />
+              </Field>
+              <Field label="Etiquetas" hint="Agrupe gastos de um assunto, como #viagem. Também vale digitar #etiqueta na descrição.">
+                <TagInput value={tags} onChange={setTags} suggestions={tagSuggestions.data?.map((t) => t.tag)} />
               </Field>
               <Field label="Observação">
                 <Textarea value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} rows={2} />

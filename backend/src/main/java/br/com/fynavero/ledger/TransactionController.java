@@ -8,11 +8,14 @@ import br.com.fynavero.domain.Scope;
 import br.com.fynavero.ledger.LedgerDtos.DeletedDto;
 import br.com.fynavero.ledger.LedgerDtos.IdsReq;
 import br.com.fynavero.ledger.LedgerDtos.InstallmentConvertReq;
+import br.com.fynavero.ledger.LedgerDtos.SearchDto;
+import br.com.fynavero.ledger.LedgerDtos.TagDto;
 import br.com.fynavero.ledger.LedgerDtos.TxDto;
 import br.com.fynavero.ledger.LedgerDtos.TxReq;
 import br.com.fynavero.ledger.LedgerDtos.TxUpdateReq;
 import br.com.fynavero.security.AuthUser;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static br.com.fynavero.common.Formats.parseMonth;
@@ -44,12 +48,30 @@ public class TransactionController {
 
     @GetMapping
     public List<TxDto> list(@AuthenticationPrincipal AuthUser u, @RequestParam(required = false) String month,
-                            @RequestParam(required = false) String q, @RequestParam(required = false) Long categoryId,
+                            @RequestParam(required = false) String q, @RequestParam(required = false) String tag,
+                            @RequestParam(required = false) Long categoryId,
                             @RequestParam(required = false) Kind kind,
                             @RequestParam(required = false) PaymentMethod paymentMethod) {
         var monthTxs = transactions.month(u.id(), parseMonth(month, props.zoneId()));
-        return transactions.filter(monthTxs, q, categoryId, kind, paymentMethod, categories.map(u.id()))
+        return transactions.filter(monthTxs, q, tag, categoryId, kind, paymentMethod, categories.map(u.id()))
                 .stream().map(TxDto::of).toList();
+    }
+
+    /** Busca no ano todo (ou no período informado): "farmácia", "#viagem"… */
+    @GetMapping("/search")
+    public SearchDto search(@AuthenticationPrincipal AuthUser u, @RequestParam(required = false) String q,
+                            @RequestParam(required = false) String tag,
+                            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+                            @RequestParam(required = false) Kind kind) {
+        var r = transactions.search(u.id(), q, tag, from, to, kind, categories.map(u.id()));
+        return new SearchDto(r.items().stream().map(TxDto::of).toList(), r.receitas(), r.despesas(), r.investido(),
+                r.truncated());
+    }
+
+    @GetMapping("/tags")
+    public List<TagDto> tags(@AuthenticationPrincipal AuthUser u) {
+        return transactions.tags(u.id()).stream().map(e -> new TagDto(e.getKey(), e.getValue())).toList();
     }
 
     @PostMapping

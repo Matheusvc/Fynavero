@@ -9,20 +9,38 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/feedback";
 import { PageHeader } from "@/components/ui/page-header";
+import { Segmented } from "@/components/ui/segmented";
+import { TagList } from "@/components/TagInput";
 import { errorMessage } from "@/lib/api";
 import { formatDayHeader, formatPct, monthLabel } from "@/lib/format";
 import { CategoryIcon } from "@/lib/icons";
 import { KIND_LABEL, PAYMENT_METHODS, paymentLabel } from "@/lib/labels";
 import { useMonth } from "@/lib/month";
-import { useCategories, useMe, useTransactions, type TxFilters } from "@/lib/queries";
+import { useCategories, useMe, useSearch, useTags, useTransactions, type TxFilters } from "@/lib/queries";
 import type { Category, Kind, PaymentMethod, Tx } from "@/lib/types";
 import { cn } from "@/lib/utils";
+
+function TagChip({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={selected}
+      className={cn(
+        "inline-flex min-h-9 shrink-0 items-center rounded-full border px-3 text-sm transition-colors",
+        selected ? "border-primary bg-accent font-medium text-accent-foreground" : "bg-card text-muted-foreground hover:bg-muted",
+      )}
+    >
+      #{label}
+    </button>
+  );
+}
 
 function signed(t: Tx) {
   return t.kind === "RECEITA" ? t.amountCents : -t.amountCents;
 }
 
-function TxRow({ tx, cat, onOpen }: { tx: Tx; cat?: Category; onOpen: () => void }) {
+function TxRow({ tx, cat, onOpen, onTag }: { tx: Tx; cat?: Category; onOpen: () => void; onTag: (t: string) => void }) {
   const title = tx.description || cat?.name || "Lançamento";
   const pm = paymentLabel(tx.paymentMethod);
   return (
@@ -53,6 +71,7 @@ function TxRow({ tx, cat, onOpen }: { tx: Tx; cat?: Category; onOpen: () => void
             )}
             {tx.origin === "IMPORTADO" && <Badge>Importado</Badge>}
           </p>
+          {tx.tags.length > 0 && <TagList tags={tx.tags} onSelect={onTag} className="mt-1" />}
         </div>
         {tx.kind === "RECEITA" ? (
           <Money cents={tx.amountCents} tone="positive" signed className="font-semibold" />
@@ -76,41 +95,56 @@ export default function TransactionsPage() {
   const [kind, setKind] = useState<Kind | undefined>();
   const [payment, setPayment] = useState<PaymentMethod | undefined>();
   const [showFilters, setShowFilters] = useState(false);
+  const [tag, setTag] = useState<string | undefined>();
+  const [scope, setScope] = useState<"month" | "year">("month");
+  const tags = useTags();
   const dq = useDeferredValue(q.trim());
+  const year = month.slice(0, 4);
+  const yearMode = scope === "year";
 
-  const filters: TxFilters = { q: dq || undefined, categoryId, kind, paymentMethod: payment };
-  const txs = useTransactions(month, filters);
+  const filters: TxFilters = { q: dq || undefined, tag, categoryId, kind, paymentMethod: payment };
+  const monthTxs = useTransactions(month, filters);
+  const search = useSearch(yearMode ? { q: dq || undefined, tag, kind, from: `${year}-01-01`, to: `${year}-12-31` } : {});
+  const waitingQuery = yearMode && !dq && !tag;
+  const txs = yearMode ? search : monthTxs;
+  const list = useMemo(() => {
+    if (!yearMode) return monthTxs.data ?? [];
+    return (search.data?.items ?? []).filter(
+      (t) => (!categoryId || t.categoryId === categoryId) && (!payment || t.paymentMethod === payment),
+    );
+  }, [yearMode, monthTxs.data, search.data, categoryId, payment]);
   const catById = useMemo(() => new Map((cats.data ?? []).map((c) => [c.id, c])), [cats.data]);
-  const active = !!(dq || categoryId || kind || payment);
+  const active = !!(dq || tag || categoryId || kind || payment);
 
   const days = useMemo(() => {
     const map = new Map<string, Tx[]>();
-    for (const t of txs.data ?? []) map.set(t.date, [...(map.get(t.date) ?? []), t]);
+    for (const t of list) map.set(t.date, [...(map.get(t.date) ?? []), t]);
     return [...map.entries()];
-  }, [txs.data]);
+  }, [list]);
 
   const totals = useMemo(() => {
     let rec = 0, des = 0, inv = 0;
-    for (const t of txs.data ?? []) {
+    for (const t of list) {
       if (t.kind === "RECEITA") rec += t.amountCents;
       else if (t.kind === "DESPESA") des += t.amountCents;
       else inv += t.amountCents;
     }
     return { rec, des, inv };
-  }, [txs.data]);
+  }, [list]);
 
   function clear() {
     setQ("");
     setCategoryId(undefined);
     setKind(undefined);
     setPayment(undefined);
+    setTag(undefined);
   }
 
   return (
     <div>
       <PageHeader
         title="Lançamentos"
-        description={monthLabel(month)}
+        description={yearMode ? `Busca no ano de ${year}` : monthLabel(month)}
         actions={
           <Button onClick={() => openNew()}>
             <Plus /> Lançar
@@ -126,7 +160,7 @@ export default function TransactionsPage() {
               type="search"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Buscar por descrição ou categoria"
+              placeholder="Buscar: farmácia, mercado, #viagem…"
               aria-label="Buscar lançamentos"
               className="pl-9"
             />
@@ -141,6 +175,24 @@ export default function TransactionsPage() {
             <SlidersHorizontal /> <span className="hidden sm:inline">Filtros</span>
           </Button>
         </div>
+        <Segmented
+          label="Onde buscar"
+          value={scope}
+          onChange={setScope}
+          options={[
+            { value: "month", label: monthLabel(month) },
+            { value: "year", label: `Ano todo (${year})` },
+          ]}
+          className="sm:max-w-md"
+        />
+        {(tag || (tags.data?.length ?? 0) > 0) && (
+          <div className="flex gap-1.5 overflow-x-auto pb-1" role="group" aria-label="Filtrar por etiqueta">
+            {tag && !tags.data?.some((t) => t.tag === tag) && <TagChip label={tag} selected onClick={() => setTag(undefined)} />}
+            {(tags.data ?? []).slice(0, 12).map((t) => (
+              <TagChip key={t.tag} label={t.tag} selected={tag === t.tag} onClick={() => setTag(tag === t.tag ? undefined : t.tag)} />
+            ))}
+          </div>
+        )}
         {showFilters && (
           <div id="tx-filters" className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             <Select aria-label="Filtrar por categoria" value={categoryId ?? ""} onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : undefined)}>
@@ -176,7 +228,7 @@ export default function TransactionsPage() {
         )}
       </div>
 
-      {txs.data && txs.data.length > 0 && (
+      {list.length > 0 && (
         <dl className="mb-4 grid grid-cols-3 gap-2 text-center text-sm">
           <div className="rounded-lg bg-card p-2 shadow-sm">
             <dt className="text-xs text-muted-foreground">Receitas</dt>
@@ -192,13 +244,24 @@ export default function TransactionsPage() {
           </div>
         </dl>
       )}
-      {me.data?.contribution.enabled && txs.data && txs.data.length > 0 && !active && (
+      {yearMode && search.data?.truncated && (
+        <p className="-mt-2 mb-4 text-xs text-muted-foreground">
+          Mostrando os 500 lançamentos mais recentes. Refine a busca para ver o restante.
+        </p>
+      )}
+      {me.data?.contribution.enabled && list.length > 0 && !active && !yearMode && (
         <p className="-mt-2 mb-4 text-xs text-muted-foreground">
           No Início, as despesas também incluem a contribuição automática de {formatPct(me.data.contribution.bps)} sobre as receitas.
         </p>
       )}
 
-      {txs.isLoading ? (
+      {waitingQuery ? (
+        <Card>
+          <EmptyState icon={<Search className="size-7" />} title={`Buscar em ${year}`}>
+            Digite o que procura (ex.: farmácia) ou escolha uma etiqueta para ver os lançamentos do ano todo.
+          </EmptyState>
+        </Card>
+      ) : txs.isLoading ? (
         <div className="space-y-2" aria-busy="true" aria-label="Carregando">
           {Array.from({ length: 6 }, (_, i) => (
             <Skeleton key={i} className="h-16" />
@@ -241,7 +304,7 @@ export default function TransactionsPage() {
                 </div>
                 <ul className="divide-y">
                   {list.map((t) => (
-                    <TxRow key={t.id} tx={t} cat={catById.get(t.categoryId)} onOpen={() => openEdit(t)} />
+                    <TxRow key={t.id} tx={t} cat={catById.get(t.categoryId)} onOpen={() => openEdit(t)} onTag={setTag} />
                   ))}
                 </ul>
               </section>

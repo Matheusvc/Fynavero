@@ -29,7 +29,12 @@ public class Category {
     public boolean hidden;
     /** Receita que é empréstimo recebido: entra no saldo, mas não conta como renda nem para a contribuição. */
     public boolean loan;
-    /** Meta opcional (só investimentos), em centavos. */
+    /**
+     * Meta opcional, em centavos. Em investimento é o valor a juntar (objetivo de economia);
+     * em despesa é o limite de gasto do mês.
+     */
     @Column(name = "goal_cents") public Long goalCents;
+    /** Prazo do objetivo de economia (só investimentos). */
+    @Column(name = "goal_deadline") public java.time.LocalDate goalDeadline;
     @Column(name = "created_at") public Instant createdAt;
 }

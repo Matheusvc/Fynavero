@@ -3,6 +3,8 @@
 Plataforma web de gestão financeira pessoal, multiusuário, em português do Brasil.
 Cada pessoa cria a conta, escolhe as próprias categorias, lança gastos, rendas e investimentos, importa a planilha que já usa e acompanha para onde vai o dinheiro.
 
+Também tem: etiquetas (#viagem) e busca no ano todo, limite de gasto por categoria com alerta em 80% e 100%, objetivos de economia com prazo e barra de progresso, sino de avisos e e-mails (conta que vence amanhã com "Marcar como paga", limites e resumo do mês no dia 1).
+
 | Camada | Tecnologia |
 |---|---|
 | Back-end | Java 21, Spring Boot 3.5 (Web, Security, Data JPA, Validation, OAuth2 Client, Mail), Flyway |

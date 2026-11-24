@@ -18,6 +18,8 @@ import { useCategories, useDashboard, useMe, useTxMutations } from "@/lib/querie
 import type { Slice } from "@/lib/types";
 import { Hero, StatCard } from "./SummaryCards";
 import { CategoryPanel } from "./CategoryPanel";
+import { BudgetCard } from "./BudgetCard";
+import { GoalsCard } from "./GoalsCard";
 
 export default function HomePage() {
   const { month } = useMonth();
@@ -171,6 +173,11 @@ export default function HomePage() {
             </ul>
           )}
         </Card>
+      </div>
+
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+        <BudgetCard month={month} />
+        <GoalsCard />
       </div>
 
       <Card aria-labelledby="seis-meses">

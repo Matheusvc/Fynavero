@@ -2,6 +2,13 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClie
 import { api, ApiError } from "./api";
 import type {
   AnnualReport,
+  AppNotification,
+  Budget,
+  Goal,
+  GoalInput,
+  NotificationPreferences,
+  SearchResult,
+  TagCount,
   CatalogItem,
   Category,
   CompareReport,
@@ -45,11 +52,12 @@ export const useCatalog = () =>
 export const useCategories = () =>
   useQuery({ queryKey: ["categories"], queryFn: () => api<Category[]>("/api/categories"), staleTime: 60_000 });
 
-export type TxFilters = { q?: string; categoryId?: number; kind?: Kind; paymentMethod?: PaymentMethod };
+export type TxFilters = { q?: string; tag?: string; categoryId?: number; kind?: Kind; paymentMethod?: PaymentMethod };
 
 export function useTransactions(month: string, f: TxFilters = {}) {
   const p = new URLSearchParams({ month });
   if (f.q) p.set("q", f.q);
+  if (f.tag) p.set("tag", f.tag);
   if (f.categoryId) p.set("categoryId", String(f.categoryId));
   if (f.kind) p.set("kind", f.kind);
   if (f.paymentMethod) p.set("paymentMethod", f.paymentMethod);
@@ -103,9 +111,64 @@ export const useIncomeSources = () =>
 export const useRecurrences = () =>
   useQuery({ queryKey: ["recurrences"], queryFn: () => api<Recurrence[]>("/api/recurrences") });
 
+/** Busca no ano todo (ou no período): texto livre e/ou etiqueta. Só roda com algo para buscar. */
+export function useSearch(f: { q?: string; tag?: string; from?: string; to?: string; kind?: Kind }) {
+  const p = new URLSearchParams();
+  if (f.q) p.set("q", f.q);
+  if (f.tag) p.set("tag", f.tag);
+  if (f.from) p.set("from", f.from);
+  if (f.to) p.set("to", f.to);
+  if (f.kind) p.set("kind", f.kind);
+  return useQuery({
+    queryKey: ["transactions", "search", f],
+    queryFn: () => api<SearchResult>(`/api/transactions/search?${p}`),
+    enabled: !!(f.q?.trim() || f.tag),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export const useTags = () => useQuery({ queryKey: ["transactions", "tags"], queryFn: () => api<TagCount[]>("/api/transactions/tags") });
+
+export const useBudgets = (month: string) =>
+  useQuery({
+    queryKey: ["budgets", month],
+    queryFn: () => api<Budget[]>(`/api/budgets?month=${month}`),
+    placeholderData: keepPreviousData,
+  });
+
+export const useGoals = () => useQuery({ queryKey: ["goals"], queryFn: () => api<Goal[]>("/api/goals") });
+
+export function useGoalMutations() {
+  const qc = useQueryClient();
+  const done = () => {
+    invalidateFinance(qc);
+    void qc.invalidateQueries({ queryKey: ["categories"] });
+  };
+  return {
+    create: useMutation({ mutationFn: (b: GoalInput) => api<Goal>("/api/goals", { method: "POST", body: b }), onSuccess: done }),
+    update: useMutation({
+      mutationFn: ({ id, body }: { id: number; body: GoalInput }) => api<Goal>(`/api/goals/${id}`, { method: "PUT", body }),
+      onSuccess: done,
+    }),
+    remove: useMutation({ mutationFn: (id: number) => api<void>(`/api/goals/${id}`, { method: "DELETE" }), onSuccess: done }),
+  };
+}
+
+/** Avisos do sino: atualizados a cada 5 minutos e depois de qualquer alteração financeira. */
+export const useNotifications = (enabled = true) =>
+  useQuery({
+    queryKey: ["notifications"],
+    queryFn: () => api<AppNotification[]>("/api/notifications"),
+    refetchInterval: 5 * 60_000,
+    enabled,
+  });
+
+export const useNotificationPreferences = () =>
+  useQuery({ queryKey: ["notification-preferences"], queryFn: () => api<NotificationPreferences>("/api/notifications/preferences") });
+
 /** Tudo que depende de lançamentos é atualizado na hora depois de qualquer alteração. */
 export function invalidateFinance(qc: QueryClient) {
-  for (const key of ["transactions", "dashboard", "installments", "investments", "reports", "imports", "recurrences", "income-sources"]) {
+  for (const key of ["transactions", "dashboard", "installments", "investments", "reports", "imports", "recurrences", "income-sources", "budgets", "goals", "notifications"]) {
     void qc.invalidateQueries({ queryKey: [key] });
   }
 }

@@ -24,11 +24,11 @@ public final class LedgerDtos {
     public record TxDto(Long id, Kind kind, LocalDate date, String description, Long categoryId, long amountCents,
                         PaymentMethod paymentMethod, Status status, Integer installmentNumber,
                         Integer installmentTotal, Long recurrenceId, Long installmentPlanId, Origin origin,
-                        Long importBatchId, String note) {
+                        Long importBatchId, String note, List<String> tags) {
         public static TxDto of(Transaction t) {
             return new TxDto(t.id, t.kind, t.date, t.description, t.categoryId, t.amountCents, t.paymentMethod,
                     t.status, t.installmentNumber, t.installmentTotal, t.recurrenceId, t.installmentPlanId,
-                    t.origin, t.importBatchId, t.note);
+                    t.origin, t.importBatchId, t.note, Tags.list(t.tags));
         }
     }
 
@@ -46,7 +46,8 @@ public final class LedgerDtos {
                         boolean repeatMonthly,
                         @Min(2) @Max(120) Integer installments,
                         Boolean installmentValue,
-                        @Valid LoanRepayment loan) {}
+                        @Valid LoanRepayment loan,
+                        @Size(max = Tags.MAX_TAGS) List<@Size(max = 40) String> tags) {}
 
     /** Como um empréstimo recebido será pago: parcelas futuras de despesa. */
     public record LoanRepayment(@Min(1) @Max(240) int count,
@@ -60,7 +61,8 @@ public final class LedgerDtos {
                               @Size(max = 120) String description,
                               PaymentMethod paymentMethod,
                               @Size(max = 500) String note,
-                              Status status) {}
+                              Status status,
+                              @Size(max = Tags.MAX_TAGS) List<@Size(max = 40) String> tags) {}
 
     /** Transforma um lançamento simples em compra parcelada. */
     public record InstallmentConvertReq(@Positive @Max(MAX_CENTS) long amountCents,
@@ -70,10 +72,16 @@ public final class LedgerDtos {
                                         PaymentMethod paymentMethod,
                                         @Size(max = 500) String note,
                                         @Min(2) @Max(120) int count,
-                                        boolean installmentValue) {}
+                                        boolean installmentValue,
+                                        @Size(max = Tags.MAX_TAGS) List<@Size(max = 40) String> tags) {}
 
     /** Muda o número total de parcelas de um parcelamento. */
     public record PlanResizeReq(@Min(1) @Max(120) int count) {}
+
+    /** Resultado da busca: lançamentos encontrados e quanto somam por tipo. */
+    public record SearchDto(List<TxDto> items, long receitasCents, long despesasCents, long investidoCents, boolean truncated) {}
+
+    public record TagDto(String tag, int count) {}
 
     public record IdsReq(@NotEmpty @Size(max = 500) List<Long> ids) {}
 

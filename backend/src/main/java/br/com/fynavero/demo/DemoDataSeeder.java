@@ -200,7 +200,7 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     private void tx(Long userId, Kind kind, String category, long cents, LocalDate date, String desc, PaymentMethod pm) {
         if (date.isAfter(calendar.today())) return;
-        transactions.create(userId, new TxReq(kind, cents, cat(userId, category).id, date, desc, pm, null, false, null, null, null));
+        transactions.create(userId, new TxReq(kind, cents, cat(userId, category).id, date, desc, pm, null, false, null, null, null, null));
     }
 
     private static LocalDate day(YearMonth m, int d) {

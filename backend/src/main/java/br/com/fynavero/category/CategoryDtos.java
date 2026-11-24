@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static br.com.fynavero.common.ApiLimits.MAX_CENTS;
@@ -22,13 +23,16 @@ public final class CategoryDtos {
     }
 
     public record CategoryDto(Long id, String name, Kind kind, String group, String icon, String color,
-                              int sortOrder, boolean hidden, boolean loan, Long goalCents) {
+                              int sortOrder, boolean hidden, boolean loan, Long goalCents, LocalDate goalDeadline) {
         public static CategoryDto of(Category c) {
-            return new CategoryDto(c.id, c.name, c.kind, c.group, c.icon, c.color, c.sortOrder, c.hidden, c.loan, c.goalCents);
+            return new CategoryDto(c.id, c.name, c.kind, c.group, c.icon, c.color, c.sortOrder, c.hidden, c.loan, c.goalCents, c.goalDeadline);
         }
     }
 
-    /** Criar ou editar. Na edição, campos nulos não mudam; goalCents 0 remove a meta. */
+    /**
+     * Criar ou editar. Na edição, campos nulos não mudam; goalCents 0 remove a meta.
+     * goalCents: em despesa é o limite do mês; em investimento, o valor a juntar.
+     */
     public record CategoryReq(@NotBlank @Size(max = 60) String name,
                               Kind kind,
                               @Size(max = 30) String group,

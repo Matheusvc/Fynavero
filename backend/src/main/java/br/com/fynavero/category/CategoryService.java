@@ -80,7 +80,7 @@ public class CategoryService {
         c.icon = icon == null || icon.isBlank() ? defaultIcon(kind) : icon;
         c.color = "chart-" + (count % CHART_SLOTS + 1);
         c.sortOrder = (int) count;
-        c.goalCents = kind == Kind.INVESTIMENTO && goalCents != null && goalCents > 0 ? goalCents : null;
+        c.goalCents = kind != Kind.RECEITA && goalCents != null && goalCents > 0 ? goalCents : null;
         c.createdAt = Instant.now();
         return repo.save(c);
     }
@@ -116,7 +116,8 @@ public class CategoryService {
         if (req.group() != null) c.group = normalizeGroup(c.kind, req.group());
         if (req.icon() != null && !req.icon().isBlank()) c.icon = req.icon();
         if (req.hidden() != null) c.hidden = req.hidden();
-        if (c.kind == Kind.INVESTIMENTO && req.goalCents() != null) c.goalCents = req.goalCents() > 0 ? req.goalCents() : null;
+        if (c.kind != Kind.RECEITA && req.goalCents() != null) c.goalCents = req.goalCents() > 0 ? req.goalCents() : null;
+        if (c.goalCents == null) c.goalDeadline = null;
         return c;
     }
 

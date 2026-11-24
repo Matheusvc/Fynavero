@@ -12,6 +12,7 @@ import {
   Plus,
   Settings,
   Sun,
+  Target,
   type LucideIcon,
 } from "lucide-react";
 import { Logo, LogoMark } from "@/components/Logo";
@@ -22,6 +23,7 @@ import { api } from "@/lib/api";
 import { useMe } from "@/lib/queries";
 import { useTheme } from "@/theme/theme";
 import { cn } from "@/lib/utils";
+import { NotificationBell } from "./NotificationBell";
 
 type NavItem = { to: string; label: string; icon: LucideIcon; end?: boolean };
 
@@ -30,6 +32,7 @@ export const NAV: NavItem[] = [
   { to: "/lancamentos", label: "Lançamentos", icon: ArrowLeftRight },
   { to: "/parcelas", label: "Parcelas e Dívidas", icon: CalendarClock },
   { to: "/investimentos", label: "Investimentos", icon: PiggyBank },
+  { to: "/objetivos", label: "Objetivos", icon: Target },
   { to: "/relatorios", label: "Relatórios", icon: ChartColumn },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ];
@@ -152,6 +155,7 @@ export function AppShell() {
           </div>
           <MonthPicker />
           <div className="flex items-center justify-end gap-1">
+            <NotificationBell />
             <ThemeToggle className="hidden sm:inline-flex lg:hidden" />
             <Button onClick={() => openNew()} className="hidden sm:inline-flex">
               <Plus /> Lançar

@@ -1,5 +1,9 @@
 package br.com.fynavero;
 
+import br.com.fynavero.ledger.TransactionRepository;
+import br.com.fynavero.notification.ActionService;
+import br.com.fynavero.notification.NotificationMailer;
+import br.com.fynavero.overview.MonthSummaryService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -26,6 +30,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AcceptanceTest {
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
+    @Autowired NotificationMailer notificationMailer;
+    @Autowired ActionService actionService;
+    @Autowired TransactionRepository transactionRepository;
+    @Autowired MonthSummaryService monthSummaryService;
 
     private final LocalDate today = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
     private final String month = YearMonth.from(today).toString();
@@ -240,6 +248,133 @@ class AcceptanceTest {
         JsonNode fewer = call(s, put("/api/installment-plans/" + plan), "{\"count\":2}", 200);
         assertThat(fewer).hasSize(2);
         assertThat(call(s, get("/api/installments?month=" + month), null, 200).get("plans").get(0).get("count").asInt()).isEqualTo(2);
+    }
+
+    // ------------------------------------------------------------------ etiquetas, limites, objetivos e avisos
+
+    private long userId(MockHttpSession s) throws Exception {
+        return call(s, get("/api/auth/me"), null, 200).get("id").asLong();
+    }
+
+    @Test
+    void etiquetasEBuscaNoAnoTodo() throws Exception {
+        MockHttpSession s = newUser("null");
+        long mercado = category(s, "Mercado");
+        JsonNode tx = launch(s, "DESPESA", 4_590, mercado,
+                ",\"description\":\"Farmácia do centro #Saúde\",\"tags\":[\"Viagem\",\"#viagem\"]").get(0);
+        assertThat(tx.get("tags")).extracting(JsonNode::asText).containsExactly("viagem", "saúde");
+        assertThat(tx.get("description").asText()).isEqualTo("Farmácia do centro");
+        launch(s, "DESPESA", 30_000, mercado, ",\"description\":\"Supermercado\"");
+
+        JsonNode found = call(s, get("/api/transactions/search?q=farmacia"), null, 200);
+        assertThat(found.get("items")).hasSize(1);
+        assertThat(found.get("despesasCents").asLong()).isEqualTo(4_590);
+        assertThat(call(s, get("/api/transactions/search?tag=viagem"), null, 200).get("items")).hasSize(1);
+        assertThat(call(s, get("/api/transactions").param("month", month).param("q", "#viagem"), null, 200)).hasSize(1);
+        assertThat(call(s, get("/api/transactions/tags"), null, 200).get(0).get("tag").asText()).isIn("viagem", "saúde");
+
+        long id = tx.get("id").asLong();
+        JsonNode edited = call(s, put("/api/transactions/" + id), "{\"amountCents\":4590,\"categoryId\":" + mercado
+                + ",\"date\":\"" + today + "\",\"description\":\"Farmácia\",\"tags\":[\"reforma\"]}", 200);
+        assertThat(edited.get("tags")).extracting(JsonNode::asText).containsExactly("reforma");
+    }
+
+    @Test
+    void limiteDeCategoriaAvisaEm80E100PorCento() throws Exception {
+        MockHttpSession s = newUser("null");
+        long mercado = category(s, "Mercado");
+        call(s, put("/api/categories/" + mercado), "{\"name\":\"Mercado\",\"goalCents\":100000}", 200);
+
+        launch(s, "DESPESA", 85_000, mercado, "");
+        JsonNode budget = call(s, get("/api/budgets?month=" + month), null, 200).get(0);
+        assertThat(budget.get("pctBps").asInt()).isEqualTo(8_500);
+        assertThat(budget.get("level").asText()).isEqualTo("ALERTA");
+        JsonNode alert = call(s, get("/api/notifications"), null, 200).get(0);
+        assertThat(alert.get("type").asText()).isEqualTo("LIMITE_ALERTA");
+        assertThat(alert.get("title").asText()).isEqualTo("Mercado: 85% do limite");
+
+        long uid = userId(s);
+        assertThat(notificationMailer.sendLimitAlerts(uid)).isEqualTo(1);
+        assertThat(notificationMailer.sendLimitAlerts(uid)).isZero(); // o mesmo aviso não sai duas vezes
+
+        launch(s, "DESPESA", 20_000, mercado, "");
+        assertThat(call(s, get("/api/budgets?month=" + month), null, 200).get(0).get("level").asText()).isEqualTo("ESTOURADO");
+        assertThat(notificationMailer.sendLimitAlerts(uid)).isEqualTo(1);
+    }
+
+    @Test
+    void objetivoDeEconomiaComPrazoEProgresso() throws Exception {
+        MockHttpSession s = newUser("null");
+        LocalDate deadline = today.plusMonths(4);
+        JsonNode goal = call(s, post("/api/goals"), "{\"name\":\"Viagem\",\"targetCents\":120000,\"deadline\":\""
+                + deadline + "\",\"initialCents\":20000}", 200);
+        assertThat(goal.get("savedCents").asLong()).isEqualTo(20_000);
+        assertThat(goal.get("pctBps").asInt()).isEqualTo(1_666);
+        assertThat(goal.get("monthsLeft").asInt()).isEqualTo(5);
+        assertThat(goal.get("monthlyNeededCents").asLong()).isEqualTo(24_000);
+        assertThat(goal.get("status").asText()).isEqualTo("ATENCAO");
+
+        launch(s, "INVESTIMENTO", 4_000, goal.get("id").asLong(), "");
+        JsonNode after = call(s, get("/api/goals"), null, 200).get(0);
+        assertThat(after.get("savedCents").asLong()).isEqualTo(24_000);
+        assertThat(after.get("status").asText()).isEqualTo("NO_RITMO");
+
+        call(s, post("/api/goals"), "{\"name\":\"viagem\",\"targetCents\":5000}", 400);
+        call(s, delete("/api/goals/" + goal.get("id").asLong()), null, 204);
+        assertThat(call(s, get("/api/goals"), null, 200)).isEmpty();
+    }
+
+    @Test
+    void contaDeAmanhaGeraAvisoEMarcarComoPagaPeloEmail() throws Exception {
+        MockHttpSession s = newUser("null");
+        LocalDate tomorrow = today.plusDays(1);
+        JsonNode bill = call(s, post("/api/transactions"), "{\"kind\":\"DESPESA\",\"amountCents\":90000,\"categoryId\":"
+                + category(s, "Mercado") + ",\"date\":\"" + tomorrow + "\",\"description\":\"Aluguel\"}", 200).get(0);
+        long billId = bill.get("id").asLong();
+        assertThat(bill.get("status").asText()).isEqualTo("PREVISTO");
+
+        JsonNode n = call(s, get("/api/notifications"), null, 200).get(0);
+        assertThat(n.get("type").asText()).isEqualTo("CONTA_AMANHA");
+        assertThat(n.get("title").asText()).isEqualTo("Aluguel vence amanhã");
+        assertThat(n.get("transactionId").asLong()).isEqualTo(billId);
+
+        long uid = userId(s);
+        assertThat(notificationMailer.sendBillReminders(uid)).isEqualTo(1);
+        assertThat(notificationMailer.sendBillReminders(uid)).isZero();
+
+        String link = actionService.payLink(transactionRepository.findById(billId).orElseThrow());
+        String token = link.substring(link.indexOf("token=") + 6);
+        MockHttpSession anonymous = new MockHttpSession();
+        assertThat(call(anonymous, get("/api/actions/" + token), null, 200).get("paid").asBoolean()).isFalse();
+        JsonNode paid = call(anonymous, post("/api/actions/" + token + "/pay"), null, 200);
+        assertThat(paid.get("paid").asBoolean()).isTrue();
+        assertThat(paid.get("description").asText()).isEqualTo("Aluguel");
+        call(anonymous, get("/api/actions/token-invalido"), null, 400);
+
+        JsonNode list = call(s, get("/api/transactions?month=" + YearMonth.from(tomorrow)), null, 200);
+        for (JsonNode t : list) if (t.get("id").asLong() == billId) assertThat(t.get("status").asText()).isEqualTo("REALIZADO");
+        assertThat(call(s, get("/api/notifications"), null, 200)).isEmpty();
+    }
+
+    @Test
+    void resumoDoMesEPreferenciasDeAviso() throws Exception {
+        MockHttpSession s = newUser("null");
+        launch(s, "RECEITA", 357_500, category(s, "Salário"), "");
+        launch(s, "DESPESA", 50_000, category(s, "Mercado"), "");
+        launch(s, "DESPESA", 12_000, category(s, "Feira"), "");
+
+        var summary = monthSummaryService.summary(userId(s), YearMonth.from(today));
+        assertThat(summary.receitas()).isEqualTo(357_500);
+        assertThat(summary.despesas()).isEqualTo(62_000);
+        assertThat(summary.topCategory()).isEqualTo("Mercado");
+        assertThat(summary.saldo()).isEqualTo(295_500);
+
+        assertThat(call(s, post("/api/notifications/test-summary"), null, 200).get("month").asText())
+                .isEqualTo(YearMonth.from(today).minusMonths(1).toString());
+        call(s, put("/api/notifications/preferences"), "{\"bills\":true,\"limits\":false,\"summary\":false}", 200);
+        JsonNode prefs = call(s, get("/api/notifications/preferences"), null, 200);
+        assertThat(prefs.get("limits").asBoolean()).isFalse();
+        assertThat(prefs.get("bills").asBoolean()).isTrue();
     }
 
     @Test

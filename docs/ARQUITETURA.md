@@ -24,6 +24,8 @@ Cada pasta junta tudo de um assunto: entidade, repositório, DTOs, serviço e co
 | `income` | Fontes de renda; renda variável vira recorrência "(valor estimado)" |
 | `onboarding` | Primeiro acesso: objetivos, renda, contas fixas e contribuição em uma única chamada |
 | `overview` | Leituras do Início, Parcelas e Dívidas e Investimentos (`LedgerFigures` + `InsightWriter`) |
+| `planning` | Limites de gasto por categoria (alerta em 80% e 100%) e objetivos de economia com meta e prazo |
+| `notification` | Sino de avisos, preferências, e-mails agendados (contas de amanhã, limites, resumo do dia 1) e o link "Marcar como paga" |
 | `report` | Relatório anual, comparação de meses e exportação em Excel/PDF |
 | `importing` | Lotes de importação de planilha (confirmar e desfazer o lote inteiro) |
 | `demo` | Contas de exemplo, criadas só quando `DEMO_DATA=true` |
@@ -41,6 +43,10 @@ Saldo do mês   = Sobra − Investido          (investimento não é despesa)
 ```
 
 Empréstimo recebido entra como receita no saldo, mas não é renda: fica fora da base da contribuição e aparece separado no relatório anual. As parcelas do pagamento são despesas na categoria "Pagamento de empréstimo".
+
+### Avisos por e-mail
+
+`NotificationJobs` roda às 8h (contas que vencem amanhã + limites), às 20h (limites) e no dia 1 às 9h (resumo do mês anterior), no horário de Brasília. Cada aviso enviado fica em `notification_log`, então nunca sai duas vezes. O botão "Marcar como paga" do e-mail leva a `/conta-paga?token=…`, que mostra a conta e pede confirmação antes de marcar (leitores de e-mail que abrem links sozinhos não marcam nada); o token vale só para aquela conta, até 7 dias depois do vencimento, e no banco fica só o hash. Sem servidor de e-mail configurado, o conteúdo vai para o log.
 
 ### Decisões
 
@@ -70,6 +76,8 @@ src/
     transactions/ Lançamentos e quick-add/ (ficha de lançamento usada em todo o app)
     installments/ Parcelas e Dívidas
     investments/  Investimentos
+    goals/        Objetivos de economia (meta, prazo, quanto guardar por mês)
+    notifications/ Página do link "Marcar como paga" do e-mail
     reports/      Relatórios
     import/       Importação de planilhas (parser.ts com testes, leitura de arquivo, revisão, histórico)
     settings/     Configurações (uma seção por arquivo em sections/) e a página "Mais"

@@ -31,7 +31,9 @@ export type Category = {
   sortOrder: number;
   hidden: boolean;
   loan: boolean;
+  /** Despesa: limite de gasto do mês. Investimento: valor a juntar (objetivo de economia). */
   goalCents?: number | null;
+  goalDeadline?: string | null;
 };
 
 export type Tx = {
@@ -50,6 +52,7 @@ export type Tx = {
   origin: Origin;
   importBatchId?: number;
   note?: string;
+  tags: string[];
 };
 
 export type TxInput = {
@@ -65,6 +68,7 @@ export type TxInput = {
   /** true: amountCents é o valor de cada parcela; false/ausente: valor total da compra. */
   installmentValue?: boolean;
   loan?: LoanRepayment | null;
+  tags?: string[];
 };
 
 export type LoanRepayment = { count: number; installmentCents: number; firstDate?: string; categoryId?: number | null };
@@ -78,6 +82,7 @@ export type InstallmentConvert = {
   note?: string;
   count: number;
   installmentValue: boolean;
+  tags?: string[];
 };
 
 export type TxUpdate = {
@@ -88,6 +93,7 @@ export type TxUpdate = {
   paymentMethod?: PaymentMethod | null;
   note?: string;
   status?: Status;
+  tags?: string[];
 };
 
 export type Totals = {
@@ -210,3 +216,50 @@ export type ImportRowInput = {
   installmentTotal?: number | null;
   note?: string;
 };
+
+export type SearchResult = { items: Tx[]; receitasCents: number; despesasCents: number; investidoCents: number; truncated: boolean };
+export type TagCount = { tag: string; count: number };
+
+export type BudgetLevel = "OK" | "ALERTA" | "ESTOURADO";
+export type Budget = {
+  categoryId: number;
+  name: string;
+  icon: string;
+  color: string;
+  limitCents: number;
+  spentCents: number;
+  pctBps: number;
+  level: BudgetLevel;
+};
+
+export type GoalStatus = "CONCLUIDO" | "NO_RITMO" | "ATENCAO" | "PRAZO_VENCIDO" | "SEM_PRAZO";
+export type Goal = {
+  id: number;
+  name: string;
+  icon: string;
+  color: string;
+  targetCents: number;
+  savedCents: number;
+  remainingCents: number;
+  pctBps: number;
+  deadline?: string | null;
+  monthsLeft?: number | null;
+  monthlyNeededCents?: number | null;
+  savedThisMonthCents: number;
+  status: GoalStatus;
+};
+export type GoalInput = { name: string; targetCents: number; deadline?: string | null; icon?: string; initialCents?: number | null };
+
+export type NotificationType = "CONTA_VENCIDA" | "CONTA_HOJE" | "CONTA_AMANHA" | "LIMITE_ALERTA" | "LIMITE_ESTOURADO";
+export type AppNotification = {
+  id: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  date?: string | null;
+  transactionId?: number | null;
+  categoryId?: number | null;
+  amountCents?: number | null;
+};
+export type NotificationPreferences = { bills: boolean; limits: boolean; summary: boolean; emailConfigured: boolean };
+export type BillAction = { description: string; amountCents: number; date: string; paid: boolean };

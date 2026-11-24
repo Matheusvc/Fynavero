@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { CalendarClock, ChartColumn, ChevronRight, FileSpreadsheet, LogOut, Settings as SettingsIcon } from "lucide-react";
+import { CalendarClock, ChartColumn, ChevronRight, FileSpreadsheet, LogOut, Settings as SettingsIcon, Target } from "lucide-react";
 import { ThemeToggle, useLogout } from "@/app/AppShell";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
@@ -8,6 +8,7 @@ export function MorePage() {
   const logout = useLogout();
   const links = [
     { to: "/parcelas", label: "Parcelas e Dívidas", icon: CalendarClock },
+    { to: "/objetivos", label: "Objetivos", icon: Target },
     { to: "/relatorios", label: "Relatórios", icon: ChartColumn },
     { to: "/importar", label: "Importar planilha", icon: FileSpreadsheet },
     { to: "/configuracoes", label: "Configurações", icon: SettingsIcon },

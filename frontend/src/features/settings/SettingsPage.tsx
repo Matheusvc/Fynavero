@@ -14,6 +14,7 @@ import { IncomeSection } from "./sections/IncomeSection";
 import { BillsSection } from "./sections/BillsSection";
 import { ContributionSection } from "./sections/ContributionSection";
 import { AppearanceSection } from "./sections/AppearanceSection";
+import { NotificationsSection } from "./sections/NotificationsSection";
 import { SecuritySection } from "./sections/SecuritySection";
 import { PrivacySection } from "./sections/PrivacySection";
 
@@ -23,6 +24,7 @@ const SECTIONS = [
   ["renda", "Fontes de renda"],
   ["contas-fixas", "Contas fixas"],
   ["contribuicao", "Contribuição"],
+  ["notificacoes", "Notificações"],
   ["importar", "Importar planilha"],
   ["aparencia", "Aparência"],
   ["seguranca", "Senha"],
@@ -55,6 +57,7 @@ export default function SettingsPage() {
         <IncomeSection />
         <BillsSection />
         <ContributionSection me={me.data} />
+        <NotificationsSection email={me.data.email} />
         <Section id="importar" title="Importar planilha" description="Traga lançamentos de uma planilha do Excel ou .csv. Cada importação pode ser desfeita.">
           <Button asChild><Link to="/importar"><FileSpreadsheet /> Importar planilha</Link></Button>
         </Section>

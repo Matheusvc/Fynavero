@@ -97,9 +97,11 @@ public class InstallmentService {
         if (t.recurrenceId != null) throw badRequest("Lançamentos que se repetem todo mês não podem ser parcelados.");
         Category c = categories.require(userId, req.categoryId());
         if (c.kind != Kind.DESPESA) throw badRequest("Escolha uma categoria de despesa.");
-        List<Transaction> created = create(userId, c.id, trimOrNull(req.description()),
+        List<Transaction> created = create(userId, c.id, trimOrNull(Tags.stripHashtags(req.description())),
                 parts(req.amountCents(), req.count(), req.installmentValue()), req.date(), req.paymentMethod(),
                 trimOrNull(req.note()));
+        String tags = req.tags() != null ? Tags.toCsv(req.tags(), req.description()) : t.tags;
+        created.forEach(x -> x.tags = tags);
         transactions.delete(t);
         return created;
     }
@@ -154,6 +156,7 @@ public class InstallmentService {
                 o.categoryId = edited.categoryId;
                 o.description = edited.description;
                 o.paymentMethod = edited.paymentMethod;
+                o.tags = edited.tags;
             }
         }
         plans.findByIdAndUserId(edited.installmentPlanId, userId).ifPresent(p -> {

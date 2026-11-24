@@ -29,6 +29,10 @@ public class Profile {
     /** Percentual da contribuição em pontos-base: 1000 = 10%. */
     @Column(name = "contribution_bps") public int contributionBps = 1000;
     @Column(name = "contribution_category_id") public Long contributionCategoryId;
+    /** Avisos por e-mail: contas que vencem amanhã, limites de categoria e resumo do mês. */
+    @Column(name = "notify_bills") public boolean notifyBills = true;
+    @Column(name = "notify_limits") public boolean notifyLimits = true;
+    @Column(name = "notify_summary") public boolean notifySummary = true;
     @Column(name = "terms_accepted_at") public Instant termsAcceptedAt;
     @Column(name = "created_at") public Instant createdAt;
 

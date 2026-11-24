@@ -39,6 +39,8 @@ public class Transaction {
     @Enumerated(EnumType.STRING) public Origin origin;
     @Column(name = "import_batch_id") public Long importBatchId;
     public String note;
+    /** Etiquetas em minúsculas, sem "#", separadas por vírgula. Use {@link Tags}. */
+    public String tags;
     @Column(name = "deleted_at") public Instant deletedAt;
     @Column(name = "created_at") public Instant createdAt;
 
@@ -60,6 +62,7 @@ public class Transaction {
         t.origin = origin;
         t.importBatchId = importBatchId;
         t.note = note;
+        t.tags = tags;
         t.createdAt = Instant.now();
         return t;
     }

@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,8 @@ import static br.com.fynavero.common.Texts.trimOrNull;
 /** Lançamentos: consulta, criação (simples, recorrente, parcelada, empréstimo), edição e exclusão reversível. */
 @Service
 public class TransactionService {
+    private static final int SEARCH_LIMIT = 500;
+
     private final TransactionRepository transactions;
     private final RecurrenceService recurrences;
     private final InstallmentService installments;
@@ -60,18 +63,63 @@ public class TransactionService {
         return range(userId, m.atDay(1), m.atEndOfMonth());
     }
 
-    /** Busca por descrição, observação ou nome da categoria (sem acentos) e filtros da tela de Lançamentos. */
-    public List<Transaction> filter(List<Transaction> list, String q, Long categoryId, Kind kind, PaymentMethod pm,
-                                    Map<Long, Category> cats) {
-        String needle = q == null || q.isBlank() ? null : fold(q);
+    /**
+     * Busca por descrição, observação, etiqueta ou nome da categoria (sem acentos) e filtros da tela de Lançamentos.
+     * "#viagem" na busca procura só a etiqueta.
+     */
+    public List<Transaction> filter(List<Transaction> list, String q, String tag, Long categoryId, Kind kind,
+                                    PaymentMethod pm, Map<Long, Category> cats) {
+        String text = q == null ? "" : q.strip();
+        if (text.startsWith("#") && !text.contains(" ")) {
+            tag = tag == null ? text : tag;
+            text = "";
+        }
+        String needle = text.isEmpty() ? null : fold(text);
+        String onlyTag = tag == null || tag.isBlank() ? null : tag;
         return list.stream()
+                .filter(t -> onlyTag == null || Tags.has(t.tags, onlyTag))
                 .filter(t -> categoryId == null || categoryId.equals(t.categoryId))
                 .filter(t -> kind == null || kind == t.kind)
                 .filter(t -> pm == null || pm == t.paymentMethod)
                 .filter(t -> needle == null
                         || (t.description != null && fold(t.description).contains(needle))
                         || (t.note != null && fold(t.note).contains(needle))
+                        || (t.tags != null && fold(t.tags).contains(needle))
                         || (cats.containsKey(t.categoryId) && fold(cats.get(t.categoryId).name).contains(needle)))
+                .toList();
+    }
+
+    /** Busca em um período longo (padrão: o ano atual), com a soma por tipo do que foi encontrado. */
+    @Transactional
+    public SearchResult search(Long userId, String q, String tag, LocalDate from, LocalDate to, Kind kind,
+                               Map<Long, Category> cats) {
+        LocalDate start = from != null ? from : calendar.today().withDayOfYear(1);
+        LocalDate end = to != null ? to : start.withDayOfYear(start.lengthOfYear());
+        if (end.isBefore(start)) throw badRequest("O fim do período vem antes do início.");
+        if (start.plusYears(5).isBefore(end)) throw badRequest("Escolha um período de até 5 anos.");
+        List<Transaction> found = filter(range(userId, start, end), q, tag, null, kind, null, cats);
+        long rec = 0, des = 0, inv = 0;
+        for (Transaction t : found) {
+            switch (t.kind) {
+                case RECEITA -> rec = Math.addExact(rec, t.amountCents);
+                case DESPESA -> des = Math.addExact(des, t.amountCents);
+                case INVESTIMENTO -> inv = Math.addExact(inv, t.amountCents);
+            }
+        }
+        boolean truncated = found.size() > SEARCH_LIMIT;
+        return new SearchResult(truncated ? found.subList(0, SEARCH_LIMIT) : found, rec, des, inv, truncated);
+    }
+
+    public record SearchResult(List<Transaction> items, long receitas, long despesas, long investido, boolean truncated) {}
+
+    /** Etiquetas já usadas pela pessoa, das mais usadas para as menos usadas. */
+    public List<Map.Entry<String, Integer>> tags(Long userId) {
+        Map<String, Integer> count = new HashMap<>();
+        for (Transaction t : transactions.findAllActive(userId)) {
+            for (String tag : Tags.list(t.tags)) count.merge(tag, 1, Integer::sum);
+        }
+        return count.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed().thenComparing(Map.Entry.comparingByKey()))
                 .toList();
     }
 
@@ -83,6 +131,13 @@ public class TransactionService {
 
     @Transactional
     public List<Transaction> create(Long userId, TxReq req) {
+        String tags = Tags.toCsv(req.tags(), req.description());
+        List<Transaction> out = createEntries(userId, Tags.withoutHashtags(req));
+        if (tags != null) out.forEach(t -> t.tags = tags);
+        return out;
+    }
+
+    private List<Transaction> createEntries(Long userId, TxReq req) {
         Category c = categories.require(userId, req.categoryId());
         if (c.kind != req.kind()) throw badRequest("A categoria escolhida não é do tipo deste lançamento.");
         LocalDate date = req.date() != null ? req.date() : calendar.today();
@@ -159,7 +214,8 @@ public class TransactionService {
         t.amountCents = req.amountCents();
         t.categoryId = c.id;
         t.date = req.date();
-        t.description = trimOrNull(req.description());
+        t.tags = Tags.toCsv(req.tags() != null ? req.tags() : Tags.list(t.tags), req.description());
+        t.description = trimOrNull(Tags.stripHashtags(req.description()));
         t.paymentMethod = req.paymentMethod();
         t.note = trimOrNull(req.note());
         if (req.status() != null) t.status = req.status();
@@ -176,6 +232,7 @@ public class TransactionService {
             for (Transaction o : transactions.findRecurrenceFrom(userId, r.id, oldDate.plusDays(1))) {
                 if (o.id.equals(t.id)) continue;
                 RecurrenceService.applyTemplate(o, r);
+                o.tags = t.tags;
                 o.date = LedgerCalendar.dayIn(YearMonth.from(o.date), r.dayOfMonth);
             }
         }

@@ -80,7 +80,7 @@ public class SecurityConfig {
             .csrf(c -> c.csrfTokenRepository(csrfRepo).csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
             .securityContext(s -> s.securityContextRepository(contextRepo))
             .authorizeHttpRequests(a -> a
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/auth/**", "/api/actions/**").permitAll()
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll())
             .exceptionHandling(e -> e.defaultAuthenticationEntryPointFor(
