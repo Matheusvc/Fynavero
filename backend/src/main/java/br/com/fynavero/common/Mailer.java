@@ -6,6 +6,7 @@ import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -23,19 +24,23 @@ public class Mailer {
 
     private final ObjectProvider<JavaMailSender> sender;
     private final AppProperties props;
+    private final boolean hostSet;
 
-    public Mailer(ObjectProvider<JavaMailSender> sender, AppProperties props) {
+    /** SPRING_MAIL_HOST vazio (comum ao criar o serviço na hospedagem antes de ter o e-mail) conta como "sem servidor". */
+    public Mailer(ObjectProvider<JavaMailSender> sender, AppProperties props,
+                  @Value("${spring.mail.host:}") String host) {
         this.sender = sender;
         this.props = props;
+        this.hostSet = host != null && !host.isBlank();
     }
 
     public boolean configured() {
-        return sender.getIfAvailable() != null;
+        return hostSet && sender.getIfAvailable() != null;
     }
 
     /** Envia e devolve true; falhas de envio ficam no log e devolvem false (não derrubam a tarefa). */
     public boolean send(String to, String subject, String text, String html) {
-        JavaMailSender s = sender.getIfAvailable();
+        JavaMailSender s = hostSet ? sender.getIfAvailable() : null;
         if (s == null) {
             log.info("E-mail (sem servidor de e-mail configurado) para {} — {}\n{}", to, subject, text);
             return true;
