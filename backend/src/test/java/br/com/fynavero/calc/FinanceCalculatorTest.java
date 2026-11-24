@@ -3,7 +3,7 @@ package br.com.fynavero.calc;
 import br.com.fynavero.calc.FinanceCalculator.Contribution;
 import br.com.fynavero.calc.FinanceCalculator.Entry;
 import br.com.fynavero.calc.FinanceCalculator.MonthTotals;
-import br.com.fynavero.domain.Enums.Kind;
+import br.com.fynavero.domain.Kind;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

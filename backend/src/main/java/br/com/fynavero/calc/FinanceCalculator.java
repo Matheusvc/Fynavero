@@ -1,6 +1,6 @@
 package br.com.fynavero.calc;
 
-import br.com.fynavero.domain.Enums.Kind;
+import br.com.fynavero.domain.Kind;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

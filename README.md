@@ -51,6 +51,8 @@ Para começar com o banco limpo, apague a pasta `backend/data`.
 
 ## Configuração (variáveis de ambiente)
 
+Todas são opcionais; `.env.example` lista cada uma com um exemplo.
+
 | Variável | Padrão | Para quê |
 |---|---|---|
 | `DATABASE_URL`, `DATABASE_USER`, `DATABASE_PASSWORD` | H2 em `./data` | Banco de dados. Com `SPRING_PROFILES_ACTIVE=postgres`, usa PostgreSQL |
@@ -63,28 +65,36 @@ Para começar com o banco limpo, apague a pasta `backend/data`.
 ## Testes
 
 ```bash
-cd backend && mvn test          # 13 testes do módulo de cálculo + 8 testes de aceite de ponta a ponta
+cd backend && mvn test          # 15 testes do módulo de cálculo + 13 testes de aceite de ponta a ponta
 cd frontend && npm test         # 25 testes do leitor de planilhas
 cd frontend && npm run check:tokens   # garante que não há cor/fonte/sombra fixa fora dos tokens
 ```
+
+O GitHub Actions (`.github/workflows/ci.yml`) roda tudo isso a cada push e pull request.
 
 Os testes de aceite cobrem: isolamento entre contas, R$ 4.900 em 10× = 10 parcelas de R$ 490, contribuição de 10% sobre R$ 3.575 = R$ 357,50, investimento reduzindo o saldo sem alterar despesas, excluir/desfazer, importar e desfazer só aquele lote, relatório anual com exportação e exclusão definitiva da conta.
 
 ## Estrutura
 
+Código organizado **por funcionalidade** nas duas pontas. Detalhes, regras de cálculo e decisões em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
+
 ```
-backend/
-  src/main/java/br/com/fynavero/
-    calc/FinanceCalculator.java   ← único módulo de cálculo (Início, Relatórios e exportação)
-    domain/                       ← entidades, enums e repositórios (sempre filtrados por user_id)
-    service/                      ← lançamentos, recorrências, parcelas, importação, relatórios, conta e LGPD
-    security/                     ← sessão por cookie httpOnly, CSRF, bloqueio após 5 tentativas, Google
-    api/                          ← controladores REST, contratos (DTOs) e erros em português
-  src/main/resources/db/migration ← esquema e catálogo de categorias (Flyway)
-frontend/
-  src/styles/tokens.css           ← identidade visual Fynavero (único lugar com valores visuais)
-  src/lib/import/parser.ts        ← leitura de planilhas em português (com testes)
-  src/pages/                      ← Início, Lançamentos, Parcelas e Dívidas, Investimentos, Relatórios, Importar, Configurações
+backend/src/main/java/br/com/fynavero/
+  account/  category/  ledger/  income/  onboarding/  overview/  report/  importing/
+            ← cada pasta: entidade, repositório, DTOs, serviço e controlador REST
+  calc/FinanceCalculator.java   ← único módulo de cálculo (Início, Relatórios e exportação)
+  security/                     ← sessão por cookie httpOnly, CSRF, bloqueio após 5 tentativas, Google
+  common/  config/  domain/     ← erros em português, formatação pt-BR, propriedades e enums
+  demo/                         ← contas de exemplo
+backend/src/main/resources/db/migration   ← esquema e catálogo de categorias (Flyway)
+
+frontend/src/
+  app/                          ← rotas e casca (menu, cabeçalho, seletor de mês)
+  features/                     ← auth, onboarding, home, transactions, installments, investments,
+                                  reports, import, settings, legal, design-system
+  components/ui, components/charts   ← componentes visuais reutilizáveis
+  lib/                          ← API, React Query, formatação, tipos
+  styles/tokens.css             ← identidade visual Fynavero (único lugar com valores visuais)
 ```
 
 ## Segurança e privacidade

@@ -11,8 +11,8 @@ import "@fontsource/montserrat/600.css";
 import { ThemeProvider, useTheme } from "@/theme/theme";
 import { MonthProvider } from "@/lib/month";
 import { ApiError, onUnauthorized } from "@/lib/api";
-import { QuickAddProvider } from "@/components/QuickAdd";
-import App from "@/App";
+import { QuickAddProvider } from "@/features/transactions/quick-add/QuickAddProvider";
+import App from "@/app/App";
 import "@/index.css";
 
 const queryClient = new QueryClient({

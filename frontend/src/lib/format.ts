@@ -108,3 +108,19 @@ export function changeBps(current: number, previous: number): number | null {
   if (previous === 0) return null;
   return Math.round(((current - previous) * 10000) / Math.abs(previous));
 }
+
+/** Soma n meses a uma data ISO, preservando o dia (limitado ao último dia do mês de destino). */
+export function addMonthsISO(iso: string, n: number): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  const target = new Date(Date.UTC(y!, m! - 1 + n, 1));
+  const last = new Date(Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0)).getUTCDate();
+  target.setUTCDate(Math.min(d!, last));
+  return target.toISOString().slice(0, 10);
+}
+
+/** Quantidade de meses entre dois "AAAA-MM" (pode ser negativa). */
+export function monthsBetween(fromYm: string, toYm: string): number {
+  const [ay, am] = fromYm.split("-").map(Number);
+  const [by, bm] = toYm.split("-").map(Number);
+  return (by! - ay!) * 12 + (bm! - am!);
+}

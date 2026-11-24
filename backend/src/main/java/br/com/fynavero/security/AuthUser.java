@@ -1,6 +1,6 @@
 package br.com.fynavero.security;
 
-import br.com.fynavero.domain.Entities.Profile;
+import br.com.fynavero.account.Profile;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

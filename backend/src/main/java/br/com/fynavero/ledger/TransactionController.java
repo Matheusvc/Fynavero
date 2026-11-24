@@ -1,0 +1,93 @@
+package br.com.fynavero.ledger;
+
+import br.com.fynavero.category.CategoryService;
+import br.com.fynavero.config.AppProperties;
+import br.com.fynavero.domain.Kind;
+import br.com.fynavero.domain.PaymentMethod;
+import br.com.fynavero.domain.Scope;
+import br.com.fynavero.ledger.LedgerDtos.DeletedDto;
+import br.com.fynavero.ledger.LedgerDtos.IdsReq;
+import br.com.fynavero.ledger.LedgerDtos.InstallmentConvertReq;
+import br.com.fynavero.ledger.LedgerDtos.TxDto;
+import br.com.fynavero.ledger.LedgerDtos.TxReq;
+import br.com.fynavero.ledger.LedgerDtos.TxUpdateReq;
+import br.com.fynavero.security.AuthUser;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+import static br.com.fynavero.common.Formats.parseMonth;
+
+@RestController
+@RequestMapping("/api/transactions")
+public class TransactionController {
+    private final TransactionService transactions;
+    private final CategoryService categories;
+    private final AppProperties props;
+
+    public TransactionController(TransactionService transactions, CategoryService categories, AppProperties props) {
+        this.transactions = transactions;
+        this.categories = categories;
+        this.props = props;
+    }
+
+    @GetMapping
+    public List<TxDto> list(@AuthenticationPrincipal AuthUser u, @RequestParam(required = false) String month,
+                            @RequestParam(required = false) String q, @RequestParam(required = false) Long categoryId,
+                            @RequestParam(required = false) Kind kind,
+                            @RequestParam(required = false) PaymentMethod paymentMethod) {
+        var monthTxs = transactions.month(u.id(), parseMonth(month, props.zoneId()));
+        return transactions.filter(monthTxs, q, categoryId, kind, paymentMethod, categories.map(u.id()))
+                .stream().map(TxDto::of).toList();
+    }
+
+    @PostMapping
+    public List<TxDto> create(@AuthenticationPrincipal AuthUser u, @Valid @RequestBody TxReq body) {
+        return transactions.create(u.id(), body).stream().map(TxDto::of).toList();
+    }
+
+    @PutMapping("/{id}")
+    public TxDto update(@AuthenticationPrincipal AuthUser u, @PathVariable Long id,
+                        @RequestParam(defaultValue = "ONE") Scope scope, @Valid @RequestBody TxUpdateReq body) {
+        return TxDto.of(transactions.update(u.id(), id, scope, body));
+    }
+
+    @DeleteMapping("/{id}")
+    public DeletedDto delete(@AuthenticationPrincipal AuthUser u, @PathVariable Long id,
+                             @RequestParam(defaultValue = "ONE") Scope scope) {
+        return new DeletedDto(transactions.delete(u.id(), id, scope));
+    }
+
+    @PostMapping("/restore")
+    public ResponseEntity<Void> restore(@AuthenticationPrincipal AuthUser u, @Valid @RequestBody IdsReq body) {
+        transactions.restore(u.id(), body.ids());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/duplicate")
+    public TxDto duplicate(@AuthenticationPrincipal AuthUser u, @PathVariable Long id) {
+        return TxDto.of(transactions.duplicate(u.id(), id));
+    }
+
+    @PostMapping("/{id}/mark-paid")
+    public TxDto markPaid(@AuthenticationPrincipal AuthUser u, @PathVariable Long id) {
+        return TxDto.of(transactions.markPaid(u.id(), id));
+    }
+
+    @PostMapping("/{id}/installments")
+    public List<TxDto> convertToInstallments(@AuthenticationPrincipal AuthUser u, @PathVariable Long id,
+                                             @Valid @RequestBody InstallmentConvertReq body) {
+        return transactions.convertToInstallments(u.id(), id, body).stream().map(TxDto::of).toList();
+    }
+}
