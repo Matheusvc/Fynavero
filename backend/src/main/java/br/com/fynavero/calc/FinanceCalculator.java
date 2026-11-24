@@ -23,16 +23,22 @@ public final class FinanceCalculator {
     /** Chave usada para a contribuição quando ela não está ligada a uma categoria. */
     public static final long CONTRIBUTION_KEY = -1L;
 
-    public record Entry(Kind kind, long amountCents, Long categoryId) {}
+    /** loan = receita que é empréstimo recebido: entra no saldo, mas não é renda nem base da contribuição. */
+    public record Entry(Kind kind, long amountCents, Long categoryId, boolean loan) {
+        public Entry(Kind kind, long amountCents, Long categoryId) {
+            this(kind, amountCents, categoryId, false);
+        }
+    }
 
     /** Percentual em pontos-base: 1000 = 10%. */
     public record Contribution(boolean enabled, int bps, Long categoryId) {
         public static final Contribution NONE = new Contribution(false, 0, null);
     }
 
+    /** receitas inclui emprestimos; emprestimos é a parte que veio de empréstimo recebido. */
     public record MonthTotals(long receitas, long despesasLancadas, long contribuicao, long despesas,
-                              long sobra, long investido, long saldo) {
-        public static final MonthTotals ZERO = new MonthTotals(0, 0, 0, 0, 0, 0, 0);
+                              long sobra, long investido, long saldo, long emprestimos) {
+        public static final MonthTotals ZERO = new MonthTotals(0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     public record Slice(Long categoryId, long amountCents) {
@@ -48,20 +54,23 @@ public final class FinanceCalculator {
     }
 
     public static MonthTotals totals(Collection<Entry> entries, Contribution c) {
-        long receitas = 0, despesas = 0, investido = 0;
+        long receitas = 0, emprestimos = 0, despesas = 0, investido = 0;
         for (Entry e : entries) {
             if (e.amountCents() < 0) throw new IllegalArgumentException("Valor negativo em lançamento");
             switch (e.kind()) {
-                case RECEITA -> receitas = Math.addExact(receitas, e.amountCents());
+                case RECEITA -> {
+                    receitas = Math.addExact(receitas, e.amountCents());
+                    if (e.loan()) emprestimos = Math.addExact(emprestimos, e.amountCents());
+                }
                 case DESPESA -> despesas = Math.addExact(despesas, e.amountCents());
                 case INVESTIMENTO -> investido = Math.addExact(investido, e.amountCents());
             }
         }
-        long contrib = contribution(receitas, c);
+        long contrib = contribution(Math.subtractExact(receitas, emprestimos), c);
         long totalDespesas = Math.addExact(despesas, contrib);
         long sobra = Math.subtractExact(receitas, totalDespesas);
         long saldo = Math.subtractExact(sobra, investido);
-        return new MonthTotals(receitas, despesas, contrib, totalDespesas, sobra, investido, saldo);
+        return new MonthTotals(receitas, despesas, contrib, totalDespesas, sobra, investido, saldo, emprestimos);
     }
 
     /** Soma por categoria de um tipo. Para despesas, inclui a contribuição na categoria configurada. */
@@ -69,7 +78,7 @@ public final class FinanceCalculator {
         Map<Long, Long> out = new LinkedHashMap<>();
         long receitas = 0;
         for (Entry e : entries) {
-            if (e.kind() == Kind.RECEITA) receitas = Math.addExact(receitas, e.amountCents());
+            if (e.kind() == Kind.RECEITA && !e.loan()) receitas = Math.addExact(receitas, e.amountCents());
             if (e.kind() == kind) out.merge(e.categoryId(), e.amountCents(), Math::addExact);
         }
         if (kind == Kind.DESPESA) {
@@ -80,6 +89,16 @@ public final class FinanceCalculator {
             }
         }
         return out;
+    }
+
+    /** n parcelas de valor fixo (quando a pessoa informa o valor de cada parcela). */
+    public static long[] fixedInstallments(long installmentCents, int count) {
+        if (count < 1 || count > 240) throw new IllegalArgumentException("Parcelas devem ser entre 1 e 240");
+        if (installmentCents <= 0) throw new IllegalArgumentException("Informe o valor da parcela");
+        Math.multiplyExact(installmentCents, count);
+        long[] parts = new long[count];
+        Arrays.fill(parts, installmentCents);
+        return parts;
     }
 
     /** Divide um total em n parcelas iguais; a última absorve a diferença de centavos. */

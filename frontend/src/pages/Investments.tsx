@@ -117,9 +117,14 @@ export default function InvestmentsPage() {
                           <Pencil />
                         </Button>
                       </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Acumulado</p>
-                        <Money cents={c.accumulatedCents} className="text-xl font-bold" />
+                      <div className="flex items-end justify-between gap-3">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Acumulado</p>
+                          <Money cents={c.accumulatedCents} className="text-xl font-bold" />
+                        </div>
+                        <Button size="sm" onClick={() => openNew({ kind: "INVESTIMENTO", categoryId: c.categoryId })}>
+                          <Plus /> Investir
+                        </Button>
                       </div>
                       {goal > 0 ? (
                         <div className="space-y-1.5">
@@ -133,7 +138,7 @@ export default function InvestmentsPage() {
                         </div>
                       ) : (
                         <Button variant="link" onClick={() => edit(c)}>
-                          <Target /> Definir uma meta
+                          <Target /> Definir uma meta (quanto quer juntar)
                         </Button>
                       )}
                     </Card>
@@ -172,7 +177,10 @@ export default function InvestmentsPage() {
             <Field label="Nome">
               <Input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} maxLength={60} placeholder="Ex.: Viagem" />
             </Field>
-            <Field label="Meta (opcional)" hint="Deixe em branco para não ter meta.">
+            <Field
+              label="Meta: quanto você quer juntar (opcional)"
+              hint="Este campo não registra investimento. Para lançar um valor investido, use o botão “Investir” no cartão da categoria."
+            >
               <CurrencyInput value={draft.goal} onChange={(goal) => setDraft({ ...draft, goal })} />
             </Field>
             <IconPicker value={draft.icon} onChange={(icon) => setDraft({ ...draft, icon })} />

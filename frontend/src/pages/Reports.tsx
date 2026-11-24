@@ -66,6 +66,12 @@ function AnnualTable({ r }: { r: AnnualReport }) {
           <Section title="Receitas" />
           {r.receitas.length === 0 && <EmptyRow />}
           {r.receitas.map((x) => <Row key={x.label} row={x} />)}
+          {r.emprestimos.length > 0 && (
+            <>
+              <Section title="Empréstimos recebidos (entram no saldo)" />
+              {r.emprestimos.map((x) => <Row key={`emp-${x.label}`} row={x} />)}
+            </>
+          )}
           <Section title="Despesas" />
           {r.despesas.length === 0 && <EmptyRow />}
           {r.despesas.map((g) => (

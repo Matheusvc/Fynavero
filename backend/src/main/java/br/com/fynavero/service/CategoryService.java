@@ -62,6 +62,26 @@ public class CategoryService {
         return repo.save(c);
     }
 
+    /** Receita "Empréstimo": entra no saldo, mas aparece separada da renda. */
+    @Transactional
+    public Category ensureLoanCategory(Long userId) {
+        return repo.findByUserIdAndKindOrderBySortOrder(userId, Kind.RECEITA).stream()
+                .filter(c -> c.loan).findFirst()
+                .orElseGet(() -> {
+                    Category c = create(userId, "Empréstimo", Kind.RECEITA, null, "landmark", null);
+                    c.loan = true;
+                    return c;
+                });
+    }
+
+    /** Despesa onde entram as parcelas de pagamento de empréstimos. */
+    @Transactional
+    public Category ensureLoanPaymentCategory(Long userId) {
+        return repo.findByUserIdAndKindOrderBySortOrder(userId, Kind.DESPESA).stream()
+                .filter(c -> c.name.equalsIgnoreCase("Empréstimos e financiamentos")).findFirst()
+                .orElseGet(() -> create(userId, "Empréstimos e financiamentos", Kind.DESPESA, "Compromissos", "landmark", null));
+    }
+
     @Transactional
     public Category update(Long userId, Long id, CategoryReq req) {
         Category c = repo.findByIdAndUserId(id, userId).orElseThrow(() -> notFound());

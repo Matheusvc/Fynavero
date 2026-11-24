@@ -9,6 +9,10 @@ import jakarta.persistence.*;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Entidades sem associações JPA: chaves estrangeiras como ids simples, sempre acompanhadas de user_id,
@@ -24,13 +28,29 @@ public final class Entities {
         public String email;
         @Column(name = "password_hash") public String passwordHash;
         public String name;
-        @Enumerated(EnumType.STRING) public Objective objective;
+        /** Objetivos separados por vírgula (ex.: "ORGANIZAR,INVESTIR"). Use objectives()/setObjectives(). */
+        @Column(name = "objectives") public String objectivesCsv;
         @Column(name = "onboarding_done") public boolean onboardingDone;
         @Column(name = "contribution_enabled") public boolean contributionEnabled;
         @Column(name = "contribution_bps") public int contributionBps = 1000;
         @Column(name = "contribution_category_id") public Long contributionCategoryId;
         @Column(name = "terms_accepted_at") public Instant termsAcceptedAt;
         @Column(name = "created_at") public Instant createdAt;
+
+        public List<Objective> objectives() {
+            if (objectivesCsv == null || objectivesCsv.isBlank()) return List.of();
+            return Arrays.stream(objectivesCsv.split(","))
+                    .map(String::strip)
+                    .filter(s -> !s.isEmpty())
+                    .map(Objective::valueOf)
+                    .distinct()
+                    .toList();
+        }
+
+        public void setObjectives(Collection<Objective> list) {
+            objectivesCsv = list == null || list.isEmpty() ? null
+                    : list.stream().distinct().map(Enum::name).collect(Collectors.joining(","));
+        }
     }
 
     @Entity
@@ -55,6 +75,8 @@ public final class Entities {
         public String color;
         @Column(name = "sort_order") public int sortOrder;
         public boolean hidden;
+        /** Receita que é empréstimo recebido: entra no saldo, mas não conta como renda nem para a contribuição. */
+        public boolean loan;
         @Column(name = "goal_cents") public Long goalCents;
         @Column(name = "created_at") public Instant createdAt;
     }

@@ -91,7 +91,7 @@ public class DemoData implements ApplicationRunner {
 
     private void tx(Long userId, Kind kind, String category, long cents, LocalDate date, String desc, PaymentMethod pm) {
         if (date.isAfter(ledger.today())) return;
-        ledger.create(userId, new TxReq(kind, cents, cat(userId, category).id, date, desc, pm, null, false, null));
+        ledger.create(userId, new TxReq(kind, cents, cat(userId, category).id, date, desc, pm, null, false, null, null, null));
     }
 
     private static LocalDate day(YearMonth m, int d) {
@@ -105,7 +105,7 @@ public class DemoData implements ApplicationRunner {
     private void seedAna() {
         Profile p = newProfile("ana@fynavero.dev", "Ana Souza");
         Long id = p.id;
-        accounts.completeOnboarding(id, new OnboardingReq("Ana Souza", Objective.ORGANIZAR, List.of(),
+        accounts.completeOnboarding(id, new OnboardingReq("Ana Souza", List.of(Objective.ORGANIZAR, Objective.OBJETIVO), List.of(),
                 catalogIds("Moradia", "Contas da casa", "Internet e celular", "Mercado", "Transporte", "Saúde",
                         "Restaurantes e delivery", "Lazer", "Assinaturas", "Cartão de crédito", "Dízimo", "Presentes"),
                 List.of(new CustomCategoryInput("Cursos", "graduation-cap", "Estilo de vida")),
@@ -143,7 +143,7 @@ public class DemoData implements ApplicationRunner {
     private void seedJoao() {
         Profile p = newProfile("joao@fynavero.dev", "João Lima");
         Long id = p.id;
-        accounts.completeOnboarding(id, new OnboardingReq("João Lima", Objective.DIVIDAS, List.of(),
+        accounts.completeOnboarding(id, new OnboardingReq("João Lima", List.of(Objective.DIVIDAS), List.of(),
                 catalogIds("Moradia", "Contas da casa", "Mercado", "Transporte", "Saúde", "Restaurantes e delivery",
                         "Filhos", "Empréstimos e financiamentos", "Cartão de crédito", "Imprevistos", "Ofertas e doações"),
                 List.of(), List.of(), null));

@@ -53,6 +53,10 @@ public class ExportService {
         List<Line> out = new ArrayList<>();
         out.add(new Line(Style.SECTION, "Receitas", null));
         r.receitas().forEach(x -> out.add(new Line(Style.NORMAL, x.label(), x)));
+        if (!r.emprestimos().isEmpty()) {
+            out.add(new Line(Style.SECTION, "Empréstimos recebidos (entram no saldo)", null));
+            r.emprestimos().forEach(x -> out.add(new Line(Style.NORMAL, x.label(), x)));
+        }
         out.add(new Line(Style.SECTION, "Despesas", null));
         for (ReportGroup g : r.despesas()) {
             g.rows().forEach(x -> out.add(new Line(Style.NORMAL, x.label(), x)));

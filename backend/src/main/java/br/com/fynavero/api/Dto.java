@@ -32,10 +32,10 @@ public final class Dto {
 
     public record ContributionDto(boolean enabled, @Min(1) @Max(10000) int bps, Long categoryId) {}
 
-    public record Me(Long id, String name, String email, Objective objective, boolean onboardingDone,
+    public record Me(Long id, String name, String email, List<Objective> objectives, boolean onboardingDone,
                      ContributionDto contribution, boolean hasPassword) {}
 
-    public record ProfileReq(@NotBlank @Size(max = 100) String name, Objective objective) {}
+    public record ProfileReq(@NotBlank @Size(max = 100) String name, @Size(max = 4) List<Objective> objectives) {}
 
     public record PasswordReq(String current, @NotBlank @Size(min = 8, max = 72) String next) {}
 
@@ -60,7 +60,7 @@ public final class Dto {
                                  @NotBlank String categoryKey) {}
 
     public record OnboardingReq(@Size(max = 100) String name,
-                                Objective objective,
+                                @Size(max = 4) List<Objective> objectives,
                                 @Valid @Size(max = 20) List<IncomeInput> incomes,
                                 @Size(max = 60) List<Long> catalogIds,
                                 @Valid @Size(max = 30) List<CustomCategoryInput> customCategories,
@@ -69,9 +69,9 @@ public final class Dto {
 
     // ---------- Categorias ----------
     public record CategoryDto(Long id, String name, Kind kind, String group, String icon, String color,
-                              int sortOrder, boolean hidden, Long goalCents) {
+                              int sortOrder, boolean hidden, boolean loan, Long goalCents) {
         public static CategoryDto of(Category c) {
-            return new CategoryDto(c.id, c.name, c.kind, c.group, c.icon, c.color, c.sortOrder, c.hidden, c.goalCents);
+            return new CategoryDto(c.id, c.name, c.kind, c.group, c.icon, c.color, c.sortOrder, c.hidden, c.loan, c.goalCents);
         }
     }
 
@@ -114,7 +114,10 @@ public final class Dto {
         }
     }
 
-    /** Em compra parcelada, amountCents é o valor TOTAL da compra. */
+    /**
+     * Em compra parcelada, amountCents é o valor TOTAL da compra, ou o valor de CADA parcela quando
+     * installmentValue = true. loan: parcelas de pagamento de um empréstimo recebido (só em receitas de empréstimo).
+     */
     public record TxReq(@NotNull Kind kind,
                         @Positive @Max(MAX_CENTS) long amountCents,
                         @NotNull Long categoryId,
@@ -123,7 +126,28 @@ public final class Dto {
                         PaymentMethod paymentMethod,
                         @Size(max = 500) String note,
                         boolean repeatMonthly,
-                        @Min(2) @Max(120) Integer installments) {}
+                        @Min(2) @Max(120) Integer installments,
+                        Boolean installmentValue,
+                        @Valid LoanRepayment loan) {}
+
+    /** Como um empréstimo recebido será pago: parcelas futuras de despesa. */
+    public record LoanRepayment(@Min(1) @Max(240) int count,
+                                @Positive @Max(MAX_CENTS) long installmentCents,
+                                LocalDate firstDate,
+                                Long categoryId) {}
+
+    /** Transforma um lançamento simples em compra parcelada. */
+    public record InstallmentConvertReq(@Positive @Max(MAX_CENTS) long amountCents,
+                                        @NotNull Long categoryId,
+                                        @NotNull LocalDate date,
+                                        @Size(max = 120) String description,
+                                        PaymentMethod paymentMethod,
+                                        @Size(max = 500) String note,
+                                        @Min(2) @Max(120) int count,
+                                        boolean installmentValue) {}
+
+    /** Muda o número total de parcelas de um parcelamento. */
+    public record PlanResizeReq(@Min(1) @Max(120) int count) {}
 
     public record TxUpdateReq(@Positive @Max(MAX_CENTS) long amountCents,
                               @NotNull Long categoryId,
@@ -138,7 +162,8 @@ public final class Dto {
     public record DeletedDto(List<Long> ids) {}
 
     // ---------- Início ----------
-    public record TotalsDto(long receitas, long despesas, long despesasLancadas, long contribuicao,
+    /** receitas inclui emprestimos (entra no saldo); emprestimos mostra quanto disso é empréstimo recebido. */
+    public record TotalsDto(long receitas, long emprestimos, long despesas, long despesasLancadas, long contribuicao,
                             long sobra, long investido, long saldo) {}
 
     public record SliceDto(Long categoryId, String name, String icon, String color, long amountCents, int bps) {}
@@ -175,6 +200,7 @@ public final class Dto {
     public record ReportGroup(String group, List<ReportRow> rows, ReportRow subtotal) {}
 
     public record AnnualReport(int year, List<String> monthLabels, List<ReportRow> receitas,
+                               List<ReportRow> emprestimos,
                                List<ReportGroup> despesas, ReportRow totalDespesas,
                                List<ReportRow> investimentos, ReportRow totalInvestido,
                                List<ReportRow> resultado) {}

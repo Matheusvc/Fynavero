@@ -50,7 +50,7 @@ class AcceptanceTest {
             if (c.get("name").asText().equals("Mercado")) mercado = c.get("id").asLong();
             if (c.get("name").asText().equals("Dízimo")) dizimo = c.get("id").asLong();
         }
-        call(s, post("/api/onboarding"), "{\"name\":\"Pessoa\",\"objective\":\"ORGANIZAR\",\"incomes\":[],"
+        call(s, post("/api/onboarding"), "{\"name\":\"Pessoa\",\"objectives\":[\"ORGANIZAR\",\"INVESTIR\"],\"incomes\":[],"
                 + "\"catalogIds\":[" + mercado + "," + dizimo + "],"
                 + "\"customCategories\":[{\"name\":\"Feira\",\"icon\":\"carrot\",\"group\":\"Essenciais\"}],"
                 + "\"fixedBills\":[],\"contribution\":" + contributionJson + "}", 200);
@@ -170,6 +170,76 @@ class AcceptanceTest {
                     .andExpect(status().isOk()).andReturn().getResponse();
             assertThat(res.getContentAsByteArray().length).isGreaterThan(500);
         }
+    }
+
+    @Test
+    void variosObjetivosERendaVariavelComDia() throws Exception {
+        MockHttpSession s = newUser("null");
+        JsonNode me = call(s, get("/api/auth/me"), null, 200);
+        assertThat(me.get("objectives")).hasSize(2);
+        call(s, post("/api/income-sources"), "{\"name\":\"Transágua\",\"amountCents\":130000,\"fixed\":false,\"day\":20}", 200);
+        JsonNode recs = call(s, get("/api/recurrences"), null, 200);
+        assertThat(recs.toString()).contains("Transágua (valor estimado)");
+        JsonNode inc = call(s, get("/api/income-sources"), null, 200);
+        assertThat(inc.get(0).get("day").asInt()).isEqualTo(20);
+    }
+
+    @Test
+    void investimentoEntraMesmoComSaldoNegativo() throws Exception {
+        MockHttpSession s = newUser("null");
+        launch(s, "INVESTIMENTO", 999_999, category(s, "Reserva de emergência"), "");
+        JsonNode cur = call(s, get("/api/dashboard?month=" + month), null, 200).get("current");
+        assertThat(cur.get("investido").asLong()).isEqualTo(999_999);
+        assertThat(cur.get("saldo").asLong()).isEqualTo(-999_999);
+    }
+
+    @Test
+    void emprestimoRecebidoComParcelasDePagamento() throws Exception {
+        MockHttpSession s = newUser("{\"enabled\":true,\"bps\":1000}");
+        JsonNode created = launch(s, "RECEITA", 500_000, category(s, "Empréstimo"),
+                ",\"loan\":{\"count\":12,\"installmentCents\":55000}");
+        assertThat(created).hasSize(13);
+        JsonNode cur = call(s, get("/api/dashboard?month=" + month), null, 200).get("current");
+        assertThat(cur.get("emprestimos").asLong()).isEqualTo(500_000);
+        assertThat(cur.get("receitas").asLong()).isEqualTo(500_000);
+        assertThat(cur.get("contribuicao").asLong()).isZero();
+        JsonNode plan = call(s, get("/api/installments?month=" + month), null, 200).get("plans").get(0);
+        assertThat(plan.get("count").asInt()).isEqualTo(12);
+        assertThat(plan.get("installmentCents").asLong()).isEqualTo(55_000);
+        assertThat(plan.get("totalCents").asLong()).isEqualTo(660_000);
+        // Só receita de empréstimo aceita parcelas de pagamento
+        call(s, post("/api/transactions"), "{\"kind\":\"RECEITA\",\"amountCents\":100,\"categoryId\":"
+                + category(s, "Outras receitas") + ",\"loan\":{\"count\":2,\"installmentCents\":50}}", 400);
+    }
+
+    @Test
+    void creditoComValorDeCadaParcela() throws Exception {
+        MockHttpSession s = newUser("null");
+        JsonNode parcels = launch(s, "DESPESA", 49_000, category(s, "Mercado"),
+                ",\"installments\":10,\"installmentValue\":true,\"paymentMethod\":\"CREDITO\"");
+        assertThat(parcels).hasSize(10);
+        for (JsonNode p : parcels) assertThat(p.get("amountCents").asLong()).isEqualTo(49_000);
+    }
+
+    @Test
+    void parcelarLancamentoExistenteEMudarNumeroDeParcelas() throws Exception {
+        MockHttpSession s = newUser("null");
+        long cat = category(s, "Mercado");
+        long id = launch(s, "DESPESA", 120_000, cat, "").get(0).get("id").asLong();
+        JsonNode parcels = call(s, post("/api/transactions/" + id + "/installments"), "{\"amountCents\":120000,\"categoryId\":"
+                + cat + ",\"date\":\"" + today + "\",\"count\":3,\"installmentValue\":false,\"paymentMethod\":\"CREDITO\"}", 200);
+        assertThat(parcels).hasSize(3);
+        assertThat(parcels.get(0).get("amountCents").asLong()).isEqualTo(40_000);
+        long plan = parcels.get(0).get("installmentPlanId").asLong();
+
+        JsonNode more = call(s, put("/api/installment-plans/" + plan), "{\"count\":5}", 200);
+        assertThat(more).hasSize(5);
+        for (JsonNode p : more) assertThat(p.get("installmentTotal").asInt()).isEqualTo(5);
+        assertThat(more.get(4).get("amountCents").asLong()).isEqualTo(40_000);
+
+        JsonNode fewer = call(s, put("/api/installment-plans/" + plan), "{\"count\":2}", 200);
+        assertThat(fewer).hasSize(2);
+        assertThat(call(s, get("/api/installments?month=" + month), null, 200).get("plans").get(0).get("count").asInt()).isEqualTo(2);
     }
 
     @Test

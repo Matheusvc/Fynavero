@@ -1,5 +1,6 @@
 package br.com.fynavero.service;
 
+import br.com.fynavero.api.Dto.InstallmentConvertReq;
 import br.com.fynavero.api.Dto.RecurrenceReq;
 import br.com.fynavero.api.Dto.TxReq;
 import br.com.fynavero.api.Dto.TxUpdateReq;
@@ -215,8 +216,24 @@ public class LedgerService {
         if (req.installments() != null) {
             if (req.kind() != Kind.DESPESA) throw badRequest("Só despesas podem ser parceladas.");
             if (req.repeatMonthly()) throw badRequest("Escolha entre compra parcelada ou repetir todo mês.");
-            return createInstallments(userId, c.id, description, req.amountCents(), req.installments(), date,
+            long[] parts = parts(req.amountCents(), req.installments(), Boolean.TRUE.equals(req.installmentValue()));
+            return createInstallments(userId, c.id, description, parts, date, req.paymentMethod(), note);
+        }
+        if (req.loan() != null) {
+            if (req.kind() != Kind.RECEITA || !c.loan) throw badRequest("O pagamento em parcelas é só para empréstimo recebido.");
+            if (req.repeatMonthly()) throw badRequest("Um empréstimo não se repete todo mês.");
+            Transaction received = single(userId, req.kind(), c.id, date, description, req.amountCents(),
                     req.paymentMethod(), note);
+            Category payCat = req.loan().categoryId() != null
+                    ? categories.require(userId, req.loan().categoryId())
+                    : categories.ensureLoanPaymentCategory(userId);
+            if (payCat.kind != Kind.DESPESA) throw badRequest("Escolha uma categoria de despesa para as parcelas.");
+            LocalDate first = req.loan().firstDate() != null ? req.loan().firstDate() : date.plusMonths(1);
+            String payDesc = description != null ? "Pagamento: " + description : "Pagamento do empréstimo";
+            List<Transaction> out = new ArrayList<>(List.of(received));
+            out.addAll(createInstallments(userId, payCat.id, payDesc,
+                    parts(req.loan().installmentCents(), req.loan().count(), true), first, null, null));
+            return out;
         }
         if (req.repeatMonthly()) {
             Recurrence r = createRecurrence(userId, req.kind(), c.id, description, req.amountCents(),
@@ -225,30 +242,49 @@ public class LedgerService {
             if (note != null && !list.isEmpty()) list.getFirst().note = note;
             return list;
         }
+        return List.of(single(userId, req.kind(), c.id, date, description, req.amountCents(), req.paymentMethod(), note));
+    }
+
+    private Transaction single(Long userId, Kind kind, Long categoryId, LocalDate date, String description,
+                               long amountCents, PaymentMethod pm, String note) {
         Transaction t = new Transaction();
         t.userId = userId;
-        t.kind = req.kind();
+        t.kind = kind;
         t.date = date;
         t.description = description;
-        t.categoryId = c.id;
-        t.amountCents = req.amountCents();
-        t.paymentMethod = req.paymentMethod();
+        t.categoryId = categoryId;
+        t.amountCents = amountCents;
+        t.paymentMethod = pm;
         t.status = statusFor(date);
         t.origin = Origin.MANUAL;
         t.note = note;
         t.createdAt = Instant.now();
-        return List.of(txs.save(t));
+        return txs.save(t);
+    }
+
+    /** Valores das parcelas: total dividido igualmente, ou valor fixo por parcela. */
+    private static long[] parts(long amountCents, int count, boolean perInstallment) {
+        try {
+            return perInstallment
+                    ? FinanceCalculator.fixedInstallments(amountCents, count)
+                    : FinanceCalculator.splitInstallments(amountCents, count);
+        } catch (IllegalArgumentException | ArithmeticException e) {
+            throw badRequest(e instanceof ArithmeticException ? "Valor alto demais." : e.getMessage() + ".");
+        }
     }
 
     @Transactional
     public List<Transaction> createInstallments(Long userId, Long categoryId, String description, long totalCents,
                                                 int count, LocalDate first, PaymentMethod pm, String note) {
-        long[] parts;
-        try {
-            parts = FinanceCalculator.splitInstallments(totalCents, count);
-        } catch (IllegalArgumentException e) {
-            throw badRequest(e.getMessage() + ".");
-        }
+        return createInstallments(userId, categoryId, description, parts(totalCents, count, false), first, pm, note);
+    }
+
+    @Transactional
+    public List<Transaction> createInstallments(Long userId, Long categoryId, String description, long[] parts,
+                                                LocalDate first, PaymentMethod pm, String note) {
+        int count = parts.length;
+        long totalCents = 0;
+        for (long v : parts) totalCents = Math.addExact(totalCents, v);
         InstallmentPlan p = new InstallmentPlan();
         p.userId = userId;
         p.categoryId = categoryId;
@@ -279,6 +315,60 @@ public class LedgerService {
             list.add(t);
         }
         return txs.saveAll(list);
+    }
+
+    /** Transforma um lançamento simples de despesa em compra parcelada a partir da mesma data. */
+    @Transactional
+    public List<Transaction> convertToInstallments(Long userId, Long id, InstallmentConvertReq req) {
+        Transaction t = require(userId, id);
+        if (t.kind != Kind.DESPESA) throw badRequest("Só despesas podem ser parceladas.");
+        if (t.installmentPlanId != null) throw badRequest("Este lançamento já é parcelado.");
+        if (t.recurrenceId != null) throw badRequest("Lançamentos que se repetem todo mês não podem ser parcelados.");
+        Category c = categories.require(userId, req.categoryId());
+        if (c.kind != Kind.DESPESA) throw badRequest("Escolha uma categoria de despesa.");
+        List<Transaction> created = createInstallments(userId, c.id, trimOrNull(req.description()),
+                parts(req.amountCents(), req.count(), req.installmentValue()), req.date(), req.paymentMethod(),
+                trimOrNull(req.note()));
+        txs.delete(t);
+        return created;
+    }
+
+    /**
+     * Muda o número total de parcelas. Parcelas novas repetem o valor da parcela comum e entram nos meses seguintes;
+     * reduzir remove as últimas, sem apagar parcelas já vencidas.
+     */
+    @Transactional
+    public List<Transaction> resizePlan(Long userId, Long planId, int newCount) {
+        InstallmentPlan p = plans.findByIdAndUserId(planId, userId).orElseThrow(() -> notFound());
+        List<Transaction> parcels = new ArrayList<>(txs.findByPlan(userId, planId));
+        if (parcels.isEmpty()) throw notFound();
+        parcels.sort(Comparator.comparing(x -> x.installmentNumber));
+        long paid = parcels.stream().filter(x -> !x.date.isAfter(today())).count();
+        if (newCount < Math.max(1, paid)) {
+            throw badRequest("Já " + (paid == 1 ? "venceu 1 parcela" : "venceram " + paid + " parcelas") + ". Use pelo menos " + paid + ".");
+        }
+        Transaction last = parcels.getLast();
+        long regular = parcels.getFirst().amountCents;
+        if (newCount < parcels.size()) {
+            List<Transaction> drop = parcels.subList(newCount, parcels.size());
+            txs.deleteAll(new ArrayList<>(drop));
+            drop.clear();
+        } else {
+            for (int n = parcels.size() + 1; n <= newCount; n++) {
+                Transaction t = last.copy();
+                t.installmentNumber = n;
+                t.date = p.firstDate.plusMonths(n - 1L);
+                t.amountCents = regular;
+                t.status = statusFor(t.date);
+                t.note = null;
+                parcels.add(t);
+            }
+        }
+        for (Transaction t : parcels) t.installmentTotal = newCount;
+        txs.saveAll(parcels);
+        p.installmentCount = newCount;
+        p.totalCents = parcels.stream().mapToLong(x -> x.amountCents).sum();
+        return parcels;
     }
 
     // ------------------------------------------------------------------ edição

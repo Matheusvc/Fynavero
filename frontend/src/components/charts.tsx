@@ -14,6 +14,8 @@ import {
 } from "recharts";
 import { Money } from "./Money";
 import { ViewToggle } from "./ui/misc";
+import { Button } from "./ui/button";
+import { Pencil } from "lucide-react";
 import { Icon } from "@/lib/icons";
 import { formatBRL, formatPct } from "@/lib/format";
 import type { Slice } from "@/lib/types";
@@ -38,7 +40,17 @@ function TooltipBox({ title, rows }: { title?: string; rows: { label: string; ce
 }
 
 /** Rosca de composição (no máximo 6 categorias + "Outros") com lista ao lado. */
-export function Donut({ slices, total, title }: { slices: Slice[]; total: number; title: string }) {
+export function Donut({
+  slices,
+  total,
+  title,
+  onEdit,
+}: {
+  slices: Slice[];
+  total: number;
+  title: string;
+  onEdit?: (s: Slice) => void;
+}) {
   const [table, setTable] = useState(false);
   return (
     <div>
@@ -53,6 +65,7 @@ export function Donut({ slices, total, title }: { slices: Slice[]; total: number
               <th scope="col" className="py-2 font-medium">Categoria</th>
               <th scope="col" className="py-2 text-right font-medium">Valor</th>
               <th scope="col" className="py-2 text-right font-medium">%</th>
+              {onEdit && <th scope="col" className="py-2 text-right font-medium"><span className="sr-only">Ações</span></th>}
             </tr>
           </thead>
           <tbody>
@@ -61,6 +74,13 @@ export function Donut({ slices, total, title }: { slices: Slice[]; total: number
                 <th scope="row" className="py-2 text-left font-normal">{s.name}</th>
                 <td className="py-2 text-right"><Money cents={s.amountCents} /></td>
                 <td className="money py-2 text-right">{formatPct(s.bps)}</td>
+                {onEdit && (
+                  <td className="py-1 pl-2 text-right">
+                    <Button variant="ghost" size="sm" onClick={() => onEdit(s)} aria-label={`Editar ${s.name}`}>
+                      <Pencil /> Editar
+                    </Button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
@@ -69,11 +89,13 @@ export function Donut({ slices, total, title }: { slices: Slice[]; total: number
               <th scope="row" className="py-2 text-left">Total</th>
               <td className="py-2 text-right"><Money cents={total} /></td>
               <td className="money py-2 text-right">100%</td>
+              {onEdit && <td />}
             </tr>
           </tfoot>
         </table>
       ) : (
-        <div className="grid grid-cols-1 items-center gap-4 sm:grid-cols-[10rem_minmax(0,1fr)]">
+        <div className="@container">
+        <div className="grid grid-cols-1 items-center gap-4 @[30rem]:grid-cols-[10rem_minmax(0,1fr)]">
           <div className="relative mx-auto aspect-square w-full max-w-48" aria-hidden="true">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -108,17 +130,37 @@ export function Donut({ slices, total, title }: { slices: Slice[]; total: number
               </div>
             </div>
           </div>
-          <ul className="space-y-1" aria-label={title}>
-            {slices.map((s) => (
-              <li key={s.name} className="flex min-h-9 items-center gap-2 text-sm">
-                <span className="size-3 shrink-0 rounded-sm" style={{ background: `var(--${s.color})` }} aria-hidden="true" />
-                <Icon name={s.icon} className="size-4 shrink-0 text-muted-foreground" />
-                <span className="min-w-0 flex-1 truncate">{s.name}</span>
-                <Money cents={s.amountCents} className="font-medium" />
-                <span className="money w-12 text-right text-muted-foreground">{formatPct(s.bps)}</span>
-              </li>
-            ))}
+          <ul className="space-y-0.5" aria-label={title}>
+            {slices.map((s) => {
+              const content = (
+                <>
+                  <span className="size-3 shrink-0 rounded-sm" style={{ background: `var(--${s.color})` }} aria-hidden="true" />
+                  <Icon name={s.icon} className="size-4 shrink-0 text-muted-foreground" />
+                  <span className="min-w-0 flex-1 truncate">{s.name}</span>
+                  <Money cents={s.amountCents} className="font-medium" />
+                  <span className="money w-12 shrink-0 text-right text-muted-foreground">{formatPct(s.bps)}</span>
+                </>
+              );
+              return (
+                <li key={s.name}>
+                  {onEdit ? (
+                    <button
+                      type="button"
+                      onClick={() => onEdit(s)}
+                      className="-mx-2 flex min-h-touch w-[calc(100%+1rem)] items-center gap-2 rounded-lg px-2 text-left text-sm hover:bg-muted"
+                    >
+                      {content}
+                      <Pencil className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                      <span className="sr-only">Editar {s.name}</span>
+                    </button>
+                  ) : (
+                    <div className="flex min-h-9 items-center gap-2 text-sm">{content}</div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
+        </div>
         </div>
       )}
     </div>

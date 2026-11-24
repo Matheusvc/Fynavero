@@ -328,6 +328,28 @@ public final class Controllers {
         public TxDto markPaid(@AuthenticationPrincipal AuthUser u, @PathVariable Long id) {
             return TxDto.of(ledger.markPaid(u.id(), id));
         }
+
+        @PostMapping("/{id}/installments")
+        public List<TxDto> convertToInstallments(@AuthenticationPrincipal AuthUser u, @PathVariable Long id,
+                                                 @Valid @RequestBody InstallmentConvertReq body) {
+            return ledger.convertToInstallments(u.id(), id, body).stream().map(TxDto::of).toList();
+        }
+    }
+
+    @RestController
+    @RequestMapping("/api/installment-plans")
+    public static class InstallmentPlanController {
+        private final LedgerService ledger;
+
+        public InstallmentPlanController(LedgerService ledger) {
+            this.ledger = ledger;
+        }
+
+        @PutMapping("/{id}")
+        public List<TxDto> resize(@AuthenticationPrincipal AuthUser u, @PathVariable Long id,
+                                  @Valid @RequestBody PlanResizeReq body) {
+            return ledger.resizePlan(u.id(), id, body.count()).stream().map(TxDto::of).toList();
+        }
     }
 
     // ------------------------------------------------------------------ telas de leitura e relatórios

@@ -70,6 +70,22 @@ class FinanceCalculatorTest {
     }
 
     @Test
+    void emprestimoEntraNoSaldoMasNaoNaContribuicao() {
+        var t = FinanceCalculator.totals(List.of(receita(357_500), new Entry(Kind.RECEITA, 500_000, 7L, true)),
+                new Contribution(true, 1000, 20L));
+        assertThat(t.receitas()).isEqualTo(857_500);
+        assertThat(t.emprestimos()).isEqualTo(500_000);
+        assertThat(t.contribuicao()).isEqualTo(35_750);
+        assertThat(t.saldo()).isEqualTo(857_500 - 35_750);
+    }
+
+    @Test
+    void parcelasDeValorFixo() {
+        assertThat(FinanceCalculator.fixedInstallments(55_000, 12)).hasSize(12).containsOnly(55_000);
+        assertThatThrownBy(() -> FinanceCalculator.fixedInstallments(0, 3)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void saldoNegativo() {
         var t = FinanceCalculator.totals(List.of(receita(100_000), despesa(150_000, 2)), Contribution.NONE);
         assertThat(t.sobra()).isEqualTo(-50_000);

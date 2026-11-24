@@ -33,7 +33,7 @@ export default function OnboardingPage() {
 
   const [step, setStep] = useState(0);
   const [name, setName] = useState(me.data?.name ?? "");
-  const [objective, setObjective] = useState<Objective | null>(null);
+  const [objectives, setObjectives] = useState<Objective[]>([]);
   const [incomes, setIncomes] = useState<Income[]>([{ name: "Salário", amount: "", fixed: true, day: "5" }]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [customs, setCustoms] = useState<Custom[]>([]);
@@ -74,7 +74,7 @@ export default function OnboardingPage() {
         method: "POST",
         body: {
           name: name.trim() || undefined,
-          objective: objective ?? undefined,
+          objectives,
           incomes: incomes
             .filter((i) => i.name.trim() && parseMoneyInput(i.amount))
             .map((i) => ({ name: i.name.trim(), amountCents: parseMoneyInput(i.amount)!, fixed: i.fixed, day: Number(i.day) || 5 })),
@@ -138,34 +138,44 @@ export default function OnboardingPage() {
           <section className="space-y-6" aria-labelledby="s0">
             <div>
               <h1 id="s0" className="text-2xl font-bold">Vamos começar!</h1>
-              <p className="text-muted-foreground">Como você quer ser chamado e qual é seu principal objetivo?</p>
+              <p className="text-muted-foreground">Como você quer ser chamado e quais são seus objetivos?</p>
             </div>
             <Field label="Seu nome">
               <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={100} autoComplete="given-name" />
             </Field>
-            <div role="radiogroup" aria-label="Objetivo principal" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {OBJECTIVES.map((o) => (
-                <button
-                  key={o.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={objective === o.value}
-                  onClick={() => setObjective(o.value)}
-                  className={cn(
-                    "flex min-h-20 items-center gap-3 rounded-xl border p-4 text-left transition-colors",
-                    objective === o.value ? "border-primary bg-accent ring-2 ring-primary" : "bg-card hover:bg-muted",
-                  )}
-                >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-muted">
-                    <Icon name={o.icon} className="size-5" />
-                  </span>
-                  <span>
-                    <span className="block font-semibold">{o.label}</span>
-                    <span className="block text-sm text-muted-foreground">{o.hint}</span>
-                  </span>
-                </button>
-              ))}
-            </div>
+            <fieldset className="space-y-2">
+              <legend className="text-sm font-medium">
+                Seus objetivos <span className="font-normal text-muted-foreground">· pode escolher mais de um</span>
+              </legend>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {OBJECTIVES.map((o) => {
+                  const on = objectives.includes(o.value);
+                  return (
+                    <button
+                      key={o.value}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() =>
+                        setObjectives((l) => (on ? l.filter((x) => x !== o.value) : [...l, o.value]))
+                      }
+                      className={cn(
+                        "relative flex min-h-20 items-center gap-3 rounded-xl border p-4 text-left transition-colors",
+                        on ? "border-primary bg-accent ring-2 ring-primary" : "bg-card hover:bg-muted",
+                      )}
+                    >
+                      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-muted">
+                        <Icon name={o.icon} className="size-5" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-semibold">{o.label}</span>
+                        <span className="block text-sm text-muted-foreground">{o.hint}</span>
+                      </span>
+                      {on && <Check className="size-5 shrink-0 text-primary-text" aria-hidden="true" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
           </section>
         )}
 
@@ -173,7 +183,9 @@ export default function OnboardingPage() {
           <section className="space-y-5" aria-labelledby="s1">
             <div>
               <h1 id="s1" className="text-2xl font-bold">De onde vem seu dinheiro?</h1>
-              <p className="text-muted-foreground">Cadastre suas fontes de renda. Renda fixa entra automaticamente todo mês como Previsto.</p>
+              <p className="text-muted-foreground">
+                Cadastre suas fontes de renda. Elas entram todo mês como Previsto no dia informado; na renda variável o valor é uma estimativa que você ajusta quando receber.
+              </p>
             </div>
             {incomes.map((inc, i) => (
               <div key={i} className="space-y-3 rounded-xl border bg-card p-4">
@@ -202,18 +214,16 @@ export default function OnboardingPage() {
                       <option value="variavel">Variável (muda de mês a mês)</option>
                     </Select>
                   </Field>
-                  {inc.fixed && (
-                    <Field label="Dia em que recebe">
-                      <Input
-                        type="number"
-                        inputMode="numeric"
-                        min={1}
-                        max={31}
-                        value={inc.day}
-                        onChange={(e) => setIncomes((l) => l.map((x, j) => (j === i ? { ...x, day: e.target.value } : x)))}
-                      />
-                    </Field>
-                  )}
+                  <Field label={inc.fixed ? "Dia em que recebe" : "Dia em que costuma receber"}>
+                    <Input
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={31}
+                      value={inc.day}
+                      onChange={(e) => setIncomes((l) => l.map((x, j) => (j === i ? { ...x, day: e.target.value } : x)))}
+                    />
+                  </Field>
                 </div>
                 {incomes.length > 1 && (
                   <Button variant="ghost" size="sm" className="text-negative" onClick={() => setIncomes((l) => l.filter((_, j) => j !== i))}>

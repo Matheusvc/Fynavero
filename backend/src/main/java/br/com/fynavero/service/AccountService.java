@@ -70,7 +70,7 @@ public class AccountService {
     }
 
     public Me me(Profile p) {
-        return new Me(p.id, p.name, p.email, p.objective, p.onboardingDone,
+        return new Me(p.id, p.name, p.email, p.objectives(), p.onboardingDone,
                 new ContributionDto(p.contributionEnabled, p.contributionBps, p.contributionCategoryId),
                 p.passwordHash != null);
     }
@@ -154,7 +154,7 @@ public class AccountService {
         Profile p = require(userId);
         if (p.onboardingDone) throw badRequest("A configuração inicial já foi concluída.");
         if (trimOrNull(req.name()) != null) p.name = req.name().strip();
-        p.objective = req.objective();
+        p.setObjectives(req.objectives());
 
         Map<String, Category> byKey = new LinkedHashMap<>();
         Map<Long, CatalogItem> catalogById = new HashMap<>();
@@ -188,6 +188,7 @@ public class AccountService {
             categories.create(userId, "Salário", Kind.RECEITA, null, "briefcase", null);
         }
         categories.create(userId, "Outras receitas", Kind.RECEITA, null, "wallet", null);
+        categories.ensureLoanCategory(userId);
         categories.create(userId, "Reserva de emergência", Kind.INVESTIMENTO, null, "piggy-bank", null);
 
         if (req.fixedBills() != null) {
@@ -216,7 +217,7 @@ public class AccountService {
     public Profile updateProfile(Long userId, ProfileReq req) {
         Profile p = require(userId);
         p.name = req.name().strip();
-        p.objective = req.objective();
+        p.setObjectives(req.objectives());
         return p;
     }
 
@@ -267,12 +268,17 @@ public class AccountService {
         s.fixed = req.fixed();
         s.categoryId = cat.id;
         s.createdAt = Instant.now();
-        if (req.fixed() && req.amountCents() > 0) {
+        if (req.amountCents() > 0) {
             int day = req.day() == null ? 5 : req.day();
-            s.recurrenceId = ledger.createRecurrence(userId, Kind.RECEITA, cat.id, name, req.amountCents(), day, null,
-                    ledger.nextOccurrence(day), false).id;
+            s.recurrenceId = ledger.createRecurrence(userId, Kind.RECEITA, cat.id, incomeDescription(name, req.fixed()),
+                    req.amountCents(), day, null, ledger.nextOccurrence(day), false).id;
         }
         return dto(incomes.save(s));
+    }
+
+    /** Renda variável entra todo mês como Previsto com o valor estimado, para ajustar quando receber. */
+    private static String incomeDescription(String name, boolean fixed) {
+        return fixed ? name : name + " (valor estimado)";
     }
 
     @Transactional
@@ -280,16 +286,17 @@ public class AccountService {
         IncomeSource s = incomes.findByIdAndUserId(id, userId).orElseThrow(() -> notFound());
         s.name = req.name().strip();
         s.amountCents = req.amountCents();
-        boolean wantsRecurrence = req.fixed() && req.amountCents() > 0;
+        boolean wantsRecurrence = req.amountCents() > 0;
         int day = req.day() == null ? 5 : req.day();
+        String desc = incomeDescription(s.name, req.fixed());
         if (s.recurrenceId != null && wantsRecurrence) {
             ledger.updateRecurrence(userId, s.recurrenceId,
-                    new RecurrenceReq(Kind.RECEITA, s.categoryId, s.name, s.amountCents, day, null));
+                    new RecurrenceReq(Kind.RECEITA, s.categoryId, desc, s.amountCents, day, null));
         } else if (s.recurrenceId != null) {
             ledger.endRecurrence(userId, s.recurrenceId);
             s.recurrenceId = null;
         } else if (wantsRecurrence) {
-            s.recurrenceId = ledger.createRecurrence(userId, Kind.RECEITA, s.categoryId, s.name, s.amountCents, day,
+            s.recurrenceId = ledger.createRecurrence(userId, Kind.RECEITA, s.categoryId, desc, s.amountCents, day,
                     null, ledger.nextOccurrence(day), false).id;
         }
         s.fixed = req.fixed();
@@ -312,7 +319,7 @@ public class AccountService {
         out.put("perfil", Map.of(
                 "nome", Objects.toString(p.name, ""),
                 "email", p.email,
-                "objetivo", Objects.toString(p.objective, ""),
+                "objetivos", p.objectives().stream().map(Enum::name).toList(),
                 "contribuicao", new ContributionDto(p.contributionEnabled, p.contributionBps, p.contributionCategoryId),
                 "termosAceitosEm", p.termsAcceptedAt.toString(),
                 "criadoEm", p.createdAt.toString()));

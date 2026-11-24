@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from "react";
-import { Link } from "react-router";
+import { useEffect, useState, type ReactNode } from "react";
+import { Link, useLocation } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -24,7 +24,7 @@ import { IconPicker } from "@/components/IconPicker";
 import { ThemeToggle, useLogout } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/dialog";
-import { Field, Input, Select, Switch } from "@/components/ui/field";
+import { Checkbox, Field, Input, Select, Switch } from "@/components/ui/field";
 import { Badge, Card, PageHeader, Segmented, Spinner } from "@/components/ui/misc";
 import { ImportHistory } from "./Import";
 import { api, errorMessage } from "@/lib/api";
@@ -81,7 +81,7 @@ function Section({ id, title, description, children, action }: {
 function ProfileSection({ me }: { me: Me }) {
   const setMe = useSetMe();
   const [name, setName] = useState(me.name ?? "");
-  const [objective, setObjective] = useState<Objective | "">(me.objective ?? "");
+  const [objectives, setObjectives] = useState<Objective[]>(me.objectives ?? []);
   const s = useSave();
   return (
     <Section id="perfil" title="Perfil">
@@ -89,7 +89,7 @@ function ProfileSection({ me }: { me: Me }) {
         className="grid grid-cols-1 gap-4 sm:grid-cols-2"
         onSubmit={(e) => {
           e.preventDefault();
-          void s.run(async () => setMe(await api<Me>("/api/profile", { method: "PUT", body: { name, objective: objective || null } })), "Perfil salvo");
+          void s.run(async () => setMe(await api<Me>("/api/profile", { method: "PUT", body: { name, objectives } })), "Perfil salvo");
         }}
       >
         <Field label="Nome">
@@ -98,12 +98,22 @@ function ProfileSection({ me }: { me: Me }) {
         <Field label="E-mail">
           <Input value={me.email} readOnly disabled />
         </Field>
-        <Field label="Objetivo principal" hint="Personaliza os textos e as dicas do Início.">
-          <Select value={objective} onChange={(e) => setObjective(e.target.value as Objective)}>
-            <option value="">Não informar</option>
-            {OBJECTIVES.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </Select>
-        </Field>
+        <fieldset className="space-y-2 sm:col-span-2">
+          <legend className="text-sm font-medium">
+            Objetivos <span className="font-normal text-muted-foreground">· pode marcar mais de um; personalizam as dicas do Início</span>
+          </legend>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {OBJECTIVES.map((o) => (
+              <Checkbox
+                key={o.value}
+                checked={objectives.includes(o.value)}
+                onChange={(v) => setObjectives((l) => (v ? [...l, o.value] : l.filter((x) => x !== o.value)))}
+              >
+                {o.label}
+              </Checkbox>
+            ))}
+          </div>
+        </fieldset>
         <div className="flex items-end">
           <Button type="submit" disabled={s.busy || !name.trim()}>{s.busy && <Spinner />} Salvar perfil</Button>
         </div>
@@ -287,7 +297,7 @@ function IncomeSection() {
           <li key={i.id} className="flex items-center gap-3 px-3 py-2">
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium">{i.name}</p>
-              <p className="text-xs text-muted-foreground">{i.fixed ? `Fixa · todo dia ${i.day ?? 5}` : "Variável"}</p>
+              <p className="text-xs text-muted-foreground">{i.fixed ? "Fixa" : "Variável (estimativa)"}{i.day ? ` · todo dia ${i.day}` : ""}</p>
             </div>
             <Money cents={i.amountCents} className="font-semibold" />
             <Button variant="ghost" size="icon" aria-label={`Editar ${i.name}`} onClick={() => setDraft({ id: i.id, name: i.name, amount: centsToInput(i.amountCents), fixed: i.fixed, day: String(i.day ?? 5) })}><Pencil /></Button>
@@ -307,12 +317,15 @@ function IncomeSection() {
           <div className="space-y-4">
             <Field label="Nome"><Input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} maxLength={60} /></Field>
             <Field label="Valor por mês"><CurrencyInput value={draft.amount} onChange={(amount) => setDraft({ ...draft, amount })} /></Field>
-            <Switch label="Renda fixa" description="Mesmo valor todo mês" checked={draft.fixed} onChange={(fixed) => setDraft({ ...draft, fixed })} />
-            {draft.fixed && (
-              <Field label="Dia em que recebe">
-                <Input type="number" inputMode="numeric" min={1} max={31} value={draft.day} onChange={(e) => setDraft({ ...draft, day: e.target.value })} />
-              </Field>
-            )}
+            <Switch
+              label="Renda fixa"
+              description={draft.fixed ? "Mesmo valor todo mês" : "Valor muda: entra como estimativa, você ajusta quando receber"}
+              checked={draft.fixed}
+              onChange={(fixed) => setDraft({ ...draft, fixed })}
+            />
+            <Field label={draft.fixed ? "Dia em que recebe" : "Dia em que costuma receber"}>
+              <Input type="number" inputMode="numeric" min={1} max={31} value={draft.day} onChange={(e) => setDraft({ ...draft, day: e.target.value })} />
+            </Field>
           </div>
         )}
       </Modal>
@@ -666,6 +679,12 @@ const SECTIONS = [
 export default function SettingsPage() {
   const me = useMe();
   const logout = useLogout();
+  const { hash } = useLocation();
+  const ready = !!me.data;
+  useEffect(() => {
+    if (!ready || !hash) return;
+    document.getElementById(hash.slice(1))?.scrollIntoView({ block: "start" });
+  }, [ready, hash]);
   if (!me.data) return <Spinner />;
   return (
     <div>

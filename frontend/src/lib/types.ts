@@ -11,7 +11,7 @@ export type Me = {
   id: number;
   name?: string;
   email: string;
-  objective?: Objective;
+  objectives: Objective[];
   onboardingDone: boolean;
   contribution: Contribution;
   hasPassword: boolean;
@@ -30,6 +30,7 @@ export type Category = {
   color: string;
   sortOrder: number;
   hidden: boolean;
+  loan: boolean;
   goalCents?: number | null;
 };
 
@@ -61,6 +62,22 @@ export type TxInput = {
   note?: string;
   repeatMonthly?: boolean;
   installments?: number | null;
+  /** true: amountCents é o valor de cada parcela; false/ausente: valor total da compra. */
+  installmentValue?: boolean;
+  loan?: LoanRepayment | null;
+};
+
+export type LoanRepayment = { count: number; installmentCents: number; firstDate?: string; categoryId?: number | null };
+
+export type InstallmentConvert = {
+  amountCents: number;
+  categoryId: number;
+  date: string;
+  description?: string;
+  paymentMethod?: PaymentMethod | null;
+  note?: string;
+  count: number;
+  installmentValue: boolean;
 };
 
 export type TxUpdate = {
@@ -75,6 +92,7 @@ export type TxUpdate = {
 
 export type Totals = {
   receitas: number;
+  emprestimos: number;
   despesas: number;
   despesasLancadas: number;
   contribuicao: number;
@@ -146,6 +164,7 @@ export type AnnualReport = {
   year: number;
   monthLabels: string[];
   receitas: ReportRow[];
+  emprestimos: ReportRow[];
   despesas: ReportGroup[];
   totalDespesas: ReportRow;
   investimentos: ReportRow[];

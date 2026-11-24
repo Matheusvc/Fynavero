@@ -46,12 +46,16 @@ public class InsightsService {
         return new Contribution(p.contributionEnabled, p.contributionBps, p.contributionCategoryId);
     }
 
-    static List<Entry> entries(Collection<Transaction> list) {
-        return list.stream().map(t -> new Entry(t.kind, t.amountCents, t.categoryId)).toList();
+    static List<Entry> entries(Collection<Transaction> list, Set<Long> loanCategories) {
+        return list.stream().map(t -> new Entry(t.kind, t.amountCents, t.categoryId, loanCategories.contains(t.categoryId))).toList();
+    }
+
+    static Set<Long> loanIds(Collection<Category> cats) {
+        return cats.stream().filter(c -> c.loan).map(c -> c.id).collect(Collectors.toSet());
     }
 
     static TotalsDto dto(MonthTotals t) {
-        return new TotalsDto(t.receitas(), t.despesas(), t.despesasLancadas(), t.contribuicao(), t.sobra(),
+        return new TotalsDto(t.receitas(), t.emprestimos(), t.despesas(), t.despesasLancadas(), t.contribuicao(), t.sobra(),
                 t.investido(), t.saldo());
     }
 
@@ -69,20 +73,21 @@ public class InsightsService {
     public DashboardDto dashboard(Long userId, YearMonth m) {
         Contribution c = contribution(userId);
         Map<Long, Category> cats = categories.map(userId);
+        Set<Long> loans = loanIds(cats.values());
         Map<YearMonth, List<Transaction>> months = byMonth(ledger.range(userId, m.minusMonths(5).atDay(1), m.atEndOfMonth()));
 
         List<Transaction> cur = months.getOrDefault(m, List.of());
         List<Transaction> prev = months.getOrDefault(m.minusMonths(1), List.of());
-        MonthTotals current = FinanceCalculator.totals(entries(cur), c);
-        MonthTotals previous = FinanceCalculator.totals(entries(prev), c);
+        MonthTotals current = FinanceCalculator.totals(entries(cur, loans), c);
+        MonthTotals previous = FinanceCalculator.totals(entries(prev, loans), c);
 
-        Map<Long, Long> curByCat = FinanceCalculator.byCategory(entries(cur), Kind.DESPESA, c);
+        Map<Long, Long> curByCat = FinanceCalculator.byCategory(entries(cur, loans), Kind.DESPESA, c);
         List<SliceDto> breakdown = slices(curByCat, current.despesas(), cats);
 
         List<MonthBarDto> bars = new ArrayList<>();
         for (int i = 5; i >= 0; i--) {
             YearMonth ym = m.minusMonths(i);
-            MonthTotals t = FinanceCalculator.totals(entries(months.getOrDefault(ym, List.of())), c);
+            MonthTotals t = FinanceCalculator.totals(entries(months.getOrDefault(ym, List.of()), loans), c);
             bars.add(new MonthBarDto(ym.toString(), label(ym), t.receitas(), t.despesas(), t.investido()));
         }
 
@@ -95,9 +100,9 @@ public class InsightsService {
                         t.installmentNumber, t.installmentTotal))
                 .toList();
 
-        Objective objective = profiles.findById(userId).map(p -> p.objective).orElse(null);
-        List<String> insights = insights(objective, current, curByCat,
-                FinanceCalculator.byCategory(entries(prev), Kind.DESPESA, c), cats, upcoming, cur, userId, m);
+        List<Objective> objectives = profiles.findById(userId).map(Profile::objectives).orElse(List.of());
+        List<String> insights = insights(objectives, current, curByCat,
+                FinanceCalculator.byCategory(entries(prev, loans), Kind.DESPESA, c), cats, upcoming, cur, userId, m);
 
         // Vazia enquanto não houver nenhum lançamento até hoje (previstos futuros, como o salário recorrente, não contam).
         return new DashboardDto(m.toString(), !txs.hasAnyUntil(userId, today), dto(current), dto(previous), breakdown, bars,
@@ -121,8 +126,8 @@ public class InsightsService {
         return out;
     }
 
-    /** No máximo 3 frases, em linguagem humana, personalizadas pelo objetivo. */
-    private List<String> insights(Objective objective, MonthTotals t, Map<Long, Long> cur, Map<Long, Long> prev,
+    /** No máximo 3 frases, em linguagem humana, personalizadas pelos objetivos escolhidos. */
+    private List<String> insights(List<Objective> objectives, MonthTotals t, Map<Long, Long> cur, Map<Long, Long> prev,
                                   Map<Long, Category> cats, List<UpcomingDto> upcoming, List<Transaction> monthTxs,
                                   Long userId, YearMonth m) {
         List<String> out = new ArrayList<>();
@@ -133,6 +138,9 @@ public class InsightsService {
         if (t.saldo() < 0) {
             out.add("Atenção: o saldo para passar o mês está negativo em " + brl(-t.saldo())
                     + ". Vale rever os gastos que ainda dá para adiar.");
+        }
+        if (t.emprestimos() > 0) {
+            out.add("Entraram " + brl(t.emprestimos()) + " de empréstimo neste mês. As parcelas do pagamento ficam em Parcelas e Dívidas.");
         }
 
         Long worstCat = null;
@@ -157,7 +165,7 @@ public class InsightsService {
                     : "Você tem " + upcoming.size() + " contas para pagar nos próximos 15 dias, somando " + brl(sum) + ".");
         }
 
-        if (objective != null) {
+        for (Objective objective : objectives) {
             switch (objective) {
                 case INVESTIR -> out.add(t.investido() == 0
                         ? "Seu objetivo é começar a investir. Que tal separar um valor fixo assim que a renda cair?"
@@ -263,6 +271,7 @@ public class InsightsService {
         if (year < 2000 || year > 2100) throw badRequest("Ano inválido.");
         Contribution c = contribution(userId);
         List<Category> catList = categories.list(userId);
+        Set<Long> loans = loanIds(catList);
         Map<YearMonth, List<Transaction>> months = byMonth(ledger.range(userId,
                 LocalDate.of(year, 1, 1), LocalDate.of(year, 12, 31)));
 
@@ -272,14 +281,15 @@ public class InsightsService {
         for (int i = 0; i < 12; i++) {
             YearMonth ym = YearMonth.of(year, i + 1);
             labels.add(monthShort(ym));
-            List<Entry> e = entries(months.getOrDefault(ym, List.of()));
+            List<Entry> e = entries(months.getOrDefault(ym, List.of()), loans);
             inc[i] = FinanceCalculator.byCategory(e, Kind.RECEITA, c);
             exp[i] = FinanceCalculator.byCategory(e, Kind.DESPESA, c);
             inv[i] = FinanceCalculator.byCategory(e, Kind.INVESTIMENTO, c);
             totals[i] = FinanceCalculator.totals(e, c);
         }
 
-        List<ReportRow> receitas = rows(catList, Kind.RECEITA, null, inc);
+        List<ReportRow> receitas = rows(catList.stream().filter(x -> !x.loan).toList(), Kind.RECEITA, null, inc);
+        List<ReportRow> emprestimos = rows(catList.stream().filter(x -> x.loan).toList(), Kind.RECEITA, null, inc);
         List<ReportGroup> groups = new ArrayList<>();
         List<String> groupOrder = new ArrayList<>(CategoryService.EXPENSE_GROUPS);
         catList.stream().filter(x -> x.kind == Kind.DESPESA && !groupOrder.contains(x.group)).forEach(x -> groupOrder.add(x.group));
@@ -308,7 +318,7 @@ public class InsightsService {
                 row(null, "Sobra do mês", sobra),
                 row(null, "Investido", invest),
                 row(null, "Saldo para passar o mês", saldo));
-        return new AnnualReport(year, labels, receitas, groups, row(null, "Total de despesas", desp),
+        return new AnnualReport(year, labels, receitas, emprestimos, groups, row(null, "Total de despesas", desp),
                 investimentos, row(null, "Total investido", invest), resultado);
     }
 
@@ -335,22 +345,26 @@ public class InsightsService {
     public CompareReport compare(Long userId, YearMonth m) {
         Contribution c = contribution(userId);
         Map<Long, Category> cats = categories.map(userId);
+        Set<Long> loans = loanIds(cats.values());
         Map<YearMonth, List<Transaction>> months = byMonth(ledger.range(userId, m.minusMonths(12).atDay(1), m.atEndOfMonth()));
 
         MonthTotals[] t = new MonthTotals[13];
         List<Map<Long, Long>> exp = new ArrayList<>();
         for (int i = 0; i <= 12; i++) {
-            List<Entry> e = entries(months.getOrDefault(m.minusMonths(12 - i), List.of()));
+            List<Entry> e = entries(months.getOrDefault(m.minusMonths(12 - i), List.of()), loans);
             t[i] = FinanceCalculator.totals(e, c);
             exp.add(FinanceCalculator.byCategory(e, Kind.DESPESA, c));
         }
         record Metric(String label, java.util.function.ToLongFunction<MonthTotals> f) {}
-        List<Metric> metrics = List.of(
+        List<Metric> metrics = new ArrayList<>(List.of(
                 new Metric("Receitas", MonthTotals::receitas),
                 new Metric("Despesas", MonthTotals::despesas),
                 new Metric("Investido", MonthTotals::investido),
                 new Metric("Sobra do mês", MonthTotals::sobra),
-                new Metric("Saldo para passar o mês", MonthTotals::saldo));
+                new Metric("Saldo para passar o mês", MonthTotals::saldo)));
+        if (Arrays.stream(t).anyMatch(x -> x.emprestimos() > 0)) {
+            metrics.add(1, new Metric("Empréstimos recebidos (incluídos nas receitas)", MonthTotals::emprestimos));
+        }
         List<CompareRow> totals = new ArrayList<>();
         for (Metric mt : metrics) {
             long[] hist = new long[12];

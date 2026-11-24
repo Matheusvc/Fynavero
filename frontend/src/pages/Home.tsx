@@ -1,4 +1,5 @@
-import { Link } from "react-router";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import {
   ArrowDownRight,
@@ -8,6 +9,7 @@ import {
   FileSpreadsheet,
   Lightbulb,
   Minus,
+  Pencil,
   Plus,
   TriangleAlert,
   Wallet,
@@ -16,13 +18,14 @@ import { Money } from "@/components/Money";
 import { Bars, Donut } from "@/components/charts";
 import { useQuickAdd } from "@/components/QuickAdd";
 import { Button } from "@/components/ui/button";
-import { Badge, Card, CardTitle, EmptyState, ErrorState, Skeleton } from "@/components/ui/misc";
+import { Badge, Card, CardTitle, EmptyState, ErrorState, Skeleton, Spinner } from "@/components/ui/misc";
+import { Modal } from "@/components/ui/dialog";
 import { errorMessage } from "@/lib/api";
 import { changeBps, formatPct, formatShortDay, monthName, shiftMonth } from "@/lib/format";
 import { CategoryIcon } from "@/lib/icons";
 import { useMonth } from "@/lib/month";
-import { useCategories, useDashboard, useMe, useTxMutations } from "@/lib/queries";
-import type { Totals } from "@/lib/types";
+import { useCategories, useDashboard, useMe, useTransactions, useTxMutations } from "@/lib/queries";
+import type { Slice, Totals } from "@/lib/types";
 
 function Change({ current, previous, month }: { current: number; previous: number; month: string }) {
   const bps = changeBps(current, previous);
@@ -40,13 +43,113 @@ function Change({ current, previous, month }: { current: number; previous: numbe
   );
 }
 
-function StatCard({ label, cents, prev, month }: { label: string; cents: number; prev: number; month: string }) {
+function StatCard({ label, cents, prev, month, note }: { label: string; cents: number; prev: number; month: string; note?: ReactNode }) {
   return (
     <Card as="div" className="space-y-1">
       <p className="text-sm text-muted-foreground">{label}</p>
       <Money cents={cents} className="block text-2xl font-bold" />
+      {note && <p className="text-xs text-muted-foreground">{note}</p>}
       <Change current={cents} previous={prev} month={month} />
     </Card>
+  );
+}
+
+/**
+ * Lançamentos por trás de uma linha de "Para onde foi seu dinheiro".
+ * Tocar num lançamento abre a edição completa (valor, categoria, parcelas…).
+ */
+function CategoryPanel({
+  slice,
+  slices,
+  month,
+  contribution,
+  contributionCategoryId,
+  onClose,
+}: {
+  slice: Slice;
+  slices: Slice[];
+  month: string;
+  contribution: number;
+  contributionCategoryId?: number | null;
+  onClose: () => void;
+}) {
+  const navigate = useNavigate();
+  const { openEdit } = useQuickAdd();
+  const cats = useCategories();
+  const txs = useTransactions(month, { kind: "DESPESA" });
+  const catById = new Map((cats.data ?? []).map((c) => [c.id, c]));
+  const isOthers = slice.categoryId == null;
+  const topIds = new Set(slices.map((s) => s.categoryId).filter((id): id is number => id != null));
+  const list = (txs.data ?? []).filter((t) => (isOthers ? !topIds.has(t.categoryId) : t.categoryId === slice.categoryId));
+  const hasContribution = !isOthers && contribution > 0 && slice.categoryId === contributionCategoryId;
+  const autoOpened = useRef(false);
+
+  useEffect(() => {
+    if (autoOpened.current || !txs.data || isOthers || hasContribution || list.length !== 1) return;
+    autoOpened.current = true;
+    onClose();
+    openEdit(list[0]!);
+  }, [txs.data, isOthers, hasContribution, list, onClose, openEdit]);
+
+  return (
+    <Modal open onOpenChange={(o) => !o && onClose()} title={`${slice.name} · ${monthName(month)}`} description="Toque em um lançamento para editar.">
+      {txs.isLoading ? (
+        <p className="flex items-center gap-2 text-sm text-muted-foreground"><Spinner /> Carregando…</p>
+      ) : (
+        <ul className="divide-y">
+          {hasContribution && (
+            <li className="flex flex-wrap items-center gap-3 py-3">
+              <div className="min-w-0 flex-1">
+                <p className="font-medium">Contribuição automática</p>
+                <p className="text-xs text-muted-foreground">Calculada sobre as receitas do mês</p>
+              </div>
+              <Money cents={-contribution} className="font-semibold" />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  onClose();
+                  navigate("/configuracoes#contribuicao");
+                }}
+              >
+                Ajustar contribuição
+              </Button>
+            </li>
+          )}
+          {list.map((t) => {
+            const c = catById.get(t.categoryId);
+            return (
+              <li key={t.id}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    openEdit(t);
+                  }}
+                  className="flex min-h-14 w-full items-center gap-3 py-2 text-left hover:bg-muted"
+                >
+                  <CategoryIcon icon={c?.icon ?? "tag"} color={c?.color} size="sm" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium">{t.description || c?.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatShortDay(t.date)}
+                      {isOthers && c && ` · ${c.name}`}
+                      {t.installmentNumber && ` · parcela ${t.installmentNumber}/${t.installmentTotal}`}
+                      {t.status === "PREVISTO" && " · Previsto"}
+                    </p>
+                  </div>
+                  <Money cents={-t.amountCents} className="font-semibold" />
+                  <Pencil className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                </button>
+              </li>
+            );
+          })}
+          {list.length === 0 && !hasContribution && (
+            <li className="py-4 text-sm text-muted-foreground">Nenhum lançamento encontrado.</li>
+          )}
+        </ul>
+      )}
+    </Modal>
   );
 }
 
@@ -84,6 +187,9 @@ export default function HomePage() {
   const cats = useCategories();
   const { openNew } = useQuickAdd();
   const { markPaid } = useTxMutations();
+  const navigate = useNavigate();
+  const [panel, setPanel] = useState<Slice | null>(null);
+  const closePanel = useCallback(() => setPanel(null), []);
 
   if (dash.isLoading) {
     return (
@@ -135,7 +241,13 @@ export default function HomePage() {
       <Hero t={d.current} month={month} />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <StatCard label="Receitas" cents={d.current.receitas} prev={d.previous.receitas} month={month} />
+        <StatCard
+          label="Receitas"
+          cents={d.current.receitas}
+          prev={d.previous.receitas}
+          month={month}
+          note={d.current.emprestimos > 0 ? <>inclui <Money cents={d.current.emprestimos} /> de empréstimo</> : undefined}
+        />
         <StatCard label="Despesas" cents={d.current.despesas} prev={d.previous.despesas} month={month} />
         <StatCard label="Investido" cents={d.current.investido} prev={d.previous.investido} month={month} />
       </div>
@@ -160,7 +272,22 @@ export default function HomePage() {
           {d.breakdown.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">Nenhuma despesa neste mês.</p>
           ) : (
-            <Donut slices={d.breakdown} total={d.current.despesas} title="Despesas por categoria" />
+            <Donut
+              slices={d.breakdown}
+              total={d.current.despesas}
+              title="Despesas por categoria"
+              onEdit={(s) => (s.categoryId === -1 ? navigate("/configuracoes#contribuicao") : setPanel(s))}
+            />
+          )}
+          {panel && (
+            <CategoryPanel
+              slice={panel}
+              slices={d.breakdown}
+              month={month}
+              contribution={d.current.contribuicao}
+              contributionCategoryId={me.data?.contribution.categoryId}
+              onClose={closePanel}
+            />
           )}
         </Card>
 
