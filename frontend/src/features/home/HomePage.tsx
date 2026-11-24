@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { toast } from "sonner";
 import { CalendarClock, CircleCheck, FileSpreadsheet, Lightbulb, Plus, Wallet } from "lucide-react";
 import { Money } from "@/components/Money";
 import { Bars } from "@/components/charts/Bars";
@@ -14,7 +13,8 @@ import { errorMessage } from "@/lib/api";
 import { formatShortDay } from "@/lib/format";
 import { CategoryIcon } from "@/lib/icons";
 import { useMonth } from "@/lib/month";
-import { useCategories, useDashboard, useMe, useTxMutations } from "@/lib/queries";
+import { useCategories, useDashboard, useMe } from "@/lib/queries";
+import { useUndoable } from "@/features/transactions/quick-add/useUndoable";
 import type { Slice } from "@/lib/types";
 import { Hero, StatCard } from "./SummaryCards";
 import { CategoryPanel } from "./CategoryPanel";
@@ -27,7 +27,7 @@ export default function HomePage() {
   const dash = useDashboard(month);
   const cats = useCategories();
   const { openNew } = useQuickAdd();
-  const { markPaid } = useTxMutations();
+  const undoable = useUndoable();
   const navigate = useNavigate();
   const [panel, setPanel] = useState<Slice | null>(null);
   const closePanel = useCallback(() => setPanel(null), []);
@@ -158,12 +158,7 @@ export default function HomePage() {
                       variant="ghost"
                       size="icon"
                       aria-label={`Marcar ${u.description || c?.name} como pago`}
-                      onClick={() =>
-                        markPaid.mutate(u.id, {
-                          onSuccess: () => toast.success("Marcado como pago"),
-                          onError: (e) => toast.error(errorMessage(e)),
-                        })
-                      }
+                      onClick={() => undoable.markPaid(u.id, u.description || c?.name)}
                     >
                       <CircleCheck />
                     </Button>

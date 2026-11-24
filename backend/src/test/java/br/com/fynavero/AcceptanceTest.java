@@ -182,6 +182,37 @@ class AcceptanceTest {
     }
 
     @Test
+    void excluirCompraParceladaInteiraEDesfazer() throws Exception {
+        MockHttpSession s = newUser("null");
+        long cat = category(s, "Mercado");
+        JsonNode parcels = launch(s, "DESPESA", 155_970, cat, ",\"installments\":9,\"paymentMethod\":\"CREDITO\"");
+        long plan = parcels.get(0).get("installmentPlanId").asLong();
+        long third = parcels.get(2).get("id").asLong();
+
+        // "Todas as parcelas" a partir de qualquer parcela apaga a compra inteira, inclusive as anteriores.
+        JsonNode all = call(s, delete("/api/transactions/" + third + "?scope=ALL"), null, 200);
+        assertThat(all.get("ids")).hasSize(9);
+        assertThat(call(s, get("/api/installments?month=" + month), null, 200).get("plans")).isEmpty();
+        call(s, post("/api/transactions/restore"), "{\"ids\":" + all.get("ids") + "}", 204);
+        assertThat(call(s, get("/api/installments?month=" + month), null, 200).get("plans")).hasSize(1);
+
+        // Botão "Excluir" no cartão de Parcelas e Dívidas.
+        JsonNode viaPlan = call(s, delete("/api/installment-plans/" + plan), null, 200);
+        assertThat(viaPlan.get("ids")).hasSize(9);
+        assertThat(call(s, get("/api/installments?month=" + month), null, 200).get("plans")).isEmpty();
+    }
+
+    @Test
+    void marcarComoPagoPorEnganoPodeSerDesfeito() throws Exception {
+        MockHttpSession s = newUser("null");
+        JsonNode bill = call(s, post("/api/transactions"), "{\"kind\":\"DESPESA\",\"amountCents\":5000,\"categoryId\":"
+                + category(s, "Mercado") + ",\"date\":\"" + today.plusDays(3) + "\",\"description\":\"Internet\"}", 200).get(0);
+        long id = bill.get("id").asLong();
+        assertThat(call(s, post("/api/transactions/" + id + "/mark-paid"), null, 200).get("status").asText()).isEqualTo("REALIZADO");
+        assertThat(call(s, post("/api/transactions/" + id + "/mark-unpaid"), null, 200).get("status").asText()).isEqualTo("PREVISTO");
+    }
+
+    @Test
     void importarEDesfazerRemoveSoAqueleLote() throws Exception {
         MockHttpSession s = newUser("null");
         long mercado = category(s, "Mercado");

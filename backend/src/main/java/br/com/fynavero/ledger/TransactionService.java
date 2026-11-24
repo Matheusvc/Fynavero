@@ -123,6 +123,13 @@ public class TransactionService {
                 .toList();
     }
 
+    /** Todos os lançamentos de uma categoria, do mais novo para o mais antigo (ex.: o que já foi guardado num objetivo). */
+    @Transactional(readOnly = true)
+    public List<Transaction> byCategory(Long userId, Long categoryId) {
+        categories.require(userId, categoryId);
+        return transactions.findByCategory(userId, categoryId);
+    }
+
     public Transaction require(Long userId, Long id) {
         return transactions.findByIdAndUserIdAndDeletedAtIsNull(id, userId).orElseThrow(() -> notFound());
     }
@@ -268,7 +275,11 @@ public class TransactionService {
     public List<Long> delete(Long userId, Long id, Scope scope) {
         Transaction t = require(userId, id);
         List<Transaction> targets = new ArrayList<>(List.of(t));
-        if (scope == Scope.FOLLOWING && t.installmentPlanId != null) {
+        if (scope == Scope.ALL && t.installmentPlanId != null) {
+            transactions.findByPlan(userId, t.installmentPlanId).stream()
+                    .filter(o -> !o.id.equals(t.id))
+                    .forEach(targets::add);
+        } else if (scope == Scope.FOLLOWING && t.installmentPlanId != null) {
             transactions.findByPlan(userId, t.installmentPlanId).stream()
                     .filter(o -> o.installmentNumber != null && o.installmentNumber > t.installmentNumber)
                     .forEach(targets::add);
@@ -280,6 +291,24 @@ public class TransactionService {
         Instant now = Instant.now();
         targets.forEach(x -> x.deletedAt = now);
         return targets.stream().map(x -> x.id).toList();
+    }
+
+    /** Exclui a compra parcelada inteira (botão "Excluir" em Parcelas e Dívidas); devolve os ids para o "Desfazer". */
+    @Transactional
+    public List<Long> deletePlan(Long userId, Long planId) {
+        List<Transaction> parcels = transactions.findByPlan(userId, planId);
+        if (parcels.isEmpty()) throw notFound();
+        Instant now = Instant.now();
+        parcels.forEach(x -> x.deletedAt = now);
+        return parcels.stream().map(x -> x.id).toList();
+    }
+
+    /** Desfaz o "Marcar como pago" apertado por engano: a conta volta a ser Previsto. */
+    @Transactional
+    public Transaction markUnpaid(Long userId, Long id) {
+        Transaction t = require(userId, id);
+        t.status = Status.PREVISTO;
+        return t;
     }
 
     @Transactional

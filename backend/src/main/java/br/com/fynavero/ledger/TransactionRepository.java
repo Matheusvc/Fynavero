@@ -32,6 +32,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Query("select count(t) > 0 from Transaction t where t.userId = :userId and t.deletedAt is null and t.date <= :until")
     boolean hasAnyUntil(@Param("userId") Long userId, @Param("until") LocalDate until);
 
+    @Query("""
+        select t from Transaction t where t.userId = :userId and t.deletedAt is null and t.categoryId = :categoryId
+        order by t.date desc, t.id desc""")
+    List<Transaction> findByCategory(@Param("userId") Long userId, @Param("categoryId") Long categoryId);
+
     Optional<Transaction> findByIdAndUserIdAndDeletedAtIsNull(Long id, Long userId);
 
     /** Inclui excluídos: usado para desfazer a exclusão. */

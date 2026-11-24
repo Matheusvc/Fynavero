@@ -10,7 +10,7 @@ import { Spinner } from "@/components/ui/feedback";
 import { Field, Input, Select, Switch, Textarea } from "@/components/ui/field";
 import { Segmented } from "@/components/ui/segmented";
 import { api, errorMessage } from "@/lib/api";
-import { addMonthsISO, centsToInput, defaultDateFor, formatBRL, monthLabel, parseMoneyInput, shiftMonth } from "@/lib/format";
+import { addMonthsISO, centsToInput, defaultDateFor, formatBRL, monthLabel, parseMoneyInput, shiftMonth, todayISO } from "@/lib/format";
 import { KIND_LABEL, PAYMENT_METHODS } from "@/lib/labels";
 import { useMonth } from "@/lib/month";
 import { invalidateFinance, useCategories, useTags, useTxMutations } from "@/lib/queries";
@@ -24,7 +24,7 @@ export type NewOptions = { kind?: Kind; installments?: boolean; categoryId?: num
 
 /**
  * Ficha de lançamento (bottom sheet no celular, modal no desktop): valor → categoria → salvar.
- * "Mais detalhes" traz data, forma de pagamento (Crédito abre o parcelamento), descrição e repetição;
+ * A data fica sempre à mostra ("Data em que guardou" nos investimentos). "Mais detalhes" traz forma de pagamento (Crédito abre o parcelamento), descrição e repetição;
  * receitas de empréstimo pedem as parcelas do pagamento; parcelas existentes permitem mudar o total.
  */
 export function TransactionSheet({
@@ -442,6 +442,21 @@ export function TransactionSheet({
           </section>
         )}
 
+        <Field
+          label={
+            effectiveParcel
+              ? "Data da 1ª parcela"
+              : isLoan || kind === "RECEITA"
+                ? "Data em que recebeu"
+                : kind === "INVESTIMENTO"
+                  ? "Data em que guardou"
+                  : "Data"
+          }
+          hint={date > todayISO() ? "Data futura: entra como Previsto." : undefined}
+        >
+          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+        </Field>
+
         <div className="rounded-lg border">
           <button
             type="button"
@@ -455,10 +470,7 @@ export function TransactionSheet({
           </button>
           {more && (
             <div id="tx-more" className="space-y-4 border-t p-3">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label={effectiveParcel ? "Data da 1ª parcela" : isLoan ? "Data em que recebeu" : "Data"}>
-                  <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-                </Field>
+              <div className="grid grid-cols-1 gap-4">
                 <Field label="Forma de pagamento">
                   <Select
                     value={payment}

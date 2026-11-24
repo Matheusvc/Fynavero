@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import { Popover } from "radix-ui";
-import { toast } from "sonner";
 import { Bell, CalendarClock, CircleAlert, CircleCheck, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { errorMessage } from "@/lib/api";
-import { useNotifications, useTxMutations } from "@/lib/queries";
+import { useNotifications } from "@/lib/queries";
+import { useUndoable } from "@/features/transactions/quick-add/useUndoable";
 import type { AppNotification } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -29,7 +28,7 @@ function NotificationIcon({ n }: { n: AppNotification }) {
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const notifications = useNotifications();
-  const { markPaid } = useTxMutations();
+  const undoable = useUndoable();
   const list = notifications.data ?? [];
   const urgent = list.some((n) => n.type === "CONTA_VENCIDA" || n.type === "CONTA_HOJE" || n.type === "LIMITE_ESTOURADO");
 
@@ -86,13 +85,8 @@ export function NotificationBell() {
                         size="sm"
                         variant="outline"
                         className="mt-2"
-                        disabled={markPaid.isPending}
-                        onClick={() =>
-                          markPaid.mutate(n.transactionId!, {
-                            onSuccess: () => toast.success("Marcada como paga"),
-                            onError: (e) => toast.error(errorMessage(e)),
-                          })
-                        }
+                        disabled={undoable.busy}
+                        onClick={() => undoable.markPaid(n.transactionId!, n.title.replace(/ (vence|venceu).*$/, ""))}
                       >
                         <CircleCheck /> Marcar como paga
                       </Button>

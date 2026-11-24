@@ -20,6 +20,7 @@ import { CategoryIcon } from "@/lib/icons";
 import { useMonth } from "@/lib/month";
 import { invalidateFinance, useInvestments } from "@/lib/queries";
 import type { InvestmentCategory } from "@/lib/types";
+import { SavingsHistoryDialog } from "./SavingsHistoryDialog";
 
 type Draft = { id?: number; name: string; goal: string; icon: string };
 
@@ -30,6 +31,7 @@ export default function InvestmentsPage() {
   const { openNew } = useQuickAdd();
   const [draft, setDraft] = useState<Draft | null>(null);
   const [saving, setSaving] = useState(false);
+  const [history, setHistory] = useState<{ id: number; name: string; key: number } | null>(null);
 
   async function save() {
     if (!draft || !draft.name.trim()) return;
@@ -124,6 +126,13 @@ export default function InvestmentsPage() {
                         <div>
                           <p className="text-xs text-muted-foreground">Acumulado</p>
                           <Money cents={c.accumulatedCents} className="text-xl font-bold" />
+                          <button
+                            type="button"
+                            onClick={() => setHistory({ id: c.categoryId, name: c.name, key: Date.now() })}
+                            className="block text-xs font-medium text-primary-text underline-offset-4 hover:underline"
+                          >
+                            Editar valor guardado
+                          </button>
                         </div>
                         <Button size="sm" onClick={() => openNew({ kind: "INVESTIMENTO", categoryId: c.categoryId })}>
                           <Plus /> Investir
@@ -163,6 +172,10 @@ export default function InvestmentsPage() {
             A Fynavero organiza o que você investe, mas não faz recomendação de investimento.
           </p>
         </>
+      )}
+
+      {history && (
+        <SavingsHistoryDialog key={history.key} categoryId={history.id} name={history.name} open onClose={() => setHistory(null)} />
       )}
 
       <Modal

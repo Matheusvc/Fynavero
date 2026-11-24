@@ -69,6 +69,12 @@ public class TransactionController {
                 r.truncated());
     }
 
+    /** Histórico completo de uma categoria: usado para ver e corrigir o que foi guardado em cada investimento. */
+    @GetMapping("/by-category/{categoryId}")
+    public List<TxDto> byCategory(@AuthenticationPrincipal AuthUser u, @PathVariable Long categoryId) {
+        return transactions.byCategory(u.id(), categoryId).stream().map(TxDto::of).toList();
+    }
+
     @GetMapping("/tags")
     public List<TagDto> tags(@AuthenticationPrincipal AuthUser u) {
         return transactions.tags(u.id()).stream().map(e -> new TagDto(e.getKey(), e.getValue())).toList();
@@ -105,6 +111,11 @@ public class TransactionController {
     @PostMapping("/{id}/mark-paid")
     public TxDto markPaid(@AuthenticationPrincipal AuthUser u, @PathVariable Long id) {
         return TxDto.of(transactions.markPaid(u.id(), id));
+    }
+
+    @PostMapping("/{id}/mark-unpaid")
+    public TxDto markUnpaid(@AuthenticationPrincipal AuthUser u, @PathVariable Long id) {
+        return TxDto.of(transactions.markUnpaid(u.id(), id));
     }
 
     @PostMapping("/{id}/installments")

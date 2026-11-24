@@ -7,9 +7,12 @@ import { useTxMutations } from "@/lib/queries";
 import type { Scope, Tx } from "@/lib/types";
 import { TransactionSheet, type NewOptions } from "./TransactionSheet";
 
+/** Tempo para o "Desfazer" depois de excluir ou marcar como pago. */
+export const UNDO_MS = 8000;
+
 /**
  * Lançamento rápido disponível em todo o app: abrir para lançar ou editar, perguntar
- * "Só este / Este e os próximos" e excluir com "Desfazer" por 4 segundos.
+ * "Só este / Este e os próximos / Todas as parcelas" e excluir com "Desfazer" por 8 segundos.
  */
 type Ctx = {
   openNew: (o?: NewOptions) => void;
@@ -53,7 +56,7 @@ export function QuickAddProvider({ children }: { children: ReactNode }) {
       try {
         const { ids } = await m.remove.mutateAsync({ id: tx.id, scope });
         toast(ids.length > 1 ? `${ids.length} lançamentos excluídos` : "Lançamento excluído", {
-          duration: 4000,
+          duration: UNDO_MS,
           action: {
             label: "Desfazer",
             onClick: () => {
@@ -81,6 +84,10 @@ export function QuickAddProvider({ children }: { children: ReactNode }) {
   );
 
   const close = () => setState((s) => ({ ...s, open: false }));
+  const answer = (s: Scope) => {
+    ask?.resolve(s);
+    setAsk(null);
+  };
 
   return (
     <QuickAddCtx.Provider value={value}>
@@ -112,32 +119,36 @@ export function QuickAddProvider({ children }: { children: ReactNode }) {
           ask?.action === "delete" ? "O que você quer excluir?" : "Onde você quer aplicar esta alteração?"
         }
         footer={
-          <>
-            <Button
-              variant="outline"
-              onClick={() => {
-                ask?.resolve("FOLLOWING");
-                setAsk(null);
-              }}
-            >
-              Este e os próximos
-            </Button>
-            <Button
-              variant={ask?.action === "delete" ? "destructive" : "primary"}
-              onClick={() => {
-                ask?.resolve("ONE");
-                setAsk(null);
-              }}
-            >
-              Só este
-            </Button>
-          </>
+          ask?.installment && ask.action === "delete" ? (
+            <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button variant="outline" onClick={() => answer("ONE")}>
+                Só esta parcela
+              </Button>
+              <Button variant="outline" onClick={() => answer("FOLLOWING")}>
+                Esta e as próximas
+              </Button>
+              <Button variant="destructive" onClick={() => answer("ALL")}>
+                Todas as parcelas
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Button variant="outline" onClick={() => answer("FOLLOWING")}>
+                {ask?.installment ? "Esta e as próximas" : "Este e os próximos"}
+              </Button>
+              <Button variant={ask?.action === "delete" ? "destructive" : "primary"} onClick={() => answer("ONE")}>
+                {ask?.installment ? "Só esta parcela" : "Só este"}
+              </Button>
+            </>
+          )
         }
       >
         <p className="text-sm text-muted-foreground">
-          {ask?.installment
-            ? "“Este e os próximos” vale para esta parcela e as seguintes."
-            : "“Este e os próximos” também muda os meses seguintes."}
+          {ask?.installment && ask.action === "delete"
+            ? "“Todas as parcelas” apaga a compra inteira de Parcelas e Dívidas. “Só esta parcela” apaga só a deste mês. Em qualquer caso dá para desfazer logo depois."
+            : ask?.installment
+              ? "“Esta e as próximas” vale para esta parcela e as seguintes."
+              : "“Este e os próximos” também muda os meses seguintes."}
         </p>
       </Modal>
     </QuickAddCtx.Provider>

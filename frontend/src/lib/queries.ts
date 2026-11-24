@@ -200,6 +200,14 @@ export function useTxMutations() {
       mutationFn: (id: number) => api<Tx>(`/api/transactions/${id}/mark-paid`, { method: "POST" }),
       onSuccess: done,
     }),
+    markUnpaid: useMutation({
+      mutationFn: (id: number) => api<Tx>(`/api/transactions/${id}/mark-unpaid`, { method: "POST" }),
+      onSuccess: done,
+    }),
+    removePlan: useMutation({
+      mutationFn: (planId: number) => api<{ ids: number[] }>(`/api/installment-plans/${planId}`, { method: "DELETE" }),
+      onSuccess: done,
+    }),
   };
 }
 

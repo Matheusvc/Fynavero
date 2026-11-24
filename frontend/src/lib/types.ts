@@ -3,7 +3,7 @@ export type Status = "REALIZADO" | "PREVISTO";
 export type Origin = "MANUAL" | "IMPORTADO";
 export type Objective = "ORGANIZAR" | "DIVIDAS" | "INVESTIR" | "OBJETIVO";
 export type PaymentMethod = "PIX" | "DINHEIRO" | "DEBITO" | "CREDITO" | "VA_VR" | "VT" | "BOLETO" | "TRANSFERENCIA";
-export type Scope = "ONE" | "FOLLOWING";
+export type Scope = "ONE" | "FOLLOWING" | "ALL";
 
 export type Contribution = { enabled: boolean; bps: number; categoryId?: number | null };
 

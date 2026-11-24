@@ -13,6 +13,7 @@ import { useGoalMutations, useGoals } from "@/lib/queries";
 import type { Goal } from "@/lib/types";
 import { GoalDialog } from "./GoalDialog";
 import { GoalProgress } from "./GoalCard";
+import { SavingsHistoryDialog } from "@/features/investments/SavingsHistoryDialog";
 
 /** Objetivos de economia: viagem, reserva, carro… com meta, prazo, progresso e quanto guardar por mês. */
 export default function GoalsPage() {
@@ -21,6 +22,7 @@ export default function GoalsPage() {
   const { openNew } = useQuickAdd();
   const [dialog, setDialog] = useState<{ goal: Goal | null; key: number } | null>(null);
   const [removing, setRemoving] = useState<Goal | null>(null);
+  const [history, setHistory] = useState<{ goal: Goal; key: number } | null>(null);
 
   const open = (goal: Goal | null) => setDialog({ goal, key: Date.now() });
   const totals = (goals.data ?? []).reduce((a, g) => ({ saved: a.saved + g.savedCents, target: a.target + g.targetCents }), { saved: 0, target: 0 });
@@ -78,6 +80,9 @@ export default function GoalsPage() {
                         <PiggyBank /> Guardar dinheiro
                       </Button>
                     )}
+                    <Button size="sm" variant="outline" onClick={() => setHistory({ goal: g, key: Date.now() })}>
+                      Valor guardado
+                    </Button>
                     <Button size="sm" variant="outline" onClick={() => open(g)}>
                       <Pencil /> Editar
                     </Button>
@@ -93,6 +98,9 @@ export default function GoalsPage() {
       )}
 
       {dialog && <GoalDialog key={dialog.key} goal={dialog.goal} open onClose={() => setDialog(null)} />}
+      {history && (
+        <SavingsHistoryDialog key={history.key} categoryId={history.goal.id} name={history.goal.name} open onClose={() => setHistory(null)} />
+      )}
 
       <Modal
         open={!!removing}

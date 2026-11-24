@@ -1,4 +1,5 @@
-import { CalendarClock, CircleCheck, Plus } from "lucide-react";
+import { useState } from "react";
+import { CalendarClock, CircleCheck, Plus, Trash2 } from "lucide-react";
 import { Money } from "@/components/Money";
 import { Bars } from "@/components/charts/Bars";
 import { useQuickAdd } from "@/features/transactions/quick-add/QuickAddProvider";
@@ -12,6 +13,9 @@ import { errorMessage } from "@/lib/api";
 import { CategoryIcon } from "@/lib/icons";
 import { useMonth } from "@/lib/month";
 import { useCategories, useInstallments } from "@/lib/queries";
+import { Modal } from "@/components/ui/dialog";
+import { useUndoable } from "@/features/transactions/quick-add/useUndoable";
+import type { Plan } from "@/lib/types";
 import { monthName } from "@/lib/format";
 
 export default function InstallmentsPage() {
@@ -20,6 +24,9 @@ export default function InstallmentsPage() {
   const cats = useCategories();
   const { openNew } = useQuickAdd();
   const catById = new Map((cats.data ?? []).map((c) => [c.id, c]));
+  const undoable = useUndoable();
+  const [removing, setRemoving] = useState<Plan | null>(null);
+  const planName = (p: Plan) => p.description || catById.get(p.categoryId)?.name || "Parcelamento";
 
   const action = (
     <Button onClick={() => openNew({ kind: "DESPESA", installments: true })}>
@@ -119,6 +126,11 @@ export default function InstallmentsPage() {
                         <dd className="font-semibold">{p.lastMonth}</dd>
                       </div>
                     </dl>
+                    <div className="flex justify-end border-t pt-2">
+                      <Button variant="ghost" size="sm" onClick={() => setRemoving(p)} aria-label={`Excluir ${planName(p)}`}>
+                        <Trash2 /> Excluir parcelamento
+                      </Button>
+                    </div>
                   </Card>
                 </li>
               );
@@ -134,6 +146,9 @@ export default function InstallmentsPage() {
                     <span className="flex-1">{p.description || catById.get(p.categoryId)?.name}</span>
                     <Badge tone="positive">Quitado</Badge>
                     <Money cents={p.totalCents} />
+                    <Button variant="ghost" size="icon" onClick={() => setRemoving(p)} aria-label={`Excluir ${planName(p)}`}>
+                      <Trash2 />
+                    </Button>
                   </li>
                 ))}
               </ul>
@@ -141,6 +156,31 @@ export default function InstallmentsPage() {
           )}
         </section>
       )}
+
+      <Modal
+        open={!!removing}
+        onOpenChange={(o) => !o && setRemoving(null)}
+        title="Excluir este parcelamento?"
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setRemoving(null)}>Cancelar</Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (removing) undoable.deletePlan(removing.id, planName(removing));
+                setRemoving(null);
+              }}
+            >
+              <Trash2 /> Excluir todas as parcelas
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-muted-foreground">
+          “{removing ? planName(removing) : ""}” sai de Parcelas e Dívidas, junto com as {removing?.count} parcelas em Lançamentos.
+          Se foi sem querer, use “Desfazer” logo em seguida.
+        </p>
+      </Modal>
     </div>
   );
 }
