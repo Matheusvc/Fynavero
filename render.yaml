@@ -1,11 +1,13 @@
 # Blueprint da Render: cria o app (Docker) e o PostgreSQL de uma vez.
 # Na Render: New › Blueprint › escolha este repositório. Depois preencha as variáveis marcadas como sync: false.
-# Confira os planos em render.com/pricing antes de criar (os nomes abaixo eram os vigentes ao escrever).
+# Planos GRÁTIS, só para testar: o site dorme após ~15 min sem visitas (os e-mails das 8h podem não sair)
+# e o banco grátis expira em ~30 dias. Antes de abrir para pessoas de verdade, troque no painel da Render:
+# site para "starter" e banco para "basic-256mb" (ou mude aqui e publique). Confira em render.com/pricing.
 services:
   - type: web
     name: fynavero
     runtime: docker
-    plan: starter
+    plan: free
     healthCheckPath: /actuator/health
     autoDeploy: true
     envVars:
@@ -30,6 +32,6 @@ services:
 
 databases:
   - name: fynavero-db
-    plan: basic-256mb
+    plan: free
     databaseName: fynavero
     user: fynavero

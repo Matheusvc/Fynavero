@@ -37,6 +37,8 @@ O remetente de `MAIL_FROM` precisa ser do domínio verificado.
 
 ### Opção A: Render (recomendada para começar)
 
+O `render.yaml` vem com os planos **grátis**, para testar. Limites do grátis: o site dorme após ~15 min sem visitas (a primeira visita depois demora ~1 min e os e-mails agendados podem não sair) e o banco expira em ~30 dias. Antes de abrir para pessoas de verdade, mude no painel da Render o site para **Starter** e o banco para **Basic**.
+
 1. Crie a conta em render.com e conecte o GitHub.
 2. **New › Blueprint**, escolha o repositório `Fynavero`. O arquivo `render.yaml` cria o app e o PostgreSQL.
 3. Preencha as variáveis pedidas: `APP_BASE_URL` (ex.: `https://fynavero.onrender.com`, ou o seu domínio) e as do e-mail (passo 1).

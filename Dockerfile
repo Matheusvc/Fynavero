@@ -30,6 +30,6 @@ USER app
 ENV SPRING_PROFILES_ACTIVE=postgres \
     COOKIE_SECURE=true \
     FORWARD_HEADERS_STRATEGY=framework \
-    JAVA_OPTS="-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError"
+    JAVA_OPTS="-XX:MaxRAMPercentage=75 -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError"
 EXPOSE 8080
 ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]
