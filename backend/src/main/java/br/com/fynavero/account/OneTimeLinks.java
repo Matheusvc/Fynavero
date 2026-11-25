@@ -13,7 +13,7 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.HexFormat;
 
-import static br.com.fynavero.common.Errors.badRequest;
+import static br.com.fynavero.shared.Errors.badRequest;
 
 /**
  * Tokens dos links enviados por e-mail (entrar sem senha, redefinir senha, confirmar e-mail, "Marcar como paga"):

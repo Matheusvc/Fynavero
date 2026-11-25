@@ -1,6 +1,6 @@
 package br.com.fynavero.account;
 
-import br.com.fynavero.domain.Objective;
+import br.com.fynavero.account.Objective;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

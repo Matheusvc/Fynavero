@@ -3,7 +3,7 @@ package br.com.fynavero.planning;
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryDtos.CategoryReq;
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.domain.Kind;
+import br.com.fynavero.ledger.Kind;
 import br.com.fynavero.ledger.LedgerCalendar;
 import br.com.fynavero.ledger.LedgerDtos.TxReq;
 import br.com.fynavero.ledger.Transaction;
@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static br.com.fynavero.common.Errors.badRequest;
-import static br.com.fynavero.common.Errors.notFound;
+import static br.com.fynavero.shared.Errors.badRequest;
+import static br.com.fynavero.shared.Errors.notFound;
 
 /**
  * Objetivos de economia (viagem, reserva, carro…). Cada objetivo é uma categoria de investimento com meta e

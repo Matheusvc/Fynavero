@@ -4,8 +4,8 @@ import br.com.fynavero.account.AccountService;
 import br.com.fynavero.account.Profile;
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.common.Mailer;
-import br.com.fynavero.config.AppProperties;
+import br.com.fynavero.shared.Mailer;
+import br.com.fynavero.shared.AppProperties;
 import br.com.fynavero.ledger.LedgerCalendar;
 import br.com.fynavero.ledger.Transaction;
 import br.com.fynavero.overview.MonthSummaryService;
@@ -23,11 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static br.com.fynavero.common.EmailLayout.button;
-import static br.com.fynavero.common.EmailLayout.esc;
-import static br.com.fynavero.common.EmailLayout.page;
-import static br.com.fynavero.common.Formats.brl;
-import static br.com.fynavero.common.Formats.monthInText;
+import static br.com.fynavero.shared.Mailer.button;
+import static br.com.fynavero.shared.Mailer.esc;
+import static br.com.fynavero.shared.Mailer.page;
+import static br.com.fynavero.shared.Formats.brl;
+import static br.com.fynavero.shared.Formats.monthInText;
 
 /**
  * E-mails de aviso: lembrete de contas que vencem amanhã, limites de categoria e resumo do mês.

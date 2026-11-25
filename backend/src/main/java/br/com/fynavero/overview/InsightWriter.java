@@ -1,9 +1,9 @@
 package br.com.fynavero.overview;
 
-import br.com.fynavero.calc.FinanceCalculator.MonthTotals;
+import br.com.fynavero.ledger.FinanceCalculator.MonthTotals;
 import br.com.fynavero.category.Category;
-import br.com.fynavero.domain.Kind;
-import br.com.fynavero.domain.Objective;
+import br.com.fynavero.ledger.Kind;
+import br.com.fynavero.account.Objective;
 import br.com.fynavero.ledger.Transaction;
 import br.com.fynavero.ledger.TransactionRepository;
 import br.com.fynavero.overview.OverviewDtos.UpcomingDto;
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static br.com.fynavero.common.Formats.brl;
+import static br.com.fynavero.shared.Formats.brl;
 
 /** Até 3 dicas do Início, em linguagem simples, personalizadas pelos objetivos escolhidos. */
 @Component

@@ -1,11 +1,11 @@
 package br.com.fynavero.ledger;
 
-import br.com.fynavero.calc.FinanceCalculator;
+import br.com.fynavero.ledger.FinanceCalculator;
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.domain.Kind;
-import br.com.fynavero.domain.Origin;
-import br.com.fynavero.domain.PaymentMethod;
+import br.com.fynavero.ledger.Kind;
+import br.com.fynavero.ledger.Origin;
+import br.com.fynavero.ledger.PaymentMethod;
 import br.com.fynavero.ledger.LedgerDtos.InstallmentConvertReq;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,9 +16,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import static br.com.fynavero.common.Errors.badRequest;
-import static br.com.fynavero.common.Errors.notFound;
-import static br.com.fynavero.common.Texts.trimOrNull;
+import static br.com.fynavero.shared.Errors.badRequest;
+import static br.com.fynavero.shared.Errors.notFound;
+import static br.com.fynavero.shared.Formats.trimOrNull;
 
 /** Compras parceladas e dívidas: cria as parcelas mês a mês, converte lançamentos e muda o número de parcelas. */
 @Service

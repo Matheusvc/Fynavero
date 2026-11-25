@@ -1,6 +1,6 @@
 package br.com.fynavero.category;
 
-import br.com.fynavero.domain.Kind;
+import br.com.fynavero.ledger.Kind;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

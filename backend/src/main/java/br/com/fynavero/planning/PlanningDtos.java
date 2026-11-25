@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
-import static br.com.fynavero.common.ApiLimits.MAX_CENTS;
+import static br.com.fynavero.shared.Formats.MAX_CENTS;
 
 /** Contratos de limites por categoria e objetivos de economia. Valores em centavos; percentuais em pontos-base. */
 public final class PlanningDtos {

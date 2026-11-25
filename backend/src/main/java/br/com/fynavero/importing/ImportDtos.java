@@ -1,7 +1,7 @@
 package br.com.fynavero.importing;
 
-import br.com.fynavero.domain.Kind;
-import br.com.fynavero.domain.PaymentMethod;
+import br.com.fynavero.ledger.Kind;
+import br.com.fynavero.ledger.PaymentMethod;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -15,7 +15,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
-import static br.com.fynavero.common.ApiLimits.MAX_CENTS;
+import static br.com.fynavero.shared.Formats.MAX_CENTS;
 
 /** A planilha é lida no navegador; a API recebe só as linhas já revisadas e com categoria definida. */
 public final class ImportDtos {

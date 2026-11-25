@@ -86,12 +86,15 @@ Código organizado **por funcionalidade** nas duas pontas. Detalhes, regras de c
 
 ```
 backend/src/main/java/br/com/fynavero/
-  account/  category/  ledger/  income/  onboarding/  overview/  report/  importing/
-            ← cada pasta: entidade, repositório, DTOs, serviço e controlador REST
-  calc/FinanceCalculator.java   ← único módulo de cálculo (Início, Relatórios e exportação)
-  security/                     ← sessão por cookie httpOnly, CSRF, bloqueio após 5 tentativas, Google
-  common/  config/  domain/     ← erros em português, formatação pt-BR, propriedades e enums
-  demo/                         ← contas de exemplo
+  account/       ← perfil, login, links por e-mail, primeiro acesso, LGPD
+  category/      ← categorias
+  ledger/        ← lançamentos, recorrências, parcelas, renda e o FinanceCalculator (único módulo de cálculo)
+  importing/     ← importação de planilhas
+  overview/      ← Início, Parcelas, Investimentos e Relatórios
+  planning/      ← limites por categoria e objetivos
+  notification/  ← sino, e-mails agendados e "Marcar como paga"
+  security/      ← sessão, CSRF, limite de tentativas, Google
+  shared/        ← erros, formatação pt-BR, e-mail, configuração e contas de exemplo
 backend/src/main/resources/db/migration   ← esquema e catálogo de categorias (Flyway)
 
 frontend/src/

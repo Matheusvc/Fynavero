@@ -1,9 +1,9 @@
 package br.com.fynavero.ledger;
 
-import br.com.fynavero.domain.Kind;
-import br.com.fynavero.domain.Origin;
-import br.com.fynavero.domain.PaymentMethod;
-import br.com.fynavero.domain.Status;
+import br.com.fynavero.ledger.Kind;
+import br.com.fynavero.ledger.Origin;
+import br.com.fynavero.ledger.PaymentMethod;
+import br.com.fynavero.ledger.Status;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

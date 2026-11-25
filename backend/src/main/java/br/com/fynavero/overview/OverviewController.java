@@ -1,6 +1,6 @@
 package br.com.fynavero.overview;
 
-import br.com.fynavero.config.AppProperties;
+import br.com.fynavero.shared.AppProperties;
 import br.com.fynavero.overview.OverviewDtos.DashboardDto;
 import br.com.fynavero.overview.OverviewDtos.InstallmentsDto;
 import br.com.fynavero.overview.OverviewDtos.InvestmentsDto;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import static br.com.fynavero.common.Formats.parseMonth;
+import static br.com.fynavero.shared.Formats.parseMonth;
 
 @RestController
 @RequestMapping("/api")

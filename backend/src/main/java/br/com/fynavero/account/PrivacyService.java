@@ -5,8 +5,8 @@ import br.com.fynavero.account.AccountDtos.DeleteAccountReq;
 import br.com.fynavero.category.CategoryDtos.CategoryDto;
 import br.com.fynavero.category.CategoryRepository;
 import br.com.fynavero.importing.ImportBatchRepository;
-import br.com.fynavero.income.IncomeSourceRepository;
-import br.com.fynavero.income.IncomeSourceService;
+import br.com.fynavero.ledger.IncomeSourceRepository;
+import br.com.fynavero.ledger.IncomeSourceService;
 import br.com.fynavero.ledger.InstallmentPlanRepository;
 import br.com.fynavero.ledger.LedgerDtos.RecurrenceDto;
 import br.com.fynavero.ledger.LedgerDtos.TxDto;
@@ -22,7 +22,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
-import static br.com.fynavero.common.Errors.badRequest;
+import static br.com.fynavero.shared.Errors.badRequest;
 
 /** Direitos da LGPD: portabilidade (exportar tudo) e exclusão definitiva da conta. */
 @Service

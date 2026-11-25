@@ -4,10 +4,10 @@ import br.com.fynavero.account.AccountDtos.ContributionDto;
 import br.com.fynavero.account.AccountDtos.PasswordReq;
 import br.com.fynavero.account.AccountDtos.ProfileReq;
 import br.com.fynavero.account.AccountDtos.RegisterReq;
-import br.com.fynavero.calc.FinanceCalculator.Contribution;
+import br.com.fynavero.ledger.FinanceCalculator.Contribution;
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.domain.Kind;
+import br.com.fynavero.ledger.Kind;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.Locale;
 
-import static br.com.fynavero.common.Errors.badRequest;
-import static br.com.fynavero.common.Errors.notFound;
+import static br.com.fynavero.shared.Errors.badRequest;
+import static br.com.fynavero.shared.Errors.notFound;
 
 /** Cadastro, perfil, senha e configuração da contribuição automática. */
 @Service

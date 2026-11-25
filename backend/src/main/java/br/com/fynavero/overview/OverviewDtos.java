@@ -1,6 +1,6 @@
 package br.com.fynavero.overview;
 
-import br.com.fynavero.calc.FinanceCalculator.MonthTotals;
+import br.com.fynavero.ledger.FinanceCalculator.MonthTotals;
 
 import java.time.LocalDate;
 import java.util.List;

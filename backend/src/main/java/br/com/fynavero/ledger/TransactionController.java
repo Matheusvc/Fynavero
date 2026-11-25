@@ -1,10 +1,10 @@
 package br.com.fynavero.ledger;
 
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.config.AppProperties;
-import br.com.fynavero.domain.Kind;
-import br.com.fynavero.domain.PaymentMethod;
-import br.com.fynavero.domain.Scope;
+import br.com.fynavero.shared.AppProperties;
+import br.com.fynavero.ledger.Kind;
+import br.com.fynavero.ledger.PaymentMethod;
+import br.com.fynavero.ledger.Scope;
 import br.com.fynavero.ledger.LedgerDtos.DeletedDto;
 import br.com.fynavero.ledger.LedgerDtos.IdsReq;
 import br.com.fynavero.ledger.LedgerDtos.InstallmentConvertReq;
@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.util.List;
 
-import static br.com.fynavero.common.Formats.parseMonth;
+import static br.com.fynavero.shared.Formats.parseMonth;
 
 @RestController
 @RequestMapping("/api/transactions")

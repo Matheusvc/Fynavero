@@ -2,11 +2,11 @@ package br.com.fynavero.ledger;
 
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.domain.Kind;
-import br.com.fynavero.domain.Origin;
-import br.com.fynavero.domain.PaymentMethod;
-import br.com.fynavero.domain.Scope;
-import br.com.fynavero.domain.Status;
+import br.com.fynavero.ledger.Kind;
+import br.com.fynavero.ledger.Origin;
+import br.com.fynavero.ledger.PaymentMethod;
+import br.com.fynavero.ledger.Scope;
+import br.com.fynavero.ledger.Status;
 import br.com.fynavero.ledger.LedgerDtos.InstallmentConvertReq;
 import br.com.fynavero.ledger.LedgerDtos.LoanRepayment;
 import br.com.fynavero.ledger.LedgerDtos.TxReq;
@@ -24,10 +24,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static br.com.fynavero.common.Errors.badRequest;
-import static br.com.fynavero.common.Errors.notFound;
-import static br.com.fynavero.common.Texts.fold;
-import static br.com.fynavero.common.Texts.trimOrNull;
+import static br.com.fynavero.shared.Errors.badRequest;
+import static br.com.fynavero.shared.Errors.notFound;
+import static br.com.fynavero.shared.Formats.fold;
+import static br.com.fynavero.shared.Formats.trimOrNull;
 
 /** Lançamentos: consulta, criação (simples, recorrente, parcelada, empréstimo), edição e exclusão reversível. */
 @Service

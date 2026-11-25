@@ -1,6 +1,6 @@
 package br.com.fynavero.notification;
 
-import br.com.fynavero.common.Mailer;
+import br.com.fynavero.shared.Mailer;
 import br.com.fynavero.ledger.LedgerCalendar;
 import br.com.fynavero.notification.NotificationDtos.ActionDto;
 import br.com.fynavero.notification.NotificationDtos.NotificationDto;

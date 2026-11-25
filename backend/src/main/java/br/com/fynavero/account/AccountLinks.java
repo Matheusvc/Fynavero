@@ -1,9 +1,8 @@
 package br.com.fynavero.account;
 
 import br.com.fynavero.account.AccountToken.Purpose;
-import br.com.fynavero.common.EmailLayout;
-import br.com.fynavero.common.Mailer;
-import br.com.fynavero.config.AppProperties;
+import br.com.fynavero.shared.Mailer;
+import br.com.fynavero.shared.AppProperties;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.session.FindByIndexNameSessionRepository;
@@ -13,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.Instant;
 
-import static br.com.fynavero.common.Errors.notFound;
+import static br.com.fynavero.shared.Errors.notFound;
 
 /**
  * Links da conta enviados por e-mail: entrar sem senha (15 min), redefinir senha (1 h) e confirmar e-mail (2 dias).
@@ -118,10 +117,10 @@ public class AccountLinks {
     private void send(Profile p, String subject, String title, String textIntro, String htmlIntro, String buttonLabel,
                       String link, String footnote) {
         String text = "Olá, " + p.firstName() + "!\n\n" + textIntro + "\n\n" + link + "\n\n" + footnote;
-        String html = EmailLayout.page(title,
-                "<p>Olá, " + EmailLayout.esc(p.firstName()) + "! " + EmailLayout.esc(htmlIntro) + "</p><p>"
-                        + EmailLayout.button(buttonLabel, link)
-                        + "</p><p style=\"color:#646464;font-size:13px\">" + EmailLayout.esc(footnote) + "</p>",
+        String html = Mailer.page(title,
+                "<p>Olá, " + Mailer.esc(p.firstName()) + "! " + Mailer.esc(htmlIntro) + "</p><p>"
+                        + Mailer.button(buttonLabel, link)
+                        + "</p><p style=\"color:#646464;font-size:13px\">" + Mailer.esc(footnote) + "</p>",
                 props.baseUrl() + "/configuracoes#notificacoes");
         mailer.send(p.email, subject, text, html);
     }

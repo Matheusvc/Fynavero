@@ -1,6 +1,6 @@
 package br.com.fynavero.planning;
 
-import br.com.fynavero.config.AppProperties;
+import br.com.fynavero.shared.AppProperties;
 import br.com.fynavero.planning.PlanningDtos.BudgetDto;
 import br.com.fynavero.planning.PlanningDtos.GoalDto;
 import br.com.fynavero.planning.PlanningDtos.GoalReq;
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import static br.com.fynavero.common.Formats.parseMonth;
+import static br.com.fynavero.shared.Formats.parseMonth;
 
 @RestController
 @RequestMapping("/api")

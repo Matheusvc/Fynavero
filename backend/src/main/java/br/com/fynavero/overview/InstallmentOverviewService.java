@@ -1,6 +1,6 @@
 package br.com.fynavero.overview;
 
-import br.com.fynavero.domain.Kind;
+import br.com.fynavero.ledger.Kind;
 import br.com.fynavero.ledger.InstallmentPlan;
 import br.com.fynavero.ledger.InstallmentPlanRepository;
 import br.com.fynavero.ledger.LedgerCalendar;
@@ -23,8 +23,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static br.com.fynavero.common.Formats.monthName;
-import static br.com.fynavero.common.Formats.monthTag;
+import static br.com.fynavero.shared.Formats.monthName;
+import static br.com.fynavero.shared.Formats.monthTag;
 import static br.com.fynavero.overview.LedgerFigures.byMonth;
 
 /** Tela Parcelas e Dívidas: cada parcelamento com progresso e a linha do tempo dos próximos 12 meses. */

@@ -1,10 +1,10 @@
 package br.com.fynavero.planning;
 
 import br.com.fynavero.account.AccountService;
-import br.com.fynavero.calc.FinanceCalculator;
+import br.com.fynavero.ledger.FinanceCalculator;
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.domain.Kind;
+import br.com.fynavero.ledger.Kind;
 import br.com.fynavero.ledger.TransactionService;
 import br.com.fynavero.planning.PlanningDtos.BudgetDto;
 import br.com.fynavero.planning.PlanningDtos.BudgetLevel;

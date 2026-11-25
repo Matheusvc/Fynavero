@@ -1,7 +1,7 @@
 package br.com.fynavero.security;
 
 import br.com.fynavero.account.ProfileRepository;
-import br.com.fynavero.config.AppProperties;
+import br.com.fynavero.shared.AppProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;

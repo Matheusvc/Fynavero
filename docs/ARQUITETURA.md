@@ -8,28 +8,21 @@ navegador ── React (features/*) ── React Query ── /api ── Contro
                                                      calc/FinanceCalculator (puro, sem banco)
 ```
 
-## Back-end: pacotes por funcionalidade
+## Back-end: 9 pacotes por área de negócio
 
 Cada pasta junta tudo de um assunto: entidade, repositório, DTOs, serviço e controlador. Um assunto só usa outro pelo serviço público dele, nunca pelo repositório.
 
 | Pacote | Responsabilidade |
 |---|---|
-| `config` | `AppProperties` (`app.*`), `Clock` injetável e o fallback da SPA para `index.html` |
-| `common` | Erros HTTP (`Errors`), formatação pt-BR (`Formats`), textos (`Texts`), limites da API e o `@RestControllerAdvice` com mensagens em português |
-| `domain` | Enums compartilhados: `Kind`, `Status`, `Origin`, `Objective`, `PaymentMethod`, `Scope` |
-| `security` | Cadeia de filtros, sessão por cookie, CSRF para SPA, bloqueio após 5 senhas erradas, login com Google |
-| `account` | Perfil, cadastro, login por senha e por link mágico, contribuição, troca de senha, LGPD (exportar e excluir) |
+| `account` | Perfil, cadastro e login (senha, link por e-mail, Google), confirmação de e-mail, "Esqueci minha senha", primeiro acesso (onboarding), contribuição e LGPD (exportar e excluir). Links enviados por e-mail ficam numa única tabela (`OneTimeLinks`) |
 | `category` | Catálogo de sugestões e categorias de cada pessoa (incluindo "Empréstimo" e "Pagamento de empréstimo") |
-| `ledger` | Lançamentos, recorrências (contas fixas) e planos de parcelas; datas do calendário financeiro em `LedgerCalendar` |
-| `income` | Fontes de renda; renda variável vira recorrência "(valor estimado)" |
-| `onboarding` | Primeiro acesso: objetivos, renda, contas fixas e contribuição em uma única chamada |
-| `overview` | Leituras do Início, Parcelas e Dívidas e Investimentos (`LedgerFigures` + `InsightWriter`) |
+| `ledger` | O núcleo financeiro: lançamentos, recorrências (contas fixas), parcelamentos, fontes de renda, etiquetas, os tipos básicos (`Kind`, `Status`…) e o `FinanceCalculator`, **único** lugar com fórmulas financeiras |
+| `importing` | Lotes de importação de planilha (confirmar e desfazer o lote inteiro) |
+| `overview` | Telas de leitura: Início, Parcelas e Dívidas, Investimentos, resumo do mês e Relatórios (com exportação em Excel/PDF) |
 | `planning` | Limites de gasto por categoria (alerta em 80% e 100%) e objetivos de economia com meta e prazo |
 | `notification` | Sino de avisos, preferências, e-mails agendados (contas de amanhã, limites, resumo do dia 1) e o link "Marcar como paga" |
-| `report` | Relatório anual, comparação de meses e exportação em Excel/PDF |
-| `importing` | Lotes de importação de planilha (confirmar e desfazer o lote inteiro) |
-| `demo` | Contas de exemplo, criadas só quando `DEMO_DATA=true` |
-| `calc` | `FinanceCalculator`: o **único** lugar com fórmulas financeiras |
+| `security` | Cadeia de filtros, sessão por cookie, CSRF para SPA, limite de tentativas (`RateLimiter`), login com Google |
+| `shared` | Infraestrutura comum: erros em português (`Errors`, `ApiExceptionHandler`), formatação pt-BR (`Formats`), envio de e-mail com o modelo visual (`Mailer`), configuração (`AppProperties`, `WebConfig`, `DatabaseUrlProcessor`) e contas de exemplo (`DemoDataSeeder`) |
 
 ### Regras de cálculo
 

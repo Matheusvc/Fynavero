@@ -2,8 +2,8 @@ package br.com.fynavero.importing;
 
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.domain.Kind;
-import br.com.fynavero.domain.Origin;
+import br.com.fynavero.ledger.Kind;
+import br.com.fynavero.ledger.Origin;
 import br.com.fynavero.importing.ImportDtos.DuplicateCandidate;
 import br.com.fynavero.importing.ImportDtos.DuplicateCheckDto;
 import br.com.fynavero.importing.ImportDtos.ImportBatchDto;
@@ -23,10 +23,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static br.com.fynavero.common.Errors.badRequest;
-import static br.com.fynavero.common.Errors.notFound;
-import static br.com.fynavero.common.Texts.fold;
-import static br.com.fynavero.common.Texts.trimOrNull;
+import static br.com.fynavero.shared.Errors.badRequest;
+import static br.com.fynavero.shared.Errors.notFound;
+import static br.com.fynavero.shared.Formats.fold;
+import static br.com.fynavero.shared.Formats.trimOrNull;
 
 /**
  * Importação em lote. Cada importação vira um {@link ImportBatch} que pode ser desfeito sem afetar outros lançamentos.

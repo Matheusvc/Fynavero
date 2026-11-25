@@ -1,12 +1,12 @@
 package br.com.fynavero.overview;
 
 import br.com.fynavero.account.AccountService;
-import br.com.fynavero.calc.FinanceCalculator;
-import br.com.fynavero.calc.FinanceCalculator.Contribution;
-import br.com.fynavero.calc.FinanceCalculator.MonthTotals;
+import br.com.fynavero.ledger.FinanceCalculator;
+import br.com.fynavero.ledger.FinanceCalculator.Contribution;
+import br.com.fynavero.ledger.FinanceCalculator.MonthTotals;
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.domain.Kind;
+import br.com.fynavero.ledger.Kind;
 import br.com.fynavero.ledger.Transaction;
 import br.com.fynavero.ledger.TransactionService;
 import org.springframework.stereotype.Service;

@@ -2,7 +2,7 @@ package br.com.fynavero.category;
 
 import br.com.fynavero.category.CategoryDtos.CatalogDto;
 import br.com.fynavero.category.CategoryDtos.CategoryReq;
-import br.com.fynavero.domain.Kind;
+import br.com.fynavero.ledger.Kind;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,8 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static br.com.fynavero.common.Errors.badRequest;
-import static br.com.fynavero.common.Errors.notFound;
+import static br.com.fynavero.shared.Errors.badRequest;
+import static br.com.fynavero.shared.Errors.notFound;
 
 @Service
 public class CategoryService {

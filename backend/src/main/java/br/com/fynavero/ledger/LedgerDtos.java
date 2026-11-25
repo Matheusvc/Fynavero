@@ -1,9 +1,9 @@
 package br.com.fynavero.ledger;
 
-import br.com.fynavero.domain.Kind;
-import br.com.fynavero.domain.Origin;
-import br.com.fynavero.domain.PaymentMethod;
-import br.com.fynavero.domain.Status;
+import br.com.fynavero.ledger.Kind;
+import br.com.fynavero.ledger.Origin;
+import br.com.fynavero.ledger.PaymentMethod;
+import br.com.fynavero.ledger.Status;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -15,7 +15,7 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
 
-import static br.com.fynavero.common.ApiLimits.MAX_CENTS;
+import static br.com.fynavero.shared.Formats.MAX_CENTS;
 
 /** Contratos da API de lançamentos, recorrências e parcelamentos. Valores em centavos; datas AAAA-MM-DD. */
 public final class LedgerDtos {

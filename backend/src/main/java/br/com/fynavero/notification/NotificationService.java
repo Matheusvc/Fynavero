@@ -4,9 +4,9 @@ import br.com.fynavero.account.AccountService;
 import br.com.fynavero.account.Profile;
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.common.Mailer;
-import br.com.fynavero.domain.Kind;
-import br.com.fynavero.domain.Status;
+import br.com.fynavero.shared.Mailer;
+import br.com.fynavero.ledger.Kind;
+import br.com.fynavero.ledger.Status;
 import br.com.fynavero.ledger.LedgerCalendar;
 import br.com.fynavero.ledger.Transaction;
 import br.com.fynavero.ledger.TransactionService;
@@ -28,8 +28,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import static br.com.fynavero.common.Formats.brl;
-import static br.com.fynavero.common.Formats.monthInText;
+import static br.com.fynavero.shared.Formats.brl;
+import static br.com.fynavero.shared.Formats.monthInText;
 
 /** Central de avisos (o sino): contas vencidas, de hoje e de amanhã, e limites de categoria perto do fim. */
 @Service

@@ -32,7 +32,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.Duration;
 import java.util.Locale;
 
-import static br.com.fynavero.common.Errors.unauthorized;
+import static br.com.fynavero.shared.Errors.unauthorized;
 
 /** Cadastro e login (e-mail e senha ou link mágico). A saída (/api/auth/logout) é tratada pelo Spring Security. */
 @RestController

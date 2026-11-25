@@ -2,7 +2,7 @@ package br.com.fynavero.overview;
 
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.domain.Kind;
+import br.com.fynavero.ledger.Kind;
 import br.com.fynavero.ledger.RecurrenceService;
 import br.com.fynavero.ledger.Transaction;
 import br.com.fynavero.ledger.TransactionRepository;
@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static br.com.fynavero.common.Formats.monthTag;
+import static br.com.fynavero.shared.Formats.monthTag;
 
 /** Tela Investimentos: total do mês, acumulado por categoria, progresso da meta e histórico de 12 meses. */
 @Service

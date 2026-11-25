@@ -1,6 +1,6 @@
 package br.com.fynavero.account;
 
-import br.com.fynavero.domain.Objective;
+import br.com.fynavero.account.Objective;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;

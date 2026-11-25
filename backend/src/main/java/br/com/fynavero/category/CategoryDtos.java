@@ -1,6 +1,6 @@
 package br.com.fynavero.category;
 
-import br.com.fynavero.domain.Kind;
+import br.com.fynavero.ledger.Kind;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -11,7 +11,7 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
 
-import static br.com.fynavero.common.ApiLimits.MAX_CENTS;
+import static br.com.fynavero.shared.Formats.MAX_CENTS;
 
 public final class CategoryDtos {
     private CategoryDtos() {}

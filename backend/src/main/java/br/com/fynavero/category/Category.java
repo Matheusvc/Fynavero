@@ -1,6 +1,6 @@
 package br.com.fynavero.category;
 
-import br.com.fynavero.domain.Kind;
+import br.com.fynavero.ledger.Kind;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

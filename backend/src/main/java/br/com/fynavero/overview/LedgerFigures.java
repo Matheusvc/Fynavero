@@ -1,6 +1,6 @@
 package br.com.fynavero.overview;
 
-import br.com.fynavero.calc.FinanceCalculator.Entry;
+import br.com.fynavero.ledger.FinanceCalculator.Entry;
 import br.com.fynavero.ledger.Transaction;
 
 import java.time.YearMonth;
@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/** Converte lançamentos na entrada do {@link br.com.fynavero.calc.FinanceCalculator} e agrupa por mês. */
+/** Converte lançamentos na entrada do {@link br.com.fynavero.ledger.FinanceCalculator} e agrupa por mês. */
 public final class LedgerFigures {
     private LedgerFigures() {}
 

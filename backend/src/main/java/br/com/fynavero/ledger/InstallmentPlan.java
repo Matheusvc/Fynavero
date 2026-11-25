@@ -1,6 +1,6 @@
 package br.com.fynavero.ledger;
 
-import br.com.fynavero.domain.PaymentMethod;
+import br.com.fynavero.ledger.PaymentMethod;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
