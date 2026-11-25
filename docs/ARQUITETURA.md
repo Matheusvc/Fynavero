@@ -10,13 +10,15 @@ navegador ── React (features/*) ── React Query ── /api ── Contro
 
 ## Back-end: 9 pacotes por área de negócio
 
+Cada pacote segue o mesmo molde: entidades e repositórios, serviços, **um único controller** (a API daquele assunto) e **um único arquivo de DTOs**. Tipos básicos ficam aninhados em quem os possui: `Transaction.Kind`, `Transaction.Status`, `Transaction.PaymentMethod`, `Profile.Objective`, `AccountToken.Purpose`. Ao todo, 77 classes.
+
 Cada pasta junta tudo de um assunto: entidade, repositório, DTOs, serviço e controlador. Um assunto só usa outro pelo serviço público dele, nunca pelo repositório.
 
 | Pacote | Responsabilidade |
 |---|---|
 | `account` | Perfil, cadastro e login (senha, link por e-mail, Google), confirmação de e-mail, "Esqueci minha senha", primeiro acesso (onboarding), contribuição e LGPD (exportar e excluir). Links enviados por e-mail ficam numa única tabela (`OneTimeLinks`) |
 | `category` | Catálogo de sugestões e categorias de cada pessoa (incluindo "Empréstimo" e "Pagamento de empréstimo") |
-| `ledger` | O núcleo financeiro: lançamentos, recorrências (contas fixas), parcelamentos, fontes de renda, etiquetas, os tipos básicos (`Kind`, `Status`…) e o `FinanceCalculator`, **único** lugar com fórmulas financeiras |
+| `ledger` | O núcleo financeiro: lançamentos, recorrências (contas fixas), parcelamentos, fontes de renda, etiquetas, os tipos básicos (`Transaction.Kind`, `Transaction.Status`…) e o `FinanceCalculator`, **único** lugar com fórmulas financeiras |
 | `importing` | Lotes de importação de planilha (confirmar e desfazer o lote inteiro) |
 | `overview` | Telas de leitura: Início, Parcelas e Dívidas, Investimentos, resumo do mês e Relatórios (com exportação em Excel/PDF) |
 | `planning` | Limites de gasto por categoria (alerta em 80% e 100%) e objetivos de economia com meta e prazo |

@@ -1,20 +1,18 @@
 package br.com.fynavero.account;
 
-import br.com.fynavero.account.AccountService;
-import br.com.fynavero.account.Profile;
 import br.com.fynavero.category.CatalogItem;
 import br.com.fynavero.category.CatalogItemRepository;
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.ledger.Kind;
-import br.com.fynavero.ledger.IncomeDtos.IncomeSourceReq;
+import br.com.fynavero.ledger.Transaction.Kind;
+import br.com.fynavero.ledger.LedgerDtos.IncomeSourceReq;
 import br.com.fynavero.ledger.IncomeSourceService;
 import br.com.fynavero.ledger.LedgerCalendar;
 import br.com.fynavero.ledger.RecurrenceService;
-import br.com.fynavero.account.OnboardingDtos.CustomCategoryInput;
-import br.com.fynavero.account.OnboardingDtos.FixedBillInput;
-import br.com.fynavero.account.OnboardingDtos.IncomeInput;
-import br.com.fynavero.account.OnboardingDtos.OnboardingReq;
+import br.com.fynavero.account.AccountDtos.CustomCategoryInput;
+import br.com.fynavero.account.AccountDtos.FixedBillInput;
+import br.com.fynavero.account.AccountDtos.IncomeInput;
+import br.com.fynavero.account.AccountDtos.OnboardingReq;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

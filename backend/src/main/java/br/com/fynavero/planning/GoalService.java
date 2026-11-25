@@ -3,7 +3,7 @@ package br.com.fynavero.planning;
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryDtos.CategoryReq;
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.ledger.Kind;
+import br.com.fynavero.ledger.Transaction.Kind;
 import br.com.fynavero.ledger.LedgerCalendar;
 import br.com.fynavero.ledger.LedgerDtos.TxReq;
 import br.com.fynavero.ledger.Transaction;

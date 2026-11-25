@@ -2,11 +2,11 @@ package br.com.fynavero.ledger;
 
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.ledger.Kind;
-import br.com.fynavero.ledger.Origin;
-import br.com.fynavero.ledger.PaymentMethod;
-import br.com.fynavero.ledger.Scope;
-import br.com.fynavero.ledger.Status;
+import br.com.fynavero.ledger.Transaction.Kind;
+import br.com.fynavero.ledger.Transaction.Origin;
+import br.com.fynavero.ledger.Transaction.PaymentMethod;
+import br.com.fynavero.ledger.Transaction.Scope;
+import br.com.fynavero.ledger.Transaction.Status;
 import br.com.fynavero.ledger.LedgerDtos.InstallmentConvertReq;
 import br.com.fynavero.ledger.LedgerDtos.LoanRepayment;
 import br.com.fynavero.ledger.LedgerDtos.TxReq;

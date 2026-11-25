@@ -1,7 +1,7 @@
 package br.com.fynavero.importing;
 
-import br.com.fynavero.ledger.Kind;
-import br.com.fynavero.ledger.PaymentMethod;
+import br.com.fynavero.ledger.Transaction.Kind;
+import br.com.fynavero.ledger.Transaction.PaymentMethod;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

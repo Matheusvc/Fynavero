@@ -4,7 +4,7 @@ import br.com.fynavero.account.AccountService;
 import br.com.fynavero.ledger.FinanceCalculator;
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.ledger.Kind;
+import br.com.fynavero.ledger.Transaction.Kind;
 import br.com.fynavero.ledger.TransactionService;
 import br.com.fynavero.planning.PlanningDtos.BudgetDto;
 import br.com.fynavero.planning.PlanningDtos.BudgetLevel;

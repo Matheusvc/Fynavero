@@ -2,7 +2,7 @@ package br.com.fynavero.overview;
 
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.ledger.Kind;
+import br.com.fynavero.ledger.Transaction.Kind;
 import br.com.fynavero.ledger.RecurrenceService;
 import br.com.fynavero.ledger.Transaction;
 import br.com.fynavero.ledger.TransactionRepository;

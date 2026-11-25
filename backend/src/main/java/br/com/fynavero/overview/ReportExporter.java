@@ -1,8 +1,8 @@
 package br.com.fynavero.overview;
 
-import br.com.fynavero.overview.ReportDtos.AnnualReport;
-import br.com.fynavero.overview.ReportDtos.ReportGroup;
-import br.com.fynavero.overview.ReportDtos.ReportRow;
+import br.com.fynavero.overview.OverviewDtos.AnnualReport;
+import br.com.fynavero.overview.OverviewDtos.ReportGroup;
+import br.com.fynavero.overview.OverviewDtos.ReportRow;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;

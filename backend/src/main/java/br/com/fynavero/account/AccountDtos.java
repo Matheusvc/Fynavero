@@ -1,14 +1,18 @@
 package br.com.fynavero.account;
 
-import br.com.fynavero.account.Objective;
+import br.com.fynavero.account.AccountDtos.ContributionDto;
+import br.com.fynavero.account.Profile.Objective;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
-
+import jakarta.validation.Valid;
 import java.util.List;
+import static br.com.fynavero.shared.Formats.MAX_CENTS;
 
 /** Contratos da API de conta, login e perfil. */
 public final class AccountDtos {
@@ -48,4 +52,28 @@ public final class AccountDtos {
     public record PasswordReq(String current, @NotBlank @Size(min = 8, max = 72) String next) {}
 
     public record DeleteAccountReq(@NotBlank String confirm, String password) {}
+
+    // ---------------------------------------------------------------- Onboarding
+    public record IncomeInput(@NotBlank @Size(max = 60) String name,
+                              @PositiveOrZero @Max(MAX_CENTS) long amountCents,
+                              boolean fixed,
+                              @Min(1) @Max(31) Integer day) {}
+
+    public record CustomCategoryInput(@NotBlank @Size(max = 60) String name,
+                                      @NotBlank @Size(max = 40) String icon,
+                                      @NotBlank @Size(max = 30) String group) {}
+
+    /** categoryKey: "catalog:{id}" ou "custom:{nome}", referência às categorias escolhidas na tela 3. */
+    public record FixedBillInput(@NotBlank @Size(max = 60) String name,
+                                 @Positive @Max(MAX_CENTS) long amountCents,
+                                 @Min(1) @Max(31) int day,
+                                 @NotBlank String categoryKey) {}
+
+    public record OnboardingReq(@Size(max = 100) String name,
+                                @Size(max = 4) List<Objective> objectives,
+                                @Valid @Size(max = 20) List<IncomeInput> incomes,
+                                @Size(max = 60) List<Long> catalogIds,
+                                @Valid @Size(max = 30) List<CustomCategoryInput> customCategories,
+                                @Valid @Size(max = 30) List<FixedBillInput> fixedBills,
+                                @Valid ContributionDto contribution) {}
 }

@@ -7,7 +7,7 @@ import br.com.fynavero.account.AccountDtos.RegisterReq;
 import br.com.fynavero.ledger.FinanceCalculator.Contribution;
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.ledger.Kind;
+import br.com.fynavero.ledger.Transaction.Kind;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

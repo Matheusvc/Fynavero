@@ -5,7 +5,7 @@ import br.com.fynavero.account.AccountToken.Purpose;
 import br.com.fynavero.account.OneTimeLinks;
 import br.com.fynavero.category.CategoryService;
 import br.com.fynavero.shared.AppProperties;
-import br.com.fynavero.ledger.Status;
+import br.com.fynavero.ledger.Transaction.Status;
 import br.com.fynavero.ledger.Transaction;
 import br.com.fynavero.ledger.TransactionService;
 import br.com.fynavero.notification.NotificationDtos.ActionDto;

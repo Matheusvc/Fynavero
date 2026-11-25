@@ -1,6 +1,6 @@
 package br.com.fynavero.ledger;
 
-import br.com.fynavero.ledger.Kind;
+import br.com.fynavero.ledger.Transaction.Kind;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

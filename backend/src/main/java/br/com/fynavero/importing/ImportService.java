@@ -2,8 +2,8 @@ package br.com.fynavero.importing;
 
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.ledger.Kind;
-import br.com.fynavero.ledger.Origin;
+import br.com.fynavero.ledger.Transaction.Kind;
+import br.com.fynavero.ledger.Transaction.Origin;
 import br.com.fynavero.importing.ImportDtos.DuplicateCandidate;
 import br.com.fynavero.importing.ImportDtos.DuplicateCheckDto;
 import br.com.fynavero.importing.ImportDtos.ImportBatchDto;

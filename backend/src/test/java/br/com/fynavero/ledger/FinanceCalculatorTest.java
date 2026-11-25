@@ -3,7 +3,7 @@ package br.com.fynavero.ledger;
 import br.com.fynavero.ledger.FinanceCalculator.Contribution;
 import br.com.fynavero.ledger.FinanceCalculator.Entry;
 import br.com.fynavero.ledger.FinanceCalculator.MonthTotals;
-import br.com.fynavero.ledger.Kind;
+import br.com.fynavero.ledger.Transaction.Kind;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

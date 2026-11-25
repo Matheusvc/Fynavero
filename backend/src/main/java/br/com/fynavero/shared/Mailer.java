@@ -1,6 +1,5 @@
 package br.com.fynavero.shared;
 
-import br.com.fynavero.shared.AppProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.mail.MessagingException;
@@ -138,7 +137,6 @@ public class Mailer {
     }
 
     // ------------------------------------------------------------------ moldura HTML dos e-mails (estilos inline)
-
 
     public static final String ORANGE = "#E85002";
     public static final String DARK = "#333333";

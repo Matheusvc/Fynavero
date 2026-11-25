@@ -1,9 +1,9 @@
 package br.com.fynavero.ledger;
 
-import br.com.fynavero.ledger.Kind;
-import br.com.fynavero.ledger.Origin;
-import br.com.fynavero.ledger.PaymentMethod;
-import br.com.fynavero.ledger.Status;
+import br.com.fynavero.ledger.Transaction.Kind;
+import br.com.fynavero.ledger.Transaction.Origin;
+import br.com.fynavero.ledger.Transaction.PaymentMethod;
+import br.com.fynavero.ledger.Transaction.Status;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -23,6 +23,24 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "transactions")
 public class Transaction {
+    /** Tipo de lançamento e de categoria. */
+    public enum Kind { DESPESA, RECEITA, INVESTIMENTO }
+
+    /** Realizado (já aconteceu) ou Previsto (data futura, recorrência ou parcela). */
+    public enum Status { REALIZADO, PREVISTO }
+
+    /** Como o lançamento foi criado. */
+    public enum Origin { MANUAL, IMPORTADO }
+
+    /** Formas de pagamento aceitas. */
+    public enum PaymentMethod { PIX, DINHEIRO, DEBITO, CREDITO, VA_VR, VT, BOLETO, TRANSFERENCIA }
+
+    /**
+     * "Só este", "Este e os próximos" ou "Todas" ao editar ou excluir lançamentos recorrentes e parcelados.
+     * ALL só existe na exclusão de parcelas: apaga a compra parcelada inteira (todas as parcelas).
+     */
+    public enum Scope { ONE, FOLLOWING, ALL }
+
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) public Long id;
     @Column(name = "user_id") public Long userId;
     @Enumerated(EnumType.STRING) public Kind kind;

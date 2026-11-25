@@ -1,6 +1,6 @@
 package br.com.fynavero.overview;
 
-import br.com.fynavero.ledger.Kind;
+import br.com.fynavero.ledger.Transaction.Kind;
 import br.com.fynavero.ledger.InstallmentPlan;
 import br.com.fynavero.ledger.InstallmentPlanRepository;
 import br.com.fynavero.ledger.LedgerCalendar;

@@ -1,6 +1,6 @@
 package br.com.fynavero.ledger;
 
-import br.com.fynavero.ledger.Status;
+import br.com.fynavero.ledger.Transaction.Status;
 import org.springframework.stereotype.Component;
 
 import java.time.Clock;

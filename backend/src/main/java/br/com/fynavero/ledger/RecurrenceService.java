@@ -2,9 +2,9 @@ package br.com.fynavero.ledger;
 
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.ledger.Kind;
-import br.com.fynavero.ledger.Origin;
-import br.com.fynavero.ledger.PaymentMethod;
+import br.com.fynavero.ledger.Transaction.Kind;
+import br.com.fynavero.ledger.Transaction.Origin;
+import br.com.fynavero.ledger.Transaction.PaymentMethod;
 import br.com.fynavero.ledger.LedgerDtos.RecurrenceReq;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

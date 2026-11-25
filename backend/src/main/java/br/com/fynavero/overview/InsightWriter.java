@@ -2,8 +2,8 @@ package br.com.fynavero.overview;
 
 import br.com.fynavero.ledger.FinanceCalculator.MonthTotals;
 import br.com.fynavero.category.Category;
-import br.com.fynavero.ledger.Kind;
-import br.com.fynavero.account.Objective;
+import br.com.fynavero.ledger.Transaction.Kind;
+import br.com.fynavero.account.Profile.Objective;
 import br.com.fynavero.ledger.Transaction;
 import br.com.fynavero.ledger.TransactionRepository;
 import br.com.fynavero.overview.OverviewDtos.UpcomingDto;

@@ -1,6 +1,5 @@
 package br.com.fynavero.account;
 
-import br.com.fynavero.account.Objective;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -18,6 +17,9 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "profiles")
 public class Profile {
+    /** Objetivos escolhidos no onboarding; personalizam as dicas do Início. */
+    public enum Objective { ORGANIZAR, DIVIDAS, INVESTIR, OBJETIVO }
+
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) public Long id;
     public String email;
     @Column(name = "password_hash") public String passwordHash;

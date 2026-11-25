@@ -1,7 +1,6 @@
 package br.com.fynavero.overview;
 
 import br.com.fynavero.ledger.FinanceCalculator.MonthTotals;
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -45,4 +44,19 @@ public final class OverviewDtos {
 
     public record InvestmentsDto(String month, long monthTotal, long accumulatedTotal,
                                  List<InvestmentCategoryDto> categories, List<MonthBarDto> history) {}
+
+    // ---------------------------------------------------------------- Report
+    public record ReportRow(Long categoryId, String label, long[] months, long total, long average) {}
+
+    public record ReportGroup(String group, List<ReportRow> rows, ReportRow subtotal) {}
+
+    public record AnnualReport(int year, List<String> monthLabels, List<ReportRow> receitas,
+                               List<ReportRow> emprestimos,
+                               List<ReportGroup> despesas, ReportRow totalDespesas,
+                               List<ReportRow> investimentos, ReportRow totalInvestido,
+                               List<ReportRow> resultado) {}
+
+    public record CompareRow(Long categoryId, String label, long current, long previous, long average) {}
+
+    public record CompareReport(String month, String previousMonth, List<CompareRow> totals, List<CompareRow> categories) {}
 }

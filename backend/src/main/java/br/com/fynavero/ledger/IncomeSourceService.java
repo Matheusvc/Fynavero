@@ -2,13 +2,10 @@ package br.com.fynavero.ledger;
 
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
-import br.com.fynavero.ledger.Kind;
-import br.com.fynavero.ledger.IncomeDtos.IncomeSourceDto;
-import br.com.fynavero.ledger.IncomeDtos.IncomeSourceReq;
-import br.com.fynavero.ledger.LedgerCalendar;
+import br.com.fynavero.ledger.Transaction.Kind;
+import br.com.fynavero.ledger.LedgerDtos.IncomeSourceDto;
+import br.com.fynavero.ledger.LedgerDtos.IncomeSourceReq;
 import br.com.fynavero.ledger.LedgerDtos.RecurrenceReq;
-import br.com.fynavero.ledger.RecurrenceRepository;
-import br.com.fynavero.ledger.RecurrenceService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

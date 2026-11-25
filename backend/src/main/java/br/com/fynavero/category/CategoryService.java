@@ -2,7 +2,7 @@ package br.com.fynavero.category;
 
 import br.com.fynavero.category.CategoryDtos.CatalogDto;
 import br.com.fynavero.category.CategoryDtos.CategoryReq;
-import br.com.fynavero.ledger.Kind;
+import br.com.fynavero.ledger.Transaction.Kind;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
