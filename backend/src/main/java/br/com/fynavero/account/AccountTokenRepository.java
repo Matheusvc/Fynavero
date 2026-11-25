@@ -16,4 +16,6 @@ public interface AccountTokenRepository extends JpaRepository<AccountToken, Long
     @Modifying
     @Query("update AccountToken t set t.usedAt = :now where t.userId = :userId and t.purpose = :purpose and t.usedAt is null")
     int invalidate(@Param("userId") Long userId, @Param("purpose") Purpose purpose, @Param("now") Instant now);
+
+    void deleteByUserId(Long userId);
 }

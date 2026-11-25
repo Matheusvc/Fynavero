@@ -38,6 +38,11 @@ public class Profile {
     @Column(name = "terms_accepted_at") public Instant termsAcceptedAt;
     @Column(name = "created_at") public Instant createdAt;
 
+    /** Primeiro nome para cumprimentos em e-mails ("Olá, Ana!"). */
+    public String firstName() {
+        return name == null || name.isBlank() ? "tudo bem" : name.strip().split(" +")[0];
+    }
+
     public List<Objective> objectives() {
         if (objectivesCsv == null || objectivesCsv.isBlank()) return List.of();
         return Arrays.stream(objectivesCsv.split(","))

@@ -8,7 +8,6 @@ import br.com.fynavero.account.AccountDtos.RegisterReq;
 import br.com.fynavero.account.AccountDtos.ResetPasswordReq;
 import br.com.fynavero.account.AccountDtos.TokenReq;
 import br.com.fynavero.security.AuthUser;
-import br.com.fynavero.security.LoginThrottle;
 import br.com.fynavero.security.RateLimiter;
 import br.com.fynavero.security.SessionAuthenticator;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,27 +39,22 @@ import static br.com.fynavero.common.Errors.unauthorized;
 @RequestMapping("/api/auth")
 public class AuthController {
     private final AccountService accounts;
-    private final MagicLinkService magicLinks;
     private final AuthenticationManager authManager;
     private final SessionAuthenticator sessions;
-    private final LoginThrottle throttle;
     private final ObjectProvider<ClientRegistrationRepository> oauth;
-    private final AccountEmails emails;
+    private final AccountLinks emails;
     private final RateLimiter limiter;
 
     private static final Duration HOUR = Duration.ofHours(1);
     private static final String TOO_MANY = "Muitos pedidos seguidos. Espere um pouco e tente de novo.";
 
-    public AuthController(AccountService accounts, MagicLinkService magicLinks, AuthenticationManager authManager,
-                          SessionAuthenticator sessions, LoginThrottle throttle,
-                          ObjectProvider<ClientRegistrationRepository> oauth, AccountEmails emails, RateLimiter limiter) {
+    public AuthController(AccountService accounts, AuthenticationManager authManager, SessionAuthenticator sessions,
+                          ObjectProvider<ClientRegistrationRepository> oauth, AccountLinks emails, RateLimiter limiter) {
         this.emails = emails;
         this.limiter = limiter;
         this.accounts = accounts;
-        this.magicLinks = magicLinks;
         this.authManager = authManager;
         this.sessions = sessions;
-        this.throttle = throttle;
         this.oauth = oauth;
     }
 
@@ -77,7 +71,7 @@ public class AuthController {
 
     @GetMapping("/providers")
     public Providers providers() {
-        return new Providers(oauth.getIfAvailable() != null, magicLinks.enabled());
+        return new Providers(oauth.getIfAvailable() != null, true);
     }
 
     @GetMapping("/me")
@@ -102,24 +96,25 @@ public class AuthController {
     @PostMapping("/login")
     public Me login(@Valid @RequestBody LoginReq body, HttpServletRequest req, HttpServletResponse res) {
         String email = body.email().strip();
-        if (throttle.isBlocked(email)) {
+        String failKey = "login-fail:" + email.toLowerCase(Locale.ROOT);
+        if (limiter.isLimited(failKey, 5, Duration.ofMinutes(15))) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Muitas tentativas. Tente de novo em 15 minutos.");
         }
         Authentication auth;
         try {
             auth = authManager.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(email, body.password()));
         } catch (AuthenticationException e) {
-            throttle.failure(email);
+            limiter.hit(failKey);
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "E-mail ou senha incorretos.");
         }
-        throttle.success(email);
+        limiter.reset(failKey);
         return signIn(accounts.require(((AuthUser) auth.getPrincipal()).id()), req, res);
     }
 
     @PostMapping("/magic-link")
     public ResponseEntity<Void> magicLink(@Valid @RequestBody EmailReq body, HttpServletRequest req) {
         limitEmails(body.email(), req);
-        magicLinks.request(body.email());
+        emails.requestMagicLink(body.email());
         return ResponseEntity.noContent().build();
     }
 
@@ -136,7 +131,7 @@ public class AuthController {
     public Me resetPassword(@Valid @RequestBody ResetPasswordReq body, HttpServletRequest req, HttpServletResponse res) {
         limiter.check("reset:" + req.getRemoteAddr(), 20, HOUR, TOO_MANY);
         Profile p = emails.resetPassword(body.token(), body.password());
-        throttle.success(p.email);
+        limiter.reset("login-fail:" + p.email.toLowerCase(Locale.ROOT));
         return signIn(p, req, res);
     }
 
@@ -164,6 +159,6 @@ public class AuthController {
 
     @PostMapping("/magic-link/consume")
     public Me consume(@Valid @RequestBody TokenReq body, HttpServletRequest req, HttpServletResponse res) {
-        return signIn(magicLinks.consume(body.token()), req, res);
+        return signIn(emails.consumeMagicLink(body.token()), req, res);
     }
 }

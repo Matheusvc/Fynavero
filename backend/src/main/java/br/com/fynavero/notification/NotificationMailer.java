@@ -84,7 +84,7 @@ public class NotificationMailer {
                 ? "Amanhã vence: " + NotificationService.billName(bills.getFirst(), cats) + " (" + brl(total) + ")"
                 : "Amanhã vencem " + bills.size() + " contas (" + brl(total) + ")";
 
-        StringBuilder text = new StringBuilder("Olá, " + firstName(p) + "!\n\nEstas contas vencem amanhã:\n\n");
+        StringBuilder text = new StringBuilder("Olá, " + p.firstName() + "!\n\nEstas contas vencem amanhã:\n\n");
         StringBuilder rows = new StringBuilder();
         for (Transaction t : bills) {
             String name = NotificationService.billName(t, cats);
@@ -98,7 +98,7 @@ public class NotificationMailer {
         }
         text.append("\nVer tudo na Fynavero: ").append(props.baseUrl()).append("\n");
         String html = page(bills.size() == 1 ? "Uma conta vence amanhã" : bills.size() + " contas vencem amanhã",
-                "<p>Olá, " + esc(firstName(p)) + "! Para não esquecer:</p>"
+                "<p>Olá, " + esc(p.firstName()) + "! Para não esquecer:</p>"
                         + "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">" + rows + "</table>"
                         + "<p style=\"margin-top:16px\">Total: <strong>" + esc(brl(total)) + "</strong></p>",
                 settingsUrl());
@@ -133,7 +133,7 @@ public class NotificationMailer {
         String subject = fresh.size() == 1
                 ? NotificationService.limitNotification(fresh.getFirst(), month).title()
                 : fresh.size() + " categorias perto do limite em " + monthInText(month);
-        StringBuilder text = new StringBuilder("Olá, " + firstName(p) + "!\n\n");
+        StringBuilder text = new StringBuilder("Olá, " + p.firstName() + "!\n\n");
         StringBuilder rows = new StringBuilder();
         for (BudgetDto b : fresh) {
             var n = NotificationService.limitNotification(b, month);
@@ -146,7 +146,7 @@ public class NotificationMailer {
                     .append(color).append(";width:").append(width).append("%;height:8px;border-radius:4px\"></div></div>");
         }
         text.append("\nVer na Fynavero: ").append(props.baseUrl()).append("\n");
-        String html = page("Seus limites de " + monthInText(month), "<p>Olá, " + esc(firstName(p))
+        String html = page("Seus limites de " + monthInText(month), "<p>Olá, " + esc(p.firstName())
                 + "! Algumas categorias estão chegando ao limite que você definiu:</p>" + rows
                 + "<p style=\"margin-top:20px\">" + button("Ver meus gastos", props.baseUrl()) + "</p>", settingsUrl());
         if (!mailer.send(p.email, subject, text.toString(), html)) return 0;
@@ -178,7 +178,7 @@ public class NotificationMailer {
         String result = s.saldo() >= 0 ? "Sobrou " + brl(s.saldo()) : "Faltou " + brl(-s.saldo());
         String top = s.topCategory() == null ? "Nenhuma despesa lançada"
                 : s.topCategory() + " (" + brl(s.topCategoryCents()) + ")";
-        String text = "Olá, " + firstName(p) + "! Este é o resumo de " + month + ":\n\n"
+        String text = "Olá, " + p.firstName() + "! Este é o resumo de " + month + ":\n\n"
                 + "Entrou: " + brl(s.receitas()) + "\n"
                 + "Saiu: " + brl(s.despesas()) + "\n"
                 + "Investido: " + brl(s.investido()) + "\n"
@@ -186,7 +186,7 @@ public class NotificationMailer {
                 + "Maior categoria de gasto: " + top + "\n\n"
                 + "Ver o relatório completo: " + props.baseUrl() + "/relatorios\n";
         String html = page("Seu resumo de " + month,
-                "<p>Olá, " + esc(firstName(p)) + "! Veja como foi " + esc(month) + ":</p>"
+                "<p>Olá, " + esc(p.firstName()) + "! Veja como foi " + esc(month) + ":</p>"
                         + "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"font-size:15px\">"
                         + row("Entrou", brl(s.receitas()), compare(s.receitas(), s.previous().receitas()))
                         + row("Saiu", brl(s.despesas()), compare(s.despesas(), s.previous().despesas()))
@@ -232,10 +232,5 @@ public class NotificationMailer {
 
     private String settingsUrl() {
         return props.baseUrl() + "/configuracoes#notificacoes";
-    }
-
-    private static String firstName(Profile p) {
-        if (p.name == null || p.name.isBlank()) return "tudo bem";
-        return p.name.strip().split("\\s+")[0];
     }
 }

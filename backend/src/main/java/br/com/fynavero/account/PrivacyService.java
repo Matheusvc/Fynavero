@@ -36,14 +36,14 @@ public class PrivacyService {
     private final InstallmentPlanRepository plans;
     private final TransactionRepository transactions;
     private final ImportBatchRepository batches;
-    private final MagicLinkTokenRepository magicLinks;
+    private final AccountTokenRepository links;
     private final PasswordEncoder encoder;
 
     public PrivacyService(AccountService accounts, ProfileRepository profiles, CategoryRepository categories,
                           IncomeSourceService incomeSources, IncomeSourceRepository incomeRepo,
                           RecurrenceRepository recurrences, InstallmentPlanRepository plans,
                           TransactionRepository transactions, ImportBatchRepository batches,
-                          MagicLinkTokenRepository magicLinks, PasswordEncoder encoder) {
+                          AccountTokenRepository links, PasswordEncoder encoder) {
         this.accounts = accounts;
         this.profiles = profiles;
         this.categories = categories;
@@ -53,7 +53,7 @@ public class PrivacyService {
         this.plans = plans;
         this.transactions = transactions;
         this.batches = batches;
-        this.magicLinks = magicLinks;
+        this.links = links;
         this.encoder = encoder;
     }
 
@@ -96,7 +96,7 @@ public class PrivacyService {
         recurrences.deleteByUserId(userId);
         plans.deleteByUserId(userId);
         batches.deleteByUserId(userId);
-        magicLinks.deleteByUserId(userId);
+        links.deleteByUserId(userId);
         categories.deleteByUserId(userId);
         profiles.delete(p);
     }

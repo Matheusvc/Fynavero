@@ -13,8 +13,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Limite de pedidos por chave (IP ou e-mail) numa janela de tempo: segura robôs criando contas em massa ou
- * disparando e-mails. Fica na memória do servidor — suficiente para uma instância; com várias, usar Redis.
+ * Limite de eventos por chave (IP, e-mail, conta) numa janela de tempo: cadastros, pedidos de link e senhas
+ * erradas. Fica na memória do servidor — suficiente para uma instância; com várias, usar Redis.
  */
 @Component
 public class RateLimiter {
@@ -22,23 +22,39 @@ public class RateLimiter {
 
     /** Registra o pedido e lança 429 se a chave já passou de {@code max} pedidos na janela. */
     public void check(String key, int max, Duration window, String message) {
-        if (!tryAcquire(key, max, window)) throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, message);
-    }
-
-    public boolean tryAcquire(String key, int max, Duration window) {
-        Instant now = Instant.now();
-        Instant limit = now.minus(window);
         boolean[] allowed = {false};
         hits.compute(key, (k, q) -> {
-            Deque<Instant> d = q == null ? new ArrayDeque<>() : q;
-            while (!d.isEmpty() && d.peekFirst().isBefore(limit)) d.pollFirst();
+            Deque<Instant> d = prune(q, window);
             if (d.size() < max) {
-                d.addLast(now);
+                d.addLast(Instant.now());
                 allowed[0] = true;
             }
             return d;
         });
-        return allowed[0];
+        if (!allowed[0]) throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, message);
+    }
+
+    /** Já houve {@code max} eventos na janela? (não registra nada) */
+    public boolean isLimited(String key, int max, Duration window) {
+        Deque<Instant> d = hits.computeIfPresent(key, (k, q) -> prune(q, window));
+        return d != null && d.size() >= max;
+    }
+
+    /** Registra um evento (ex.: senha errada). */
+    public void hit(String key) {
+        hits.computeIfAbsent(key, k -> new ArrayDeque<>()).addLast(Instant.now());
+    }
+
+    /** Zera a contagem (ex.: login certo depois de erros). */
+    public void reset(String key) {
+        hits.remove(key);
+    }
+
+    private static Deque<Instant> prune(Deque<Instant> q, Duration window) {
+        Deque<Instant> d = q == null ? new ArrayDeque<>() : q;
+        Instant limit = Instant.now().minus(window);
+        while (!d.isEmpty() && d.peekFirst().isBefore(limit)) d.pollFirst();
+        return d;
     }
 
     @Scheduled(fixedRate = 3_600_000)
