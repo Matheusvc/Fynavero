@@ -15,7 +15,6 @@ import jakarta.validation.Valid;
 import java.time.Duration;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,17 +27,15 @@ import java.util.List;
 public class NotificationController {
     private final NotificationService notifications;
     private final NotificationMailer mailer;
-    private final NotificationService actions;
     private final LedgerCalendar calendar;
     private final Mailer mail;
     private final RateLimiter limiter;
 
-    public NotificationController(NotificationService notifications, NotificationMailer mailer, NotificationService actions,
+    public NotificationController(NotificationService notifications, NotificationMailer mailer,
                                   LedgerCalendar calendar, Mailer mail, RateLimiter limiter) {
         this.limiter = limiter;
         this.notifications = notifications;
         this.mailer = mailer;
-        this.actions = actions;
         this.calendar = calendar;
         this.mail = mail;
     }
@@ -71,13 +68,13 @@ public class NotificationController {
     @PostMapping("/api/actions/describe")
     public ActionDto describe(@Valid @RequestBody ActionReq body, HttpServletRequest req) {
         limitActions(req);
-        return actions.describe(body.token());
+        return notifications.describe(body.token());
     }
 
     @PostMapping("/api/actions/pay")
     public ActionDto pay(@Valid @RequestBody ActionReq body, HttpServletRequest req) {
         limitActions(req);
-        return actions.pay(body.token());
+        return notifications.pay(body.token());
     }
 
     private void limitActions(HttpServletRequest req) {

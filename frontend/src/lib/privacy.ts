@@ -21,7 +21,7 @@ export function valuesHidden() {
   return hidden;
 }
 
-export function setValuesHidden(v: boolean) {
+function setValuesHidden(v: boolean) {
   hidden = v;
   try {
     localStorage.setItem(KEY, v ? "1" : "0");

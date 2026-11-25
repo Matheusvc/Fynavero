@@ -31,6 +31,7 @@ import java.util.Map;
 import static br.com.fynavero.shared.Errors.badRequest;
 import static br.com.fynavero.shared.Errors.notFound;
 import static br.com.fynavero.shared.Formats.fold;
+import static br.com.fynavero.shared.Formats.paletteColor;
 import static br.com.fynavero.shared.Formats.trimOrNull;
 
 /** Lançamentos: consulta, criação (simples, recorrente, parcelada, empréstimo), edição e exclusão reversível. */
@@ -139,7 +140,7 @@ public class TransactionService {
     public TagDto setTagColor(Long userId, String rawTag, String rawColor) {
         String tag = Tags.clean(rawTag);
         if (tag == null) throw badRequest("Informe a etiqueta.");
-        String color = br.com.fynavero.shared.Formats.paletteColor(rawColor);
+        String color = paletteColor(rawColor);
         var current = tagColors.findByUserIdAndTag(userId, tag);
         if (color == null) current.ifPresent(tagColors::delete);
         else {
@@ -149,8 +150,7 @@ public class TransactionService {
             c.color = color;
             tagColors.save(c);
         }
-        int uses = (int) transactions.findAllActive(userId).stream().filter(t -> Tags.list(t.tags).contains(tag)).count();
-        return new TagDto(tag, uses, color);
+        return tags(userId).stream().filter(t -> t.tag().equals(tag)).findFirst().orElse(new TagDto(tag, 0, color));
     }
 
     /** Todos os lançamentos de uma categoria, do mais novo para o mais antigo (ex.: o que já foi guardado num objetivo). */

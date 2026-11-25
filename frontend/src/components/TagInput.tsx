@@ -124,7 +124,7 @@ export function TagInput({
 }
 
 /** Classe e estilo de uma etiqueta: tingida pela cor escolhida, ou neutra. */
-export function tagLook(color?: string | null): { className: string; style?: CSSProperties } {
+function tagLook(color?: string | null): { className: string; style?: CSSProperties } {
   return color
     ? { className: "tag-tinted border text-foreground", style: { "--tag-color": cssColor(color) } as CSSProperties }
     : { className: "border border-transparent bg-accent text-accent-foreground" };

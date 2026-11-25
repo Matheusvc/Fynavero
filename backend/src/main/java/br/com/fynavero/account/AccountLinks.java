@@ -13,9 +13,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HexFormat;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import static br.com.fynavero.shared.Errors.badRequest;
@@ -32,15 +30,13 @@ public class AccountLinks {
     private final PasswordEncoder encoder;
     private final Mailer mailer;
     private final AppProperties props;
-    private final ObjectProvider<FindByIndexNameSessionRepository<?>> sessions;
     private final AccountTokenRepository tokens;
 
-    public AccountLinks(ProfileRepository profiles, PasswordEncoder encoder, Mailer mailer, AppProperties props, ObjectProvider<FindByIndexNameSessionRepository<?>> sessions, AccountTokenRepository tokens) {
+    public AccountLinks(ProfileRepository profiles, PasswordEncoder encoder, Mailer mailer, AppProperties props, AccountTokenRepository tokens) {
         this.profiles = profiles;
         this.encoder = encoder;
         this.mailer = mailer;
         this.props = props;
-        this.sessions = sessions;
         this.tokens = tokens;
     }
 
@@ -82,14 +78,12 @@ public class AccountLinks {
         });
     }
 
-    /** Troca a senha, invalida outros links de senha e encerra as sessões abertas (quando ficam no banco). */
+    /** Troca a senha e invalida outros links de senha (as sessões abertas são encerradas pelo controller). */
     @Transactional
     public Profile resetPassword(String token, String newPassword) {
         Profile p = confirmed(consume(token, Purpose.RESET_PASSWORD, RESET_INVALID).userId);
         p.passwordHash = encoder.encode(newPassword);
         invalidate(p.id, Purpose.RESET_PASSWORD);
-        FindByIndexNameSessionRepository<?> repo = sessions.getIfAvailable();
-        if (repo != null) repo.findByPrincipalName(p.email).keySet().forEach(repo::deleteById);
         return p;
     }
 

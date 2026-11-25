@@ -10,7 +10,7 @@ navegador ── React (features/*) ── React Query ── /api ── Contro
 
 ## Back-end: 9 pacotes por área de negócio
 
-Cada pacote segue o mesmo molde: entidades (cada uma com o seu repositório Spring Data no mesmo arquivo, ex.: `Transaction.TransactionRepository`), poucos serviços, **um único controller** e **um único arquivo de DTOs**. Tipos básicos ficam aninhados em quem os possui (`Transaction.Kind`, `Transaction.Status`, `Profile.Objective`, `AccountToken.Purpose`). Ao todo, 59 classes.
+Cada pacote segue o mesmo molde: entidades (cada uma com o seu repositório Spring Data no mesmo arquivo, ex.: `Transaction.TransactionRepository`), poucos serviços, **um único controller** e **um único arquivo de DTOs**. Tipos básicos ficam aninhados em quem os possui (`Transaction.Kind`, `Transaction.Status`, `Profile.Objective`, `AccountToken.Purpose`). Ao todo, 61 classes. Proteções de segurança e os testes de cada uma: [SEGURANCA.md](SEGURANCA.md).
 
 Cada pasta junta tudo de um assunto: entidade, repositório, DTOs, serviço e controlador. Um assunto só usa outro pelo serviço público dele, nunca pelo repositório.
 

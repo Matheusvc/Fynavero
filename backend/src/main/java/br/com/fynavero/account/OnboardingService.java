@@ -31,16 +31,13 @@ public class OnboardingService {
     private final AccountService accounts;
     private final CatalogItemRepository catalog;
     private final CategoryService categories;
-    private final RecurrenceService incomes;
     private final RecurrenceService recurrences;
     private final LedgerCalendar calendar;
 
-    public OnboardingService(AccountService accounts, CatalogItemRepository catalog, CategoryService categories,
-                             RecurrenceService incomes, RecurrenceService recurrences, LedgerCalendar calendar) {
+    public OnboardingService(AccountService accounts, CatalogItemRepository catalog, CategoryService categories, RecurrenceService recurrences, LedgerCalendar calendar) {
         this.accounts = accounts;
         this.catalog = catalog;
         this.categories = categories;
-        this.incomes = incomes;
         this.recurrences = recurrences;
         this.calendar = calendar;
     }
@@ -98,7 +95,7 @@ public class OnboardingService {
     private void createIncomeAndDefaultCategories(Long userId, List<IncomeInput> list) {
         if (list != null) {
             for (IncomeInput in : list) {
-                incomes.create(userId, new IncomeSourceReq(in.name(), in.amountCents(), in.fixed(), in.day()));
+                recurrences.create(userId, new IncomeSourceReq(in.name(), in.amountCents(), in.fixed(), in.day()));
             }
         }
         if (categories.count(userId, Kind.RECEITA) == 0) {

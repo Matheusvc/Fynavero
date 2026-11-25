@@ -44,15 +44,13 @@ public class LedgerController {
     private final AppProperties props;
     private final RecurrenceService recurrences;
     private final InstallmentService installments;
-    private final RecurrenceService incomes;
 
-    public LedgerController(TransactionService transactions, CategoryService categories, AppProperties props, RecurrenceService recurrences, InstallmentService installments, RecurrenceService incomes) {
+    public LedgerController(TransactionService transactions, CategoryService categories, AppProperties props, RecurrenceService recurrences, InstallmentService installments) {
         this.transactions = transactions;
         this.categories = categories;
         this.props = props;
         this.recurrences = recurrences;
         this.installments = installments;
-        this.incomes = incomes;
     }
 
     // ---------------------------------------------------------------- /api/transactions
@@ -178,22 +176,22 @@ public class LedgerController {
     // ---------------------------------------------------------------- /api/income-sources
     @GetMapping("/api/income-sources")
     public List<IncomeSourceDto> listIncomeSources(@AuthenticationPrincipal AuthUser u) {
-        return incomes.list(u.id());
+        return recurrences.list(u.id());
     }
 
     @PostMapping("/api/income-sources")
     public IncomeSourceDto createIncomeSource(@AuthenticationPrincipal AuthUser u, @Valid @RequestBody IncomeSourceReq body) {
-        return incomes.create(u.id(), body);
+        return recurrences.create(u.id(), body);
     }
 
     @PutMapping("/api/income-sources/{id}")
     public IncomeSourceDto updateIncomeSource(@AuthenticationPrincipal AuthUser u, @PathVariable Long id, @Valid @RequestBody IncomeSourceReq body) {
-        return incomes.update(u.id(), id, body);
+        return recurrences.update(u.id(), id, body);
     }
 
     @DeleteMapping("/api/income-sources/{id}")
     public ResponseEntity<Void> deleteIncomeSource(@AuthenticationPrincipal AuthUser u, @PathVariable Long id) {
-        incomes.delete(u.id(), id);
+        recurrences.delete(u.id(), id);
         return ResponseEntity.noContent().build();
     }
 }

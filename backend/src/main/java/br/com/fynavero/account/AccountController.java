@@ -56,17 +56,15 @@ public class AccountController {
     private final ObjectProvider<ClientRegistrationRepository> oauth;
     private final AccountLinks emails;
     private final RateLimiter limiter;
-    private final AccountService privacy;
     private final OnboardingService onboarding;
 
-    public AccountController(AccountService accounts, AuthenticationManager authManager, SessionAuthenticator sessions, ObjectProvider<ClientRegistrationRepository> oauth, AccountLinks emails, RateLimiter limiter, AccountService privacy, OnboardingService onboarding) {
+    public AccountController(AccountService accounts, AuthenticationManager authManager, SessionAuthenticator sessions, ObjectProvider<ClientRegistrationRepository> oauth, AccountLinks emails, RateLimiter limiter, OnboardingService onboarding) {
         this.accounts = accounts;
         this.authManager = authManager;
         this.sessions = sessions;
         this.oauth = oauth;
         this.emails = emails;
         this.limiter = limiter;
-        this.privacy = privacy;
         this.onboarding = onboarding;
     }
 
@@ -148,6 +146,7 @@ public class AccountController {
         limiter.check("reset:" + req.getRemoteAddr(), 20, HOUR, TOO_MANY);
         Profile p = emails.resetPassword(body.token(), body.password());
         limiter.reset("login-fail:" + p.email.toLowerCase(Locale.ROOT));
+        sessions.endOtherSessions(p.email, req); // quem estava com a conta aberta em outro aparelho sai
         return signIn(p, req, res);
     }
 
@@ -209,13 +208,13 @@ public class AccountController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         ContentDisposition.attachment().filename("fynavero-meus-dados.json").build().toString())
-                .body(privacy.exportData(u.id()));
+                .body(accounts.exportData(u.id()));
     }
 
     @DeleteMapping("/api/profile")
     public ResponseEntity<Void> delete(@AuthenticationPrincipal AuthUser u, @Valid @RequestBody DeleteAccountReq body,
                                        HttpServletRequest req) {
-        privacy.deleteAccount(u.id(), body);
+        accounts.deleteAccount(u.id(), body);
         HttpSession session = req.getSession(false);
         if (session != null) session.invalidate();
         SecurityContextHolder.clearContext();

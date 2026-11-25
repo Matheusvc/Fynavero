@@ -46,14 +46,13 @@ public class NotificationMailer {
     private final BudgetService budgets;
     private final MonthSummaryService summaries;
     private final CategoryService categories;
-    private final NotificationService actions;
     private final NotificationLogRepository log;
     private final LedgerCalendar calendar;
     private final Mailer mailer;
     private final AppProperties props;
 
     public NotificationMailer(AccountService accounts, NotificationService notifications, BudgetService budgets,
-                              MonthSummaryService summaries, CategoryService categories, NotificationService actions,
+                              MonthSummaryService summaries, CategoryService categories,
                               NotificationLogRepository log, LedgerCalendar calendar, Mailer mailer,
                               AppProperties props) {
         this.accounts = accounts;
@@ -61,7 +60,6 @@ public class NotificationMailer {
         this.budgets = budgets;
         this.summaries = summaries;
         this.categories = categories;
-        this.actions = actions;
         this.log = log;
         this.calendar = calendar;
         this.mailer = mailer;
@@ -90,7 +88,7 @@ public class NotificationMailer {
         StringBuilder rows = new StringBuilder();
         for (Transaction t : bills) {
             String name = NotificationService.billName(t, cats);
-            String link = actions.payLink(t);
+            String link = notifications.payLink(t);
             text.append("- ").append(name).append(": ").append(brl(t.amountCents))
                     .append("\n  Marcar como paga: ").append(link).append("\n");
             rows.append("<tr><td style=\"padding:12px 0;border-bottom:1px solid #eeeeee\"><strong>").append(esc(name))

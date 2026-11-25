@@ -43,7 +43,7 @@ class SecurityTest {
     @Autowired AccountLinks links;
     @Autowired ProfileRepository profiles;
 
-    private final String today = LocalDate.now().toString();
+    private final String today = LocalDate.now(java.time.ZoneId.of("America/Sao_Paulo")).toString();
 
     private MockHttpServletResponse send(MockHttpSession s, MockHttpServletRequestBuilder req, String body) throws Exception {
         if (s != null) req.session(s);
