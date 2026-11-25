@@ -1,119 +1,184 @@
 # Fynavero
 
-Plataforma web de gestão financeira pessoal, multiusuário, em português do Brasil.
-Cada pessoa cria a conta, escolhe as próprias categorias, lança gastos, rendas e investimentos, importa a planilha que já usa e acompanha para onde vai o dinheiro.
+**Controle seus gastos e veja seu dinheiro render.**
 
-Também tem: etiquetas (#viagem) e busca no ano todo, limite de gasto por categoria com alerta em 80% e 100%, objetivos de economia com prazo e barra de progresso, sino de avisos e e-mails (conta que vence amanhã com "Marcar como paga", limites e resumo do mês no dia 1).
+Plataforma web de gestão financeira pessoal, multiusuário, em português do Brasil. Cada pessoa cria a própria conta, lança gastos, rendas e investimentos (ou importa a planilha que já usa) e acompanha para onde vai o dinheiro, com limites, objetivos e lembretes.
+
+[![CI](https://github.com/Matheusvc/Fynavero/actions/workflows/ci.yml/badge.svg)](https://github.com/Matheusvc/Fynavero/actions/workflows/ci.yml)
+
+🌐 **No ar:** https://fynavero.onrender.com · 📐 [Arquitetura](docs/ARQUITETURA.md) · 🚀 [Guia de lançamento](docs/LANCAMENTO.md)
+
+---
+
+## Sumário
+
+- [Funcionalidades](#funcionalidades)
+- [Tecnologias](#tecnologias)
+- [Começando](#começando)
+- [Contas de exemplo](#contas-de-exemplo)
+- [Produção](#produção)
+- [Configuração](#configuração)
+- [Testes](#testes)
+- [Estrutura do código](#estrutura-do-código)
+- [Segurança e privacidade](#segurança-e-privacidade)
+- [Próximos passos](#próximos-passos)
+
+## Funcionalidades
+
+**Dia a dia**
+- Lançamento rápido de despesa, receita ou investimento, com data, forma de pagamento, descrição e etiquetas (`#viagem`).
+- Compras parceladas no crédito, contas que se repetem todo mês e empréstimos (recebido entra no saldo; as parcelas viram despesas futuras).
+- Editar, duplicar, marcar como pago e excluir — sempre com **Desfazer**.
+- Busca no mês ou no ano todo, filtros por categoria, tipo, forma de pagamento e etiqueta.
+- Importação de planilhas `.xlsx`, `.xls` e `.csv` em português, com revisão antes de confirmar e desfazer o lote inteiro.
+
+**Acompanhamento**
+- **Início:** saldo para passar o mês, receitas × despesas × investido, "Para onde foi seu dinheiro", próximos vencimentos e dicas.
+- **Parcelas e Dívidas:** progresso de cada parcelamento e o total comprometido nos próximos 12 meses.
+- **Investimentos:** acumulado por categoria, histórico editável e gráfico de 12 meses.
+- **Objetivos:** meta, prazo, barra de progresso e quanto guardar por mês para chegar lá.
+- **Limites por categoria:** alerta em 80% e 100% do limite do mês.
+- **Relatórios:** visão anual por categoria, comparação entre meses e exportação em Excel e PDF.
+- **Ocultar valores** com um toque (o olho no saldo), como nos apps de banco.
+
+**Avisos**
+- Sino com contas vencidas, de hoje e de amanhã (com "Marcar como paga") e limites perto do fim.
+- E-mails: conta que vence amanhã (com botão "Marcar como paga"), alerta de limite e resumo do mês no dia 1 — cada um pode ser desligado.
+
+**Conta**
+- Cadastro com confirmação de e-mail, login com senha, por link no e-mail ou com Google, e "Esqueci minha senha".
+- Primeiro acesso guiado: objetivos, rendas, contas fixas e contribuição (dízimo ou doação automática).
+- LGPD: exportar todos os dados (JSON) e excluir a conta definitivamente.
+
+## Tecnologias
 
 | Camada | Tecnologia |
 |---|---|
-| Back-end | Java 21, Spring Boot 3.5 (Web, Security, Data JPA, Validation, OAuth2 Client, Mail), Flyway |
-| Banco | H2 em arquivo (padrão, sem instalar nada) ou PostgreSQL (perfil `postgres`) |
-| Front-end | React 19 + TypeScript + Vite, Tailwind CSS 4, componentes no padrão shadcn/ui (Radix), Recharts, React Query |
-| Planilhas | SheetJS (.xlsx/.xls) e Papa Parse (.csv), lidos no navegador |
-| Exportação | Apache POI (Excel) e OpenPDF (PDF), gerados no back-end |
+| Back-end | Java 21, Spring Boot 3.5 (Web, Security, Data JPA, Validation, OAuth2 Client, Mail, Session JDBC, Actuator), Flyway |
+| Banco | PostgreSQL em produção; H2 em arquivo para desenvolvimento (sem instalar nada) |
+| Front-end | React 19, TypeScript, Vite, Tailwind CSS 4, Radix UI, TanStack Query, Recharts |
+| Planilhas | SheetJS (`.xlsx`/`.xls`) e Papa Parse (`.csv`), lidas no navegador |
+| Exportação | Apache POI (Excel) e OpenPDF (PDF) |
+| E-mail | API do Brevo ou qualquer servidor SMTP |
+| Infra | Docker, Render (ou Railway), GitHub Actions (testes e backup diário) |
 
-## Colocar no ar
-
-O passo a passo (e-mail com Brevo ou Resend, hospedagem na Render ou Railway com PostgreSQL, domínio e backup diário) está em [docs/LANCAMENTO.md](docs/LANCAMENTO.md). O `Dockerfile` gera a imagem de produção.
-
-## Rodar em desenvolvimento
+## Começando
 
 Pré-requisitos: **Java 21**, **Maven 3.9+** e **Node 20+**.
 
 ```bash
-# 1. Back-end (porta 8080). Na primeira execução cria o banco e os dados de exemplo.
+# 1. Back-end em http://localhost:8080 — na primeira execução cria o banco e as contas de exemplo
 cd backend
 mvn spring-boot:run
 
-# 2. Front-end (porta 5180), em outro terminal
+# 2. Front-end em http://localhost:5180 (em outro terminal)
 cd frontend
 npm install
 npm run dev
 ```
 
-Abra **http://localhost:5180**. O Vite encaminha `/api` para o back-end, então a sessão funciona na mesma origem.
+Abra **http://localhost:5180**. O Vite encaminha `/api` para o back-end, então login e sessão funcionam na mesma origem.
 
-## Um único arquivo para rodar (produção)
-
-```bash
-cd frontend && npm install && npm run build      # gera frontend/dist
-cd ../backend && mvn package                      # embute o front no .jar
-java -jar target/fynavero.jar                     # http://localhost:8080
-```
-
-Ou, na raiz, `./build.ps1` (Windows) / `./build.sh` (Linux/macOS) fazem os dois passos.
+Sem servidor de e-mail configurado, os e-mails (confirmação, senha, avisos) aparecem no **log do back-end**, com os links prontos para abrir.
 
 ## Contas de exemplo
 
-Criadas automaticamente quando `DEMO_DATA=true` (padrão no H2 local), com 6 meses de histórico:
+Criadas automaticamente em desenvolvimento (`DEMO_DATA=true`, padrão com H2), com 6 meses de histórico:
 
 | E-mail | Senha | Perfil |
 |---|---|---|
-| `ana@fynavero.dev` | `Fynavero@2026` | Objetivo "Organizar meus gastos", dízimo de 10%, notebook em 10×, metas de investimento |
-| `joao@fynavero.dev` | `Fynavero@2026` | Objetivo "Sair das dívidas", salário de R$ 3.575, geladeira em 12× e empréstimo em 24× |
+| `ana@fynavero.dev` | `Fynavero@2026` | Organizar os gastos: dízimo de 10%, notebook em 10×, objetivos de investimento |
+| `joao@fynavero.dev` | `Fynavero@2026` | Sair das dívidas: salário de R$ 3.575, geladeira em 12× e empréstimo em 24× |
 
-Para começar com o banco limpo, apague a pasta `backend/data`.
+Para recomeçar do zero, apague a pasta `backend/data`. Em produção as contas de exemplo ficam desligadas.
 
-## Configuração (variáveis de ambiente)
+## Produção
 
-Todas são opcionais; `.env.example` lista cada uma com um exemplo.
+**Um arquivo só (`.jar` com o front embutido):**
+
+```bash
+./build.sh            # ou .\build.ps1 no Windows
+java -jar backend/target/fynavero.jar   # http://localhost:8080
+```
+
+**Docker:**
+
+```bash
+docker build -t fynavero .
+docker run -p 8080:8080 -e DATABASE_URL=postgres://usuario:senha@host:5432/fynavero -e APP_BASE_URL=https://seu-dominio fynavero
+```
+
+A imagem já sobe no modo produção: PostgreSQL, sessões salvas no banco (reiniciar não desconecta ninguém), cookie só em HTTPS e IP real atrás do proxy.
+
+**Render:** o [`render.yaml`](render.yaml) cria o app e o PostgreSQL de uma vez (*New › Blueprint*). O passo a passo completo — e-mail, domínio próprio e backup diário criptografado — está em [docs/LANCAMENTO.md](docs/LANCAMENTO.md).
+
+## Configuração
+
+Todas as variáveis são opcionais; [`.env.example`](.env.example) traz cada uma com exemplo.
 
 | Variável | Padrão | Para quê |
 |---|---|---|
-| `DATABASE_URL`, `DATABASE_USER`, `DATABASE_PASSWORD` | H2 em `./data` | Banco de dados. Com `SPRING_PROFILES_ACTIVE=postgres`, usa PostgreSQL |
-| `APP_BASE_URL` | `http://localhost:5180` | Endereço público do front (links mágicos e retorno do Google). Em produção com o .jar: `http://localhost:8080` |
-| `COOKIE_SECURE` | `false` | Use `true` atrás de HTTPS |
-| `DEMO_DATA` | `true` (H2) / `false` (postgres) | Cria as contas de exemplo |
-| `SPRING_MAIL_HOST`, `SPRING_MAIL_PORT`, `SPRING_MAIL_USERNAME`, `SPRING_MAIL_PASSWORD`, `MAIL_FROM` | — | Envio do link mágico. **Sem servidor de e-mail, o link aparece no log do back-end** |
-| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID` e `..._CLIENT_SECRET` | — | Ativa "Continuar com Google". Sem elas, o botão não aparece. URI de retorno: `{APP_BASE_URL}/login/oauth2/code/google` |
+| `DATABASE_URL` | H2 em `backend/data` | Banco. Aceita `jdbc:postgresql://…` ou `postgres://usuario:senha@host/banco` (formato da Render/Railway) |
+| `SPRING_PROFILES_ACTIVE` | — | `postgres` liga o modo produção (o Docker já define) |
+| `APP_BASE_URL` | `http://localhost:5180` | Endereço público do site, usado nos links dos e-mails |
+| `BREVO_API_KEY` | — | Envio de e-mail pela API do Brevo (recomendado) |
+| `SPRING_MAIL_HOST`, `_PORT`, `_USERNAME`, `_PASSWORD` | — | Envio por SMTP, alternativa à API |
+| `MAIL_FROM` | `Fynavero <nao-responda@…>` | Remetente dos e-mails |
+| `COOKIE_SECURE`, `FORWARD_HEADERS_STRATEGY` | `false`, `none` | Use `true` e `framework` atrás de HTTPS/proxy (o Docker já define) |
+| `DEMO_DATA` | `true` no H2, `false` no PostgreSQL | Cria as contas de exemplo |
+| `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID` / `_CLIENT_SECRET` | — | Liga "Continuar com Google" (retorno: `{APP_BASE_URL}/login/oauth2/code/google`) |
 
 ## Testes
 
 ```bash
-cd backend && mvn test          # cálculo, aceite de ponta a ponta e um teste num PostgreSQL de verdade (embutido)
-cd frontend && npm test         # 25 testes do leitor de planilhas
-cd frontend && npm run check:tokens   # garante que não há cor/fonte/sombra fixa fora dos tokens
+cd backend && mvn test              # cálculo, aceite de ponta a ponta e um teste num PostgreSQL de verdade (embutido)
+cd frontend && npm test             # leitor de planilhas
+cd frontend && npm run typecheck    # tipos do TypeScript
+cd frontend && npm run check:tokens # nenhuma cor, fonte ou sombra fixa fora da identidade visual
 ```
 
-O GitHub Actions (`.github/workflows/ci.yml`) roda tudo isso a cada push e pull request.
+O GitHub Actions roda tudo isso a cada push e pull request.
 
-Os testes de aceite cobrem: isolamento entre contas, R$ 4.900 em 10× = 10 parcelas de R$ 490, contribuição de 10% sobre R$ 3.575 = R$ 357,50, investimento reduzindo o saldo sem alterar despesas, excluir/desfazer, importar e desfazer só aquele lote, relatório anual com exportação e exclusão definitiva da conta.
+Os testes de aceite cobrem, entre outros: isolamento entre contas, R$ 4.900 em 10× = 10 parcelas de R$ 490, contribuição de 10% sobre R$ 3.575 = R$ 357,50, investimento reduzindo o saldo sem mudar as despesas, excluir e desfazer, importar e desfazer o lote, limites de categoria, objetivos, "Marcar como paga" pelo e-mail, redefinição de senha, confirmação de e-mail, limite de cadastros e exclusão da conta.
 
-## Estrutura
+## Estrutura do código
 
-Código organizado **por funcionalidade** nas duas pontas. Detalhes, regras de cálculo e decisões em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
+Organizado **por área do negócio** nas duas pontas. Regras de cálculo e decisões de arquitetura em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
 
 ```
 backend/src/main/java/br/com/fynavero/
-  account/       ← perfil, login, links por e-mail, primeiro acesso, LGPD
-  category/      ← categorias
-  ledger/        ← lançamentos, recorrências, parcelas, renda e o FinanceCalculator (único módulo de cálculo)
-  importing/     ← importação de planilhas
-  overview/      ← Início, Parcelas, Investimentos e Relatórios
-  planning/      ← limites por categoria e objetivos
-  notification/  ← sino, e-mails agendados e "Marcar como paga"
-  security/      ← sessão, CSRF, limite de tentativas, Google
-  shared/        ← erros, formatação pt-BR, e-mail, configuração e contas de exemplo
-backend/src/main/resources/db/migration   ← esquema e catálogo de categorias (Flyway)
+  account/       perfil, login, links por e-mail, primeiro acesso e LGPD
+  category/      categorias e catálogo de sugestões
+  ledger/        lançamentos, recorrências, parcelas, rendas e o FinanceCalculator (único módulo de cálculo)
+  importing/     importação de planilhas
+  overview/      Início, Parcelas, Investimentos e Relatórios
+  planning/      limites por categoria e objetivos
+  notification/  sino, e-mails agendados e "Marcar como paga"
+  security/      sessão, CSRF, limite de tentativas e Google
+  shared/        erros, formatação pt-BR, e-mail, configuração e contas de exemplo
+backend/src/main/resources/db/migration     versões do banco (Flyway)
 
 frontend/src/
-  app/                          ← rotas e casca (menu, cabeçalho, seletor de mês)
-  features/                     ← auth, onboarding, home, transactions, installments, investments,
-                                  reports, import, settings, legal, design-system
-  components/ui, components/charts   ← componentes visuais reutilizáveis
-  lib/                          ← API, React Query, formatação, tipos
-  styles/tokens.css             ← identidade visual Fynavero (único lugar com valores visuais)
+  app/           rotas e casca (menu, cabeçalho, sino, seletor de mês)
+  features/      uma pasta por tela: auth, onboarding, home, transactions, installments,
+                 investments, goals, reports, import, settings, notifications, legal, design-system
+  components/    componentes reutilizáveis (ui, charts)
+  lib/           API, TanStack Query, formatação, tipos e "ocultar valores"
+  styles/        tokens.css — a identidade visual Fynavero (único lugar com valores visuais)
 ```
+
+Cada pacote do back-end segue o mesmo molde: entidades (com o repositório no mesmo arquivo), poucos serviços, **um controller** e **um arquivo de DTOs**.
 
 ## Segurança e privacidade
 
-- Cada consulta ao banco recebe o id da pessoa logada; recursos de outra conta respondem 404 (equivalente à Row Level Security).
-- Sessão em cookie `httpOnly` + `SameSite=Lax`, token CSRF em toda alteração, senha com BCrypt, CSP restritiva e bloqueio de 15 minutos após 5 senhas erradas.
-- LGPD: aceite dos termos registrado no cadastro, exportação de todos os dados (JSON) e exclusão definitiva da conta em Configurações › Privacidade e dados.
+- Toda consulta ao banco é filtrada pela pessoa logada; recursos de outra conta respondem 404.
+- Sessão em cookie `httpOnly` + `SameSite=Lax`, token CSRF em toda alteração, senhas com BCrypt e Content-Security-Policy restritiva.
+- Limites contra abuso: bloqueio de 15 minutos após 5 senhas erradas, até 5 contas novas por hora por rede e limite de e-mails de link.
+- Links enviados por e-mail são de uso único e expiram; no banco fica só o hash SHA-256.
+- LGPD: aceite dos termos registrado, exportação de todos os dados e exclusão definitiva da conta.
 - A planilha importada é lida no navegador e descartada; só os lançamentos confirmados são enviados.
-- A plataforma não faz recomendação de investimento.
+- A Fynavero organiza o que você investe, mas não faz recomendação de investimento.
 
-## Preparado para depois (não implementado)
+## Próximos passos
 
-Open Finance, contas compartilhadas, planos pagos, painel administrativo, notificações push e recursos de IA. A separação em serviços e o `user_id` em todas as tabelas permitem adicionar esses itens sem reescrever o núcleo.
+Open Finance, contas compartilhadas (casal ou família), notificações push, planos pagos e painel administrativo. O `user_id` em todas as tabelas e a separação por áreas permitem adicionar esses itens sem reescrever o núcleo.
