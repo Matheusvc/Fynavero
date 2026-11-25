@@ -8,8 +8,9 @@ import { errorMessage } from "@/lib/api";
 import { useMe } from "@/lib/queries";
 import { ConfirmEmailPage, ForgotPasswordPage, LoginPage, MagicLinkPage, RegisterPage, ResetPasswordPage } from "@/features/auth";
 import { PrivacyPage, TermsPage } from "@/features/legal/LegalPages";
-import HomePage from "@/features/home/HomePage";
-import TransactionsPage from "@/features/transactions/TransactionsPage";
+// Telas do app carregadas sob demanda: a tela de entrar abre rápido, sem baixar gráficos e tabelas.
+const HomePage = lazy(() => import("@/features/home/HomePage"));
+const TransactionsPage = lazy(() => import("@/features/transactions/TransactionsPage"));
 
 const OnboardingPage = lazy(() => import("@/features/onboarding/OnboardingPage"));
 const InstallmentsPage = lazy(() => import("@/features/installments/InstallmentsPage"));

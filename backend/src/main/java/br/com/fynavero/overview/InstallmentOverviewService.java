@@ -71,7 +71,7 @@ public class InstallmentOverviewService {
             long total = parcels.stream().mapToLong(t -> t.amountCents).sum();
             LocalDate last = parcels.getLast().date;
             out.add(new PlanDto(p.id, p.description, p.categoryId, parcels.getFirst().amountCents, total,
-                    p.installmentCount, paid, current, remaining, monthName(YearMonth.from(last)) + " " + last.getYear(),
+                    parcels.size(), paid, current, remaining, monthName(YearMonth.from(last)) + " " + last.getYear(),
                     p.firstDate, remaining == 0));
         }
         out.sort(Comparator.comparing(PlanDto::finished).thenComparing(PlanDto::firstDate, Comparator.reverseOrder()));

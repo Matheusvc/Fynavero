@@ -31,11 +31,15 @@ export function TagInput({
 }) {
   const [draft, setDraft] = useState("");
 
-  const add = (raw: string) => {
-    const t = cleanTag(raw);
-    setDraft("");
-    if (!t || value.includes(t) || value.length >= MAX_TAGS) return;
-    onChange([...value, t]);
+  /** Adiciona uma ou mais etiquetas de uma vez (ex.: "viagem, praia" colado de outro lugar). */
+  const add = (raw: string, rest = "") => {
+    setDraft(rest);
+    const next = [...value];
+    for (const part of raw.split(/[,\s]+/)) {
+      const t = cleanTag(part);
+      if (t && !next.includes(t) && next.length < MAX_TAGS) next.push(t);
+    }
+    if (next.length !== value.length) onChange(next);
   };
 
   const onKey = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -79,7 +83,14 @@ export function TagInput({
           {...aria}
           id={id}
           value={draft}
-          onChange={(e) => setDraft(e.target.value)}
+          onChange={(e) => {
+            const v = e.target.value;
+            // Teclados de celular nem sempre avisam a tecla: vírgula ou espaço no texto fecham a etiqueta.
+            // O que vem depois do último separador continua sendo digitado.
+            const cut = Math.max(v.lastIndexOf(","), v.search(/\s\S*$/));
+            if (cut >= 0 && v.slice(0, cut).trim()) add(v.slice(0, cut), v.slice(cut + 1).trimStart());
+            else setDraft(v.replace(/^[,\s]+/, ""));
+          }}
           onKeyDown={onKey}
           onBlur={() => draft.trim() && add(draft)}
           placeholder={value.length ? "" : "Ex.: viagem, reforma"}
