@@ -1,18 +1,13 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/dialog";
-import { errorMessage } from "@/lib/api";
-import { useTxMutations } from "@/lib/queries";
 import type { Scope, Tx } from "@/lib/types";
 import { TransactionSheet, type NewOptions } from "./TransactionSheet";
-
-/** Tempo para o "Desfazer" depois de excluir ou marcar como pago. */
-export const UNDO_MS = 8000;
+import { useUndoable } from "./useUndoable";
 
 /**
  * Lançamento rápido disponível em todo o app: abrir para lançar ou editar, perguntar
- * "Só este / Este e os próximos / Todas as parcelas" e excluir com "Desfazer" por 8 segundos.
+ * "Só este / Este e os próximos / Todas as parcelas" e excluir com "Desfazer".
  */
 type Ctx = {
   openNew: (o?: NewOptions) => void;
@@ -38,7 +33,7 @@ export function QuickAddProvider({ children }: { children: ReactNode }) {
     key: 0,
   });
   const [ask, setAsk] = useState<ScopeAsk | null>(null);
-  const m = useTxMutations();
+  const undoable = useUndoable();
 
   const askScope = useCallback(
     (tx: Tx, action: "edit" | "delete") =>
@@ -52,26 +47,9 @@ export function QuickAddProvider({ children }: { children: ReactNode }) {
   const deleteWithUndo = useCallback(
     async (tx: Tx) => {
       const scope = await askScope(tx, "delete");
-      if (!scope) return;
-      try {
-        const { ids } = await m.remove.mutateAsync({ id: tx.id, scope });
-        toast(ids.length > 1 ? `${ids.length} lançamentos excluídos` : "Lançamento excluído", {
-          duration: UNDO_MS,
-          action: {
-            label: "Desfazer",
-            onClick: () => {
-              m.restore.mutate(ids, {
-                onSuccess: () => toast.success("Exclusão desfeita"),
-                onError: (e) => toast.error(errorMessage(e)),
-              });
-            },
-          },
-        });
-      } catch (e) {
-        toast.error(errorMessage(e));
-      }
+      if (scope) await undoable.deleteTx(tx.id, scope);
     },
-    [askScope, m.remove, m.restore],
+    [askScope, undoable],
   );
 
   const value = useMemo<Ctx>(

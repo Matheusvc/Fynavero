@@ -28,7 +28,7 @@ import { VerifyEmailBanner } from "./VerifyEmailBanner";
 
 type NavItem = { to: string; label: string; icon: LucideIcon; end?: boolean };
 
-export const NAV: NavItem[] = [
+const NAV: NavItem[] = [
   { to: "/", label: "Início", icon: House, end: true },
   { to: "/lancamentos", label: "Lançamentos", icon: ArrowLeftRight },
   { to: "/parcelas", label: "Parcelas e Dívidas", icon: CalendarClock },

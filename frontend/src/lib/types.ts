@@ -74,17 +74,6 @@ export type TxInput = {
 
 export type LoanRepayment = { count: number; installmentCents: number; firstDate?: string; categoryId?: number | null };
 
-export type InstallmentConvert = {
-  amountCents: number;
-  categoryId: number;
-  date: string;
-  description?: string;
-  paymentMethod?: PaymentMethod | null;
-  note?: string;
-  count: number;
-  installmentValue: boolean;
-  tags?: string[];
-};
 
 export type TxUpdate = {
   amountCents: number;
@@ -206,17 +195,6 @@ export type ImportBatch = {
   investido: number;
 };
 
-export type ImportRowInput = {
-  kind: Kind;
-  date: string;
-  description?: string;
-  categoryId: number;
-  amountCents: number;
-  paymentMethod?: PaymentMethod | null;
-  installmentNumber?: number | null;
-  installmentTotal?: number | null;
-  note?: string;
-};
 
 export type SearchResult = { items: Tx[]; receitasCents: number; despesasCents: number; investidoCents: number; truncated: boolean };
 export type TagCount = { tag: string; count: number };

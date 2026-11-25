@@ -1,11 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router";
 import { MailCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Field, Input } from "@/components/ui/field";
-import { Spinner } from "@/components/ui/feedback";
 import { api, errorMessage } from "@/lib/api";
-import { AuthLayout } from "./AuthLayout";
+import { AuthError, AuthInput, AuthLayout, AuthSubmit } from "./AuthLayout";
 
 /** "Esqueci minha senha": pede o e-mail e envia o link de redefinição (válido por 1 hora). */
 export function ForgotPasswordPage() {
@@ -36,30 +33,22 @@ export function ForgotPasswordPage() {
     <AuthLayout title="Esqueci minha senha" subtitle="Enviamos um link para você criar uma senha nova.">
       {sent ? (
         <div className="space-y-4">
-          <div role="status" className="flex gap-3 rounded-lg bg-positive-subtle px-3 py-3 text-sm text-positive">
+          <div role="status" className="flex gap-3 rounded-md bg-positive-subtle px-3 py-3 text-sm text-positive">
             <MailCheck className="size-5 shrink-0" aria-hidden="true" />
             <p>
               Se houver uma conta com <strong>{email.trim()}</strong>, o link já está a caminho. Ele vale por 1 hora. Confira também a caixa de
               spam.
             </p>
           </div>
-          <Button variant="outline" className="w-full" onClick={() => setSent(false)}>
+          <button type="button" onClick={() => setSent(false)} className="text-sm font-medium text-auth-hint hover:text-primary-text hover:underline">
             Usar outro e-mail
-          </Button>
+          </button>
         </div>
       ) : (
         <form onSubmit={submit} className="space-y-4" noValidate>
-          <Field label="E-mail da conta">
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required autoFocus />
-          </Field>
-          {error && (
-            <p role="alert" className="rounded-lg bg-negative-subtle px-3 py-2 text-sm text-negative">
-              {error}
-            </p>
-          )}
-          <Button type="submit" size="lg" className="w-full" disabled={busy}>
-            {busy && <Spinner />} Enviar link
-          </Button>
+          <AuthInput label="E-mail da conta" type="email" value={email} onChange={(e) => setEmail(e.target.value)} onClear={() => setEmail("")} autoComplete="email" required autoFocus />
+          {error && <AuthError>{error}</AuthError>}
+          <AuthSubmit busy={busy}>Enviar link</AuthSubmit>
         </form>
       )}
       <p className="mt-8 text-center text-sm">

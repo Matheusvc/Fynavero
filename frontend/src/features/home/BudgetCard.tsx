@@ -8,7 +8,7 @@ import { CategoryIcon } from "@/lib/icons";
 import { useBudgets } from "@/lib/queries";
 import type { Budget } from "@/lib/types";
 
-export const budgetTone = (b: Budget) => (b.level === "ESTOURADO" ? "negative" : b.level === "ALERTA" ? "warning" : "primary");
+const budgetTone = (b: Budget) => (b.level === "ESTOURADO" ? "negative" : b.level === "ALERTA" ? "warning" : "primary");
 
 /** Limites do mês por categoria. Sem nenhum limite definido, mostra um convite discreto para criar. */
 export function BudgetCard({ month }: { month: string }) {

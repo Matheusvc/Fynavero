@@ -15,7 +15,7 @@ const STATUS: Record<GoalStatus, { label: string; tone: "positive" | "brand" | "
 };
 
 /** Linha de orientação: quanto guardar por mês, quanto falta, ou parabéns. */
-export function goalGuidance(g: Goal): ReactNode {
+function goalGuidance(g: Goal): ReactNode {
   if (g.status === "CONCLUIDO") return "Você chegou lá! Objetivo concluído.";
   if (g.status === "PRAZO_VENCIDO") return <>O prazo passou. Faltam <Money cents={g.remainingCents} /> — edite o prazo para recalcular.</>;
   if (g.status === "SEM_PRAZO") return <>Faltam <Money cents={g.remainingCents} />. Defina um prazo para saber quanto guardar por mês.</>;

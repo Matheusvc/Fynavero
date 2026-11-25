@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 const MAX_TAGS = 10;
 
 /** Mesma regra do back-end: sem "#", minúsculas, espaços viram "-", só letras, números, "-" e "_". */
-export function cleanTag(raw: string): string {
+function cleanTag(raw: string): string {
   return raw
     .trim()
     .replace(/^#+/, "")

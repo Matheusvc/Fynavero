@@ -1,10 +1,8 @@
 import { forwardRef, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { Link } from "react-router";
-import { Eye, EyeOff } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/feedback";
-import { Input } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 import backgroundGlow from "@/assets/auth/background-glow.svg";
 import character from "@/assets/auth/character.png";
@@ -215,44 +213,6 @@ export function AuthError({ children }: { children: ReactNode }) {
     <p role="alert" className="rounded-md bg-negative-subtle px-3 py-2 text-sm text-negative">
       {children}
     </p>
-  );
-}
-
-/** Campo de senha padrão do app (usado em "Criar senha nova"). */
-export function PasswordInput({
-  value,
-  onChange,
-  autoComplete,
-  ...aria
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  autoComplete: string;
-  id?: string;
-  "aria-describedby"?: string;
-  "aria-invalid"?: boolean;
-}) {
-  const [show, setShow] = useState(false);
-  return (
-    <div className="relative">
-      <Input
-        {...aria}
-        type={show ? "text" : "password"}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        autoComplete={autoComplete}
-        className="pr-12"
-        required
-      />
-      <button
-        type="button"
-        onClick={() => setShow((v) => !v)}
-        className="absolute top-0 right-0 grid size-touch place-items-center text-muted-foreground"
-        aria-label={show ? "Esconder senha" : "Mostrar senha"}
-      >
-        {show ? <EyeOff className="size-5" aria-hidden="true" /> : <Eye className="size-5" aria-hidden="true" />}
-      </button>
-    </div>
   );
 }
 
