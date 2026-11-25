@@ -1,11 +1,12 @@
 import { ChartPie, Table2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatBRL } from "@/lib/format";
+import { HIDDEN_MONEY, valuesHidden } from "@/lib/privacy";
 
 const compact = new Intl.NumberFormat("pt-BR", { notation: "compact", style: "currency", currency: "BRL", maximumFractionDigits: 1 });
 
 /** Rótulo curto para o eixo Y ("R$ 4,5 mil"). */
-export const axisMoney = (cents: number) => compact.format(cents / 100).replace(/ /g, " ");
+export const axisMoney = (cents: number) => valuesHidden() ? "•••" : compact.format(cents / 100).replace(/ /g, " ");
 
 export type TooltipRow = { label: string; cents: number; color?: string; pct?: string };
 
@@ -18,7 +19,7 @@ export function TooltipBox({ title, rows }: { title?: string; rows: TooltipRow[]
         <p key={r.label} className="flex items-center gap-2">
           {r.color && <span className="size-2.5 rounded-sm" style={{ background: `var(--${r.color})` }} aria-hidden="true" />}
           <span className="text-muted-foreground">{r.label}</span>
-          <span className="money ml-auto pl-3 font-semibold">{formatBRL(r.cents)}</span>
+          <span className="money ml-auto pl-3 font-semibold">{valuesHidden() ? HIDDEN_MONEY : formatBRL(r.cents)}</span>
           {r.pct && <span className="text-muted-foreground">({r.pct})</span>}
         </p>
       ))}

@@ -5,6 +5,7 @@ import { Bell, CalendarClock, CircleAlert, CircleCheck, Gauge } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { useNotifications } from "@/lib/queries";
 import { useUndoable } from "@/features/transactions/quick-add/useUndoable";
+import { maskMoney, useHideValues } from "@/lib/privacy";
 import type { AppNotification } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +30,7 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const notifications = useNotifications();
   const undoable = useUndoable();
+  const [hidden] = useHideValues();
   const list = notifications.data ?? [];
   const urgent = list.some((n) => n.type === "CONTA_VENCIDA" || n.type === "CONTA_HOJE" || n.type === "LIMITE_ESTOURADO");
 
@@ -78,8 +80,8 @@ export function NotificationBell() {
                 <li key={n.id} className="flex gap-3 px-4 py-3">
                   <NotificationIcon n={n} />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium">{n.title}</p>
-                    <p className="text-xs text-muted-foreground">{n.body}</p>
+                    <p className="text-sm font-medium">{maskMoney(n.title, hidden)}</p>
+                    <p className="text-xs text-muted-foreground">{maskMoney(n.body, hidden)}</p>
                     {n.transactionId && (
                       <Button
                         size="sm"

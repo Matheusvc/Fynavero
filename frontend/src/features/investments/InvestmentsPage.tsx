@@ -15,12 +15,13 @@ import { EmptyState, ErrorState, Skeleton, Spinner } from "@/components/ui/feedb
 import { PageHeader } from "@/components/ui/page-header";
 import { Progress } from "@/components/ui/progress";
 import { api, errorMessage } from "@/lib/api";
-import { centsToInput, formatBRL, monthName, parseMoneyInput } from "@/lib/format";
+import { centsToInput, monthName, parseMoneyInput } from "@/lib/format";
 import { CategoryIcon } from "@/lib/icons";
 import { useMonth } from "@/lib/month";
 import { invalidateFinance, useInvestments } from "@/lib/queries";
 import type { InvestmentCategory } from "@/lib/types";
 import { SavingsHistoryDialog } from "./SavingsHistoryDialog";
+import { InvestmentHistory } from "./InvestmentHistory";
 
 type Draft = { id?: number; name: string; goal: string; icon: string };
 
@@ -142,9 +143,9 @@ export default function InvestmentsPage() {
                         <div className="space-y-1.5">
                           <Progress value={c.accumulatedCents} max={goal} label={`${pct}% da meta de ${c.name}`} />
                           <p className="flex justify-between text-xs text-muted-foreground">
-                            <span>{pct}% da meta de {formatBRL(goal)}</span>
+                            <span>{pct}% da meta de <Money cents={goal} /></span>
                             <span>
-                              {c.accumulatedCents >= goal ? "Meta alcançada!" : `Faltam ${formatBRL(goal - c.accumulatedCents)}`}
+                              {c.accumulatedCents >= goal ? "Meta alcançada!" : <>Faltam <Money cents={goal - c.accumulatedCents} /></>}
                             </span>
                           </p>
                         </div>
@@ -168,6 +169,7 @@ export default function InvestmentsPage() {
               series={[{ key: "investido", label: "Investido", color: "series-invest" }]}
             />
           </Card>
+          <InvestmentHistory />
           <p className="text-center text-xs text-muted-foreground">
             A Fynavero organiza o que você investe, mas não faz recomendação de investimento.
           </p>

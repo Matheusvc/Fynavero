@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Money } from "@/components/Money";
+import { useHideValues } from "@/lib/privacy";
 import { axisMoney, TooltipBox, ViewToggle } from "./ChartParts";
 
 export type Series<T> = { key: keyof T & string; label: string; color: string; stack?: string };
@@ -20,6 +21,7 @@ export function Bars<T extends { label: string }>({
   height?: number;
 }) {
   const [table, setTable] = useState(false);
+  useHideValues(); // redesenha o eixo ao ocultar/mostrar valores
   return (
     <div>
       <div className="mb-2 flex justify-end">

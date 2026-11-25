@@ -1,8 +1,9 @@
 import { type ReactNode } from "react";
-import { ArrowDownRight, ArrowUpRight, Minus, TriangleAlert, Wallet } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Eye, EyeOff, Minus, TriangleAlert, Wallet } from "lucide-react";
 import { Money } from "@/components/Money";
 import { Card } from "@/components/ui/card";
 import { changeBps, formatPct, monthName, shiftMonth } from "@/lib/format";
+import { useHideValues } from "@/lib/privacy";
 import type { Totals } from "@/lib/types";
 
 function Change({ current, previous, month }: { current: number; previous: number; month: string }) {
@@ -34,19 +35,32 @@ export function StatCard({ label, cents, prev, month, note }: { label: string; c
 
 export function Hero({ t, month }: { t: Totals; month: string }) {
   const negative = t.saldo < 0;
+  const [hidden, toggleHidden] = useHideValues();
   return (
     <section
       aria-labelledby="saldo"
       className="relative overflow-hidden rounded-xl bg-secondary p-5 text-secondary-foreground shadow-md sm:p-7"
     >
       <span className="absolute inset-y-0 left-0 w-1.5 bg-primary" aria-hidden="true" />
-      <h2 id="saldo" className="flex items-center gap-2 text-sm font-medium opacity-80">
-        <Wallet className="size-4" aria-hidden="true" /> Saldo para passar o mês · {monthName(month)}
-      </h2>
+      <div className="flex items-start justify-between gap-3">
+        <h2 id="saldo" className="flex items-center gap-2 text-sm font-medium opacity-80">
+          <Wallet className="size-4" aria-hidden="true" /> Saldo para passar o mês · {monthName(month)}
+        </h2>
+        <button
+          type="button"
+          onClick={toggleHidden}
+          aria-pressed={hidden}
+          aria-label={hidden ? "Mostrar valores" : "Ocultar valores"}
+          title={hidden ? "Mostrar valores" : "Ocultar valores"}
+          className="-mt-2 -mr-2 grid size-touch shrink-0 place-items-center rounded-full opacity-80 hover:bg-foreground/10 hover:opacity-100"
+        >
+          {hidden ? <EyeOff className="size-5" aria-hidden="true" /> : <Eye className="size-5" aria-hidden="true" />}
+        </button>
+      </div>
       <p className="mt-2 text-hero font-bold">
         <Money cents={t.saldo} />
       </p>
-      {negative && (
+      {negative && !hidden && (
         <p className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-negative px-2 py-1 text-sm font-semibold text-negative-foreground">
           <TriangleAlert className="size-4" aria-hidden="true" /> Saldo negativo
         </p>

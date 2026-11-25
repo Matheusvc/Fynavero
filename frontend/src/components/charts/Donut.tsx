@@ -4,7 +4,7 @@ import { Pencil } from "lucide-react";
 import { Money } from "@/components/Money";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/lib/icons";
-import { formatBRL, formatPct } from "@/lib/format";
+import { formatPct } from "@/lib/format";
 import type { Slice } from "@/lib/types";
 import { TooltipBox, ViewToggle } from "./ChartParts";
 
@@ -75,7 +75,7 @@ function DonutChart({ slices, total }: { slices: Slice[]; total: number }) {
       <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
         <div>
           <p className="text-xs text-muted-foreground">Total</p>
-          <p className="money text-sm font-bold">{formatBRL(total)}</p>
+          <Money cents={total} className="block text-sm font-bold" />
         </div>
       </div>
     </div>

@@ -15,6 +15,7 @@ import { CategoryIcon } from "@/lib/icons";
 import { useMonth } from "@/lib/month";
 import { useCategories, useDashboard, useMe } from "@/lib/queries";
 import { useUndoable } from "@/features/transactions/quick-add/useUndoable";
+import { maskMoney, useHideValues } from "@/lib/privacy";
 import type { Slice } from "@/lib/types";
 import { Hero, StatCard } from "./SummaryCards";
 import { CategoryPanel } from "./CategoryPanel";
@@ -28,6 +29,7 @@ export default function HomePage() {
   const cats = useCategories();
   const { openNew } = useQuickAdd();
   const undoable = useUndoable();
+  const [hidden] = useHideValues();
   const navigate = useNavigate();
   const [panel, setPanel] = useState<Slice | null>(null);
   const closePanel = useCallback(() => setPanel(null), []);
@@ -100,7 +102,7 @@ export default function HomePage() {
             {d.insights.map((t) => (
               <li key={t} className="flex gap-3 text-sm">
                 <Lightbulb className="mt-0.5 size-4 shrink-0 text-primary-text" aria-hidden="true" />
-                <span>{t}</span>
+                <span>{maskMoney(t, hidden)}</span>
               </li>
             ))}
           </ul>

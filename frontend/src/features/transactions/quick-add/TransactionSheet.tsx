@@ -20,7 +20,10 @@ import { TagInput } from "@/components/TagInput";
 import { InstallmentCountFields } from "./InstallmentCountFields";
 import { warnLimit } from "./limitWarning";
 
+/** kind informado (ex.: botão "Investir") fixa o tipo: a ficha não mostra Despesa / Receita / Investimento. */
 export type NewOptions = { kind?: Kind; installments?: boolean; categoryId?: number };
+
+const NEW_TITLE: Record<Kind, string> = { DESPESA: "Nova despesa", RECEITA: "Nova receita", INVESTIMENTO: "Novo investimento" };
 
 /**
  * Ficha de lançamento (bottom sheet no celular, modal no desktop): valor → categoria → salvar.
@@ -264,7 +267,7 @@ export function TransactionSheet({
     <Modal
       open={open}
       onOpenChange={(o) => !o && onClose()}
-      title={editing ? "Editar lançamento" : "Novo lançamento"}
+      title={editing ? (tx!.kind === "INVESTIMENTO" ? "Editar investimento" : "Editar lançamento") : opts.kind ? NEW_TITLE[opts.kind] : "Novo lançamento"}
       description={
         isInstallment
           ? `Parcela ${tx!.installmentNumber}/${tx!.installmentTotal}`
@@ -314,13 +317,13 @@ export function TransactionSheet({
           )}
           <Button type="submit" form="tx-form" size="lg" disabled={busy}>
             {busy && <Spinner />}
-            {editing ? "Salvar alterações" : "Salvar lançamento"}
+            {editing ? "Salvar alterações" : kind === "INVESTIMENTO" ? "Salvar investimento" : "Salvar lançamento"}
           </Button>
         </>
       }
     >
       <form id="tx-form" onSubmit={submit} className="space-y-5" noValidate>
-        {!editing && (
+        {!editing && !opts.kind && (
           <Segmented
             label="Tipo de lançamento"
             value={kind}
