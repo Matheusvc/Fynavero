@@ -111,7 +111,8 @@ public class AccountController {
     public Me login(@Valid @RequestBody LoginReq body, HttpServletRequest req, HttpServletResponse res) {
         String email = body.email().strip();
         String failKey = "login-fail:" + email.toLowerCase(Locale.ROOT);
-        if (limiter.isLimited(failKey, 5, Duration.ofMinutes(15))) {
+        String ipKey = "login-fail-ip:" + req.getRemoteAddr(); // muitas contas tentadas da mesma rede
+        if (limiter.isLimited(failKey, 5, Duration.ofMinutes(15)) || limiter.isLimited(ipKey, 30, Duration.ofMinutes(15))) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Muitas tentativas. Tente de novo em 15 minutos.");
         }
         Authentication auth;
@@ -119,6 +120,7 @@ public class AccountController {
             auth = authManager.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(email, body.password()));
         } catch (AuthenticationException e) {
             limiter.hit(failKey);
+            limiter.hit(ipKey);
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "E-mail ou senha incorretos.");
         }
         limiter.reset(failKey);
@@ -173,6 +175,7 @@ public class AccountController {
 
     @PostMapping("/api/auth/magic-link/consume")
     public Me consume(@Valid @RequestBody TokenReq body, HttpServletRequest req, HttpServletResponse res) {
+        limiter.check("magic:" + req.getRemoteAddr(), 30, HOUR, TOO_MANY);
         return signIn(emails.consumeMagicLink(body.token()), req, res);
     }
 
@@ -193,8 +196,11 @@ public class AccountController {
     }
 
     @PutMapping("/api/profile/password")
-    public ResponseEntity<Void> password(@AuthenticationPrincipal AuthUser u, @Valid @RequestBody PasswordReq body) {
+    public ResponseEntity<Void> password(@AuthenticationPrincipal AuthUser u, @Valid @RequestBody PasswordReq body,
+                                         HttpServletRequest req) {
+        limiter.check("password-change:" + u.id(), 10, HOUR, TOO_MANY); // adivinhar a senha atual
         accounts.changePassword(u.id(), body);
+        sessions.endOtherSessions(u.email(), req);
         return ResponseEntity.noContent().build();
     }
 

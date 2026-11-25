@@ -3,11 +3,16 @@ package br.com.fynavero.notification;
 import br.com.fynavero.shared.Mailer;
 import br.com.fynavero.ledger.LedgerCalendar;
 import br.com.fynavero.notification.NotificationDtos.ActionDto;
+import br.com.fynavero.notification.NotificationDtos.ActionReq;
 import br.com.fynavero.notification.NotificationDtos.NotificationDto;
 import br.com.fynavero.notification.NotificationDtos.PreferencesDto;
 import br.com.fynavero.notification.NotificationDtos.PreferencesReq;
 import br.com.fynavero.notification.NotificationDtos.TestSummaryDto;
 import br.com.fynavero.security.AuthUser;
+import br.com.fynavero.security.RateLimiter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import java.time.Duration;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,9 +31,11 @@ public class NotificationController {
     private final NotificationService actions;
     private final LedgerCalendar calendar;
     private final Mailer mail;
+    private final RateLimiter limiter;
 
     public NotificationController(NotificationService notifications, NotificationMailer mailer, NotificationService actions,
-                                  LedgerCalendar calendar, Mailer mail) {
+                                  LedgerCalendar calendar, Mailer mail, RateLimiter limiter) {
+        this.limiter = limiter;
         this.notifications = notifications;
         this.mailer = mailer;
         this.actions = actions;
@@ -61,13 +68,19 @@ public class NotificationController {
 
     // ------------------------------------------------------------------ link do e-mail (sem login)
 
-    @GetMapping("/api/actions/{token}")
-    public ActionDto describe(@PathVariable String token) {
-        return actions.describe(token);
+    @PostMapping("/api/actions/describe")
+    public ActionDto describe(@Valid @RequestBody ActionReq body, HttpServletRequest req) {
+        limitActions(req);
+        return actions.describe(body.token());
     }
 
-    @PostMapping("/api/actions/{token}/pay")
-    public ActionDto pay(@PathVariable String token) {
-        return actions.pay(token);
+    @PostMapping("/api/actions/pay")
+    public ActionDto pay(@Valid @RequestBody ActionReq body, HttpServletRequest req) {
+        limitActions(req);
+        return actions.pay(body.token());
+    }
+
+    private void limitActions(HttpServletRequest req) {
+        limiter.check("action:" + req.getRemoteAddr(), 60, Duration.ofHours(1), "Muitas tentativas. Tente de novo mais tarde.");
     }
 }

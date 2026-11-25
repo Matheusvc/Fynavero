@@ -47,11 +47,14 @@ public class Mailer {
     private final ObjectMapper json;
     private final boolean hostSet;
     private final String brevoKey;
+    private final boolean logContent;
     private final HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
 
     /** Valores vazios (comuns ao criar o serviço na hospedagem antes de ter o e-mail) contam como "não configurado". */
     public Mailer(ObjectProvider<JavaMailSender> sender, AppProperties props, ObjectMapper json,
-                  @Value("${spring.mail.host:}") String host, @Value("${BREVO_API_KEY:}") String brevoKey) {
+                  @Value("${spring.mail.host:}") String host, @Value("${BREVO_API_KEY:}") String brevoKey,
+                  @Value("${app.log-mail-content:true}") boolean logContent) {
+        this.logContent = logContent;
         this.sender = sender;
         this.props = props;
         this.json = json;
@@ -75,7 +78,9 @@ public class Mailer {
         if (!brevoKey.isEmpty()) return sendWithBrevoApi(to, subject, text, html);
         JavaMailSender s = hostSet ? sender.getIfAvailable() : null;
         if (s == null) {
-            log.info("E-mail (sem servidor de e-mail configurado) para {} — {}\n{}", to, subject, text);
+            // Em produção o conteúdo (links de acesso de uso único) não vai para o log.
+            if (logContent) log.info("E-mail (sem servidor de e-mail configurado) para {} — {}\n{}", to, subject, text);
+            else log.warn("E-mail não enviado: nenhum servidor de e-mail configurado ({})", subject);
             return true;
         }
         try {

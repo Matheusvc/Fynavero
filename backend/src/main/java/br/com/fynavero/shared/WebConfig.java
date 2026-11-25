@@ -29,8 +29,10 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResolver(new PathResourceResolver() {
                     @Override
                     protected Resource getResource(String path, Resource location) throws IOException {
-                        Resource r = location.createRelative(path);
-                        if (r.exists() && r.isReadable()) return r;
+                        // Path traversal / inclusão de arquivo: "../", "\", "%" ou ":" nunca saem da pasta static.
+                        if (path.contains("..") || path.contains("\\") || path.contains("%") || path.contains(":")) return null;
+                        Resource r = super.getResource(path, location); // confere que o arquivo fica dentro de static/
+                        if (r != null) return r;
                         if (path.startsWith("api/") || path.startsWith("actuator/") || path.contains(".")) return null;
                         Resource index = location.createRelative("index.html");
                         return index.exists() ? index : null;

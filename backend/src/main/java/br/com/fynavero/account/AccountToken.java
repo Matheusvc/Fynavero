@@ -40,6 +40,11 @@ public class AccountToken {
         @Query("update AccountToken t set t.usedAt = :now where t.userId = :userId and t.purpose = :purpose and t.usedAt is null")
         int invalidate(@Param("userId") Long userId, @Param("purpose") Purpose purpose, @Param("now") Instant now);
     
+        /** Marca como usado só se ainda estava livre: em dois usos ao mesmo tempo, só um vence (devolve 1). */
+        @Modifying
+        @Query("update AccountToken t set t.usedAt = :now where t.id = :id and t.usedAt is null")
+        int markUsed(@Param("id") Long id, @Param("now") Instant now);
+
         void deleteByUserId(Long userId);
     }
 }

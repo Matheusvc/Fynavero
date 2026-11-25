@@ -155,8 +155,7 @@ public class AccountLinks {
     @Transactional
     public AccountToken consume(String token, Purpose purpose, String invalidMessage) {
         AccountToken t = find(token, purpose, invalidMessage);
-        if (t.usedAt != null) throw badRequest(invalidMessage);
-        t.usedAt = Instant.now();
+        if (t.usedAt != null || tokens.markUsed(t.id, Instant.now()) == 0) throw badRequest(invalidMessage);
         return t;
     }
 

@@ -23,7 +23,7 @@ export default function BillActionPage() {
 
   useEffect(() => {
     if (!token) return;
-    api<BillAction>(`/api/actions/${encodeURIComponent(token)}`)
+    api<BillAction>("/api/actions/describe", { method: "POST", body: { token } })
       .then(setBill)
       .catch((e) => setError(errorMessage(e)));
   }, [token]);
@@ -31,7 +31,7 @@ export default function BillActionPage() {
   async function pay() {
     setBusy(true);
     try {
-      setBill(await api<BillAction>(`/api/actions/${encodeURIComponent(token)}/pay`, { method: "POST" }));
+      setBill(await api<BillAction>("/api/actions/pay", { method: "POST", body: { token } }));
     } catch (e) {
       setError(errorMessage(e));
     } finally {

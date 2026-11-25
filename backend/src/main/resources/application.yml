@@ -17,7 +17,7 @@ spring:
     default-property-inclusion: non_null
   servlet:
     multipart:
-      max-file-size: 5MB
+      enabled: false # a API não recebe arquivos: planilhas são lidas no navegador
   # Em desenvolvimento as sessões ficam na memória; o perfil "postgres" (produção) liga as sessões no banco.
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.session.SessionAutoConfiguration
@@ -40,6 +40,10 @@ server:
   forward-headers-strategy: ${FORWARD_HEADERS_STRATEGY:none}
   error:
     include-message: never
+    include-stacktrace: never
+    include-exception: false
+    whitelabel:
+      enabled: false
   servlet:
     session:
       timeout: 30d
@@ -65,6 +69,8 @@ app:
   zone: America/Sao_Paulo
   demo-data: ${DEMO_DATA:true}
   mail-from: ${MAIL_FROM:Fynavero <nao-responda@fynavero.local>}
+  # Sem servidor de e-mail, o conteúdo (com os links) vai para o log só em desenvolvimento.
+  log-mail-content: ${LOG_MAIL_CONTENT:true}
 
 logging:
   level:
@@ -86,3 +92,4 @@ spring:
     exclude: ""
 app:
   demo-data: ${DEMO_DATA:false}
+  log-mail-content: ${LOG_MAIL_CONTENT:false}

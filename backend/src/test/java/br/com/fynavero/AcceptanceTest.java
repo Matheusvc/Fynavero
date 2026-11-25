@@ -436,11 +436,11 @@ class AcceptanceTest {
         String link = actionService.payLink(transactionRepository.findById(billId).orElseThrow());
         String token = link.substring(link.indexOf("token=") + 6);
         MockHttpSession anonymous = new MockHttpSession();
-        assertThat(call(anonymous, get("/api/actions/" + token), null, 200).get("paid").asBoolean()).isFalse();
-        JsonNode paid = call(anonymous, post("/api/actions/" + token + "/pay"), null, 200);
+        assertThat(call(anonymous, post("/api/actions/describe"), "{\"token\":\"" + token + "\"}", 200).get("paid").asBoolean()).isFalse();
+        JsonNode paid = call(anonymous, post("/api/actions/pay"), "{\"token\":\"" + token + "\"}", 200);
         assertThat(paid.get("paid").asBoolean()).isTrue();
         assertThat(paid.get("description").asText()).isEqualTo("Aluguel");
-        call(anonymous, get("/api/actions/token-invalido"), null, 400);
+        call(anonymous, post("/api/actions/describe"), "{\"token\":\"token-invalido\"}", 400);
 
         JsonNode list = call(s, get("/api/transactions?month=" + YearMonth.from(tomorrow)), null, 200);
         for (JsonNode t : list) if (t.get("id").asLong() == billId) assertThat(t.get("status").asText()).isEqualTo("REALIZADO");

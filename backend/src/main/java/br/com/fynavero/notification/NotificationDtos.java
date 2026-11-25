@@ -19,5 +19,8 @@ public final class NotificationDtos {
     public record TestSummaryDto(String month, boolean emailConfigured) {}
 
     /** O que a página aberta pelo link do e-mail mostra antes de confirmar. */
+    /** O token do link vai no corpo (não na URL), para não ficar em logs nem no histórico. */
+    public record ActionReq(@jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(max = 100) String token) {}
+
     public record ActionDto(String description, long amountCents, LocalDate date, boolean paid) {}
 }

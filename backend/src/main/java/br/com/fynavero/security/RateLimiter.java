@@ -42,7 +42,11 @@ public class RateLimiter {
 
     /** Registra um evento (ex.: senha errada). */
     public void hit(String key) {
-        hits.computeIfAbsent(key, k -> new ArrayDeque<>()).addLast(Instant.now());
+        hits.compute(key, (k, q) -> {
+            Deque<Instant> d = q == null ? new ArrayDeque<>() : q;
+            d.addLast(Instant.now());
+            return d;
+        });
     }
 
     /** Zera a contagem (ex.: login certo depois de erros). */

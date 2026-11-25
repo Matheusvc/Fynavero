@@ -6,7 +6,7 @@ Plataforma web de gestão financeira pessoal, multiusuário, em português do Br
 
 [![CI](https://github.com/Matheusvc/Fynavero/actions/workflows/ci.yml/badge.svg)](https://github.com/Matheusvc/Fynavero/actions/workflows/ci.yml)
 
-🌐 **No ar:** https://fynavero.onrender.com · 📐 [Arquitetura](docs/ARQUITETURA.md) · 🚀 [Guia de lançamento](docs/LANCAMENTO.md)
+🌐 **No ar:** https://fynavero.onrender.com · 📐 [Arquitetura](docs/ARQUITETURA.md) · 🔒 [Segurança](docs/SEGURANCA.md) · 🚀 [Guia de lançamento](docs/LANCAMENTO.md)
 
 ---
 
@@ -40,6 +40,7 @@ Plataforma web de gestão financeira pessoal, multiusuário, em português do Br
 - **Limites por categoria:** alerta em 80% e 100% do limite do mês.
 - **Relatórios:** visão anual por categoria, comparação entre meses e exportação em Excel e PDF.
 - **Ocultar valores** com um toque (o olho no saldo), como nos apps de banco.
+- **Cores à sua escolha:** paleta de 12 cores para as linhas dos gráficos (Receitas, Despesas, Investido), as categorias e as etiquetas.
 
 **Avisos**
 - Sino com contas vencidas, de hoje e de amanhã (com "Marcar como paga") e limites perto do fim.
@@ -126,12 +127,13 @@ Todas as variáveis são opcionais; [`.env.example`](.env.example) traz cada uma
 | `MAIL_FROM` | `Fynavero <nao-responda@…>` | Remetente dos e-mails |
 | `COOKIE_SECURE`, `FORWARD_HEADERS_STRATEGY` | `false`, `none` | Use `true` e `framework` atrás de HTTPS/proxy (o Docker já define) |
 | `DEMO_DATA` | `true` no H2, `false` no PostgreSQL | Cria as contas de exemplo |
+| `LOG_MAIL_CONTENT` | `true` no H2, `false` no PostgreSQL | Sem servidor de e-mail, mostra o conteúdo (com os links) no log — nunca ligue em produção |
 | `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID` / `_CLIENT_SECRET` | — | Liga "Continuar com Google" (retorno: `{APP_BASE_URL}/login/oauth2/code/google`) |
 
 ## Testes
 
 ```bash
-cd backend && mvn test              # cálculo, aceite de ponta a ponta e um teste num PostgreSQL de verdade (embutido)
+cd backend && mvn test              # cálculo, aceite de ponta a ponta, ataques de segurança e um teste num PostgreSQL de verdade (embutido)
 cd frontend && npm test             # leitor de planilhas
 cd frontend && npm run typecheck    # tipos do TypeScript
 cd frontend && npm run check:tokens # nenhuma cor, fonte ou sombra fixa fora da identidade visual
@@ -171,9 +173,14 @@ Cada pacote do back-end segue o mesmo molde: entidades (com o repositório no me
 
 ## Segurança e privacidade
 
+Cada item da lista de pentest web (SQL Injection, XSS, CSRF, IDOR, força bruta, sessão, CORS, path traversal, upload, clickjacking, condição de corrida…) tem proteção e um teste que tenta o ataque — tabela completa em [docs/SEGURANCA.md](docs/SEGURANCA.md).
+
 - Toda consulta ao banco é filtrada pela pessoa logada; recursos de outra conta respondem 404.
 - Sessão em cookie `httpOnly` + `SameSite=Lax`, token CSRF em toda alteração, senhas com BCrypt e Content-Security-Policy restritiva.
-- Limites contra abuso: bloqueio de 15 minutos após 5 senhas erradas, até 5 contas novas por hora por rede e limite de e-mails de link.
+- Limites contra abuso: bloqueio de 15 minutos após 5 senhas erradas (por conta) ou 30 (por rede), até 5 contas novas por hora por rede e limite de e-mails de link.
+- Trocar ou redefinir a senha encerra as sessões nos outros aparelhos.
+- Cabeçalhos de proteção: CSP, HSTS, X-Frame-Options, nosniff, Permissions-Policy e Cross-Origin-Opener-Policy; CORS desligado.
+- A API não recebe arquivos e limita o tamanho dos pedidos.
 - Links enviados por e-mail são de uso único e expiram; no banco fica só o hash SHA-256.
 - LGPD: aceite dos termos registrado, exportação de todos os dados e exclusão definitiva da conta.
 - A planilha importada é lida no navegador e descartada; só os lançamentos confirmados são enviados.

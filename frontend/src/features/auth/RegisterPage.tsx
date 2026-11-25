@@ -73,11 +73,11 @@ export function RegisterPage() {
         <div className="mt-4 text-sm text-auth-field-foreground">
           <Checkbox checked={terms} onChange={setTerms}>
             Li e aceito os{" "}
-            <Link to="/termos" target="_blank" className="font-medium text-primary-text underline">
+            <Link to="/termos" target="_blank" rel="noopener noreferrer" className="font-medium text-primary-text underline">
               Termos de uso
             </Link>{" "}
             e a{" "}
-            <Link to="/privacidade" target="_blank" className="font-medium text-primary-text underline">
+            <Link to="/privacidade" target="_blank" rel="noopener noreferrer" className="font-medium text-primary-text underline">
               Política de privacidade
             </Link>
             .
