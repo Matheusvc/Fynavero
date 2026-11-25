@@ -1,17 +1,21 @@
 package br.com.fynavero.account;
 
+import br.com.fynavero.account.AccountToken.AccountTokenRepository;
+
+import br.com.fynavero.account.Profile.ProfileRepository;
+
 import br.com.fynavero.account.AccountDtos.ContributionDto;
 import br.com.fynavero.account.AccountDtos.DeleteAccountReq;
 import br.com.fynavero.category.CategoryDtos.CategoryDto;
-import br.com.fynavero.category.CategoryRepository;
-import br.com.fynavero.importing.ImportBatchRepository;
-import br.com.fynavero.ledger.IncomeSourceRepository;
+import br.com.fynavero.category.Category.CategoryRepository;
+import br.com.fynavero.importing.ImportBatch.ImportBatchRepository;
+import br.com.fynavero.ledger.IncomeSource.IncomeSourceRepository;
 import br.com.fynavero.ledger.IncomeSourceService;
-import br.com.fynavero.ledger.InstallmentPlanRepository;
+import br.com.fynavero.ledger.InstallmentPlan.InstallmentPlanRepository;
 import br.com.fynavero.ledger.LedgerDtos.RecurrenceDto;
 import br.com.fynavero.ledger.LedgerDtos.TxDto;
-import br.com.fynavero.ledger.RecurrenceRepository;
-import br.com.fynavero.ledger.TransactionRepository;
+import br.com.fynavero.ledger.Recurrence.RecurrenceRepository;
+import br.com.fynavero.ledger.Transaction.TransactionRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

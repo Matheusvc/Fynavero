@@ -6,8 +6,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
 import java.time.Instant;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /** Registro de um e-mail de aviso já enviado (kind + ref únicos por pessoa), para não repetir o mesmo aviso. */
 @Entity
@@ -18,4 +18,8 @@ public class NotificationLog {
     public String kind;
     public String ref;
     @Column(name = "sent_at") public Instant sentAt;
+
+    public interface NotificationLogRepository extends JpaRepository<NotificationLog, Long> {
+        boolean existsByUserIdAndKindAndRef(Long userId, String kind, String ref);
+    }
 }

@@ -1,7 +1,7 @@
 package br.com.fynavero.security;
 
 import br.com.fynavero.account.Profile;
-import br.com.fynavero.account.ProfileRepository;
+import br.com.fynavero.account.Profile.ProfileRepository;
 import br.com.fynavero.shared.AppProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

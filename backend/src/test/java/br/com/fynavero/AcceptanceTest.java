@@ -1,7 +1,7 @@
 package br.com.fynavero;
 
 import br.com.fynavero.shared.Mailer;
-import br.com.fynavero.ledger.TransactionRepository;
+import br.com.fynavero.ledger.Transaction.TransactionRepository;
 import org.mockito.ArgumentCaptor;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;

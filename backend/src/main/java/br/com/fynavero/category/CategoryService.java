@@ -1,5 +1,9 @@
 package br.com.fynavero.category;
 
+import br.com.fynavero.category.CatalogItem.CatalogItemRepository;
+
+import br.com.fynavero.category.Category.CategoryRepository;
+
 import br.com.fynavero.category.CategoryDtos.CatalogDto;
 import br.com.fynavero.category.CategoryDtos.CategoryReq;
 import br.com.fynavero.ledger.Transaction.Kind;

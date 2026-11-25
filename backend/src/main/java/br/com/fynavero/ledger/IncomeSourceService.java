@@ -1,5 +1,9 @@
 package br.com.fynavero.ledger;
 
+import br.com.fynavero.ledger.IncomeSource.IncomeSourceRepository;
+
+import br.com.fynavero.ledger.Recurrence.RecurrenceRepository;
+
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
 import br.com.fynavero.ledger.Transaction.Kind;

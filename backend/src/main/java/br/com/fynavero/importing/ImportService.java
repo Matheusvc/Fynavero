@@ -1,5 +1,7 @@
 package br.com.fynavero.importing;
 
+import br.com.fynavero.importing.ImportBatch.ImportBatchRepository;
+
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
 import br.com.fynavero.ledger.Transaction.Kind;
@@ -11,7 +13,7 @@ import br.com.fynavero.importing.ImportDtos.ImportReq;
 import br.com.fynavero.importing.ImportDtos.ImportRow;
 import br.com.fynavero.ledger.LedgerCalendar;
 import br.com.fynavero.ledger.Transaction;
-import br.com.fynavero.ledger.TransactionRepository;
+import br.com.fynavero.ledger.Transaction.TransactionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

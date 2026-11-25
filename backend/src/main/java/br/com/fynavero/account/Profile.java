@@ -6,12 +6,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /** Pessoa usuária: login, preferências e consentimento (LGPD). */
 @Entity
@@ -58,5 +59,9 @@ public class Profile {
     public void setObjectives(Collection<Objective> list) {
         objectivesCsv = list == null || list.isEmpty() ? null
                 : list.stream().distinct().map(Enum::name).collect(Collectors.joining(","));
+    }
+
+    public interface ProfileRepository extends JpaRepository<Profile, Long> {
+        Optional<Profile> findByEmailIgnoreCase(String email);
     }
 }

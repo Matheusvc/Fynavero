@@ -7,7 +7,7 @@ import br.com.fynavero.ledger.Transaction.Kind;
 import br.com.fynavero.ledger.LedgerCalendar;
 import br.com.fynavero.ledger.LedgerDtos.TxReq;
 import br.com.fynavero.ledger.Transaction;
-import br.com.fynavero.ledger.TransactionRepository;
+import br.com.fynavero.ledger.Transaction.TransactionRepository;
 import br.com.fynavero.ledger.TransactionService;
 import br.com.fynavero.planning.PlanningDtos.GoalDto;
 import br.com.fynavero.planning.PlanningDtos.GoalReq;

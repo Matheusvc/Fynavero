@@ -3,15 +3,17 @@ package br.com.fynavero.ledger;
 import br.com.fynavero.ledger.Transaction.PaymentMethod;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /** Compra parcelada ou dívida: agrupa as parcelas (lançamentos com installmentPlanId). */
 @Entity
@@ -26,4 +28,12 @@ public class InstallmentPlan {
     @Column(name = "first_date") public LocalDate firstDate;
     @Enumerated(EnumType.STRING) @Column(name = "payment_method") public PaymentMethod paymentMethod;
     @Column(name = "created_at") public Instant createdAt;
+
+    public interface InstallmentPlanRepository extends JpaRepository<InstallmentPlan, Long> {
+        List<InstallmentPlan> findByUserIdOrderByFirstDateDesc(Long userId);
+    
+        Optional<InstallmentPlan> findByIdAndUserId(Long id, Long userId);
+    
+        void deleteByUserId(Long userId);
+    }
 }

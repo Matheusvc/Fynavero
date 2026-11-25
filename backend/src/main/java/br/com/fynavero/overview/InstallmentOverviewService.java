@@ -2,12 +2,12 @@ package br.com.fynavero.overview;
 
 import br.com.fynavero.ledger.Transaction.Kind;
 import br.com.fynavero.ledger.InstallmentPlan;
-import br.com.fynavero.ledger.InstallmentPlanRepository;
+import br.com.fynavero.ledger.InstallmentPlan.InstallmentPlanRepository;
 import br.com.fynavero.ledger.LedgerCalendar;
-import br.com.fynavero.ledger.RecurrenceRepository;
+import br.com.fynavero.ledger.Recurrence.RecurrenceRepository;
 import br.com.fynavero.ledger.RecurrenceService;
 import br.com.fynavero.ledger.Transaction;
-import br.com.fynavero.ledger.TransactionRepository;
+import br.com.fynavero.ledger.Transaction.TransactionRepository;
 import br.com.fynavero.overview.OverviewDtos.CommitmentDto;
 import br.com.fynavero.overview.OverviewDtos.InstallmentsDto;
 import br.com.fynavero.overview.OverviewDtos.PlanDto;

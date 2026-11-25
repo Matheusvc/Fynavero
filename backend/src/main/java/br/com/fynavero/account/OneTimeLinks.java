@@ -1,5 +1,7 @@
 package br.com.fynavero.account;
 
+import br.com.fynavero.account.AccountToken.AccountTokenRepository;
+
 import br.com.fynavero.account.AccountToken.Purpose;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

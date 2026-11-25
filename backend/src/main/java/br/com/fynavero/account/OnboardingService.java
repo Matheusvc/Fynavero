@@ -1,7 +1,7 @@
 package br.com.fynavero.account;
 
 import br.com.fynavero.category.CatalogItem;
-import br.com.fynavero.category.CatalogItemRepository;
+import br.com.fynavero.category.CatalogItem.CatalogItemRepository;
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
 import br.com.fynavero.ledger.Transaction.Kind;

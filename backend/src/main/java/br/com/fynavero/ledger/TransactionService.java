@@ -1,5 +1,7 @@
 package br.com.fynavero.ledger;
 
+import br.com.fynavero.ledger.Transaction.TransactionRepository;
+
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
 import br.com.fynavero.ledger.Transaction.Kind;

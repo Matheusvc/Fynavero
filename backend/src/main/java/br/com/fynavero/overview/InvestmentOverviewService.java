@@ -5,7 +5,7 @@ import br.com.fynavero.category.CategoryService;
 import br.com.fynavero.ledger.Transaction.Kind;
 import br.com.fynavero.ledger.RecurrenceService;
 import br.com.fynavero.ledger.Transaction;
-import br.com.fynavero.ledger.TransactionRepository;
+import br.com.fynavero.ledger.Transaction.TransactionRepository;
 import br.com.fynavero.overview.OverviewDtos.InvestmentCategoryDto;
 import br.com.fynavero.overview.OverviewDtos.InvestmentsDto;
 import br.com.fynavero.overview.OverviewDtos.MonthBarDto;

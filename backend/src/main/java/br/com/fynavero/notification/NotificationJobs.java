@@ -1,7 +1,7 @@
 package br.com.fynavero.notification;
 
 import br.com.fynavero.account.Profile;
-import br.com.fynavero.account.ProfileRepository;
+import br.com.fynavero.account.Profile.ProfileRepository;
 import br.com.fynavero.ledger.LedgerCalendar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

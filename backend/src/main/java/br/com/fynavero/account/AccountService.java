@@ -1,5 +1,7 @@
 package br.com.fynavero.account;
 
+import br.com.fynavero.account.Profile.ProfileRepository;
+
 import br.com.fynavero.account.AccountDtos.ContributionDto;
 import br.com.fynavero.account.AccountDtos.PasswordReq;
 import br.com.fynavero.account.AccountDtos.ProfileReq;

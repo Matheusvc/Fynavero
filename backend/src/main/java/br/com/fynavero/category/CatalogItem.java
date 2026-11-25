@@ -4,6 +4,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /** Catálogo global de categorias sugeridas no onboarding (carregado pela migração V2). */
 @Entity
@@ -14,4 +16,8 @@ public class CatalogItem {
     public String icon;
     @Column(name = "group_name") public String group;
     @Column(name = "sort_order") public int sortOrder;
+
+    public interface CatalogItemRepository extends JpaRepository<CatalogItem, Long> {
+        List<CatalogItem> findAllByOrderBySortOrder();
+    }
 }

@@ -3,14 +3,16 @@ package br.com.fynavero.category;
 import br.com.fynavero.ledger.Transaction.Kind;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
 import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /** Categoria criada pela pessoa (despesa, receita ou investimento). */
 @Entity
@@ -37,4 +39,16 @@ public class Category {
     /** Prazo do objetivo de economia (só investimentos). */
     @Column(name = "goal_deadline") public java.time.LocalDate goalDeadline;
     @Column(name = "created_at") public Instant createdAt;
+
+    public interface CategoryRepository extends JpaRepository<Category, Long> {
+        List<Category> findByUserIdOrderByKindAscSortOrderAsc(Long userId);
+    
+        List<Category> findByUserIdAndKindOrderBySortOrder(Long userId, Kind kind);
+    
+        Optional<Category> findByIdAndUserId(Long id, Long userId);
+    
+        long countByUserIdAndKind(Long userId, Kind kind);
+    
+        void deleteByUserId(Long userId);
+    }
 }

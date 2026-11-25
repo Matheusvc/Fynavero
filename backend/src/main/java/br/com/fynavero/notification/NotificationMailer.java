@@ -1,5 +1,7 @@
 package br.com.fynavero.notification;
 
+import br.com.fynavero.notification.NotificationLog.NotificationLogRepository;
+
 import br.com.fynavero.account.AccountService;
 import br.com.fynavero.account.Profile;
 import br.com.fynavero.category.Category;
