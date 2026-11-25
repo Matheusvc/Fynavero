@@ -16,7 +16,11 @@ export type Me = {
   contribution: Contribution;
   hasPassword: boolean;
   emailVerified: boolean;
+  chartColors?: ChartColors;
 };
+
+/** Cor escolhida para cada linha dos gráficos (token "chart-N"; nulo = cor padrão). */
+export type ChartColors = { income?: string | null; expense?: string | null; invest?: string | null };
 
 export type Providers = { google: boolean; magicLink: boolean };
 
@@ -197,7 +201,7 @@ export type ImportBatch = {
 
 
 export type SearchResult = { items: Tx[]; receitasCents: number; despesasCents: number; investidoCents: number; truncated: boolean };
-export type TagCount = { tag: string; count: number };
+export type TagCount = { tag: string; count: number; color?: string | null };
 
 export type BudgetLevel = "OK" | "ALERTA" | "ESTOURADO";
 export type Budget = {

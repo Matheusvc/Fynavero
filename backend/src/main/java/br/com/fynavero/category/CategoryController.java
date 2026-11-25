@@ -39,7 +39,7 @@ public class CategoryController {
 
     @PostMapping("/categories")
     public CategoryDto create(@AuthenticationPrincipal AuthUser u, @Valid @RequestBody CategoryReq body) {
-        return CategoryDto.of(categories.create(u.id(), body.name(), body.kind(), body.group(), body.icon(), body.goalCents()));
+        return CategoryDto.of(categories.create(u.id(), body));
     }
 
     @PutMapping("/categories/{id}")

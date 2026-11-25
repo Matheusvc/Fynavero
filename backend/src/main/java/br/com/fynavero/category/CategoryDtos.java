@@ -38,7 +38,8 @@ public final class CategoryDtos {
                               @Size(max = 30) String group,
                               @Size(max = 40) String icon,
                               Boolean hidden,
-                              @PositiveOrZero @Max(MAX_CENTS) Long goalCents) {}
+                              @PositiveOrZero @Max(MAX_CENTS) Long goalCents,
+                              @Size(max = 20) String color) {}
 
     public record ReorderReq(@NotNull Kind kind, @NotEmpty List<Long> ids) {}
 }

@@ -102,7 +102,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         fixedBill(id, "Assinaturas", "Streaming", 5_590, 20, PaymentMethod.CREDITO, start);
 
         Category reserva = cat(id, "Reserva de emergência");
-        categories.update(id, reserva.id, new CategoryReq(reserva.name, null, null, null, null, 1_500_000L));
+        categories.update(id, reserva.id, new CategoryReq(reserva.name, null, null, null, null, 1_500_000L, null));
         categories.create(id, "Viagem", Kind.INVESTIMENTO, null, "plane", 600_000L);
         installments.create(id, cat(id, "Cartão de crédito").id, "Notebook", InstallmentService.parts(490_000, 10, false),
                 day(now.minusMonths(3), 12), PaymentMethod.CREDITO, null);

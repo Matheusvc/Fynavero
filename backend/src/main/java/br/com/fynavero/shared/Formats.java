@@ -16,6 +16,17 @@ public final class Formats {
     /** Maior valor aceito em um lançamento: R$ 1 bilhão, em centavos. */
     public static final long MAX_CENTS = 100_000_000_000L;
 
+    /** Cores que a pessoa pode escolher (gráficos, categorias e etiquetas): tokens "chart-1" a "chart-12" da identidade visual. */
+    public static final int PALETTE_SIZE = 12;
+
+    /** A cor informada, se for da paleta; nulo/vazio volta nulo (= cor padrão). */
+    public static String paletteColor(String raw) {
+        String c = trimOrNull(raw);
+        if (c == null) return null;
+        if (!c.matches("chart-([1-9]|1[0-2])")) throw Errors.badRequest("Escolha uma cor da paleta.");
+        return c;
+    }
+
     /** Texto sem espaços nas pontas, ou nulo se ficar vazio. */
     public static String trimOrNull(String s) {
         if (s == null) return null;

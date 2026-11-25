@@ -1,5 +1,6 @@
 package br.com.fynavero.account;
 
+import br.com.fynavero.account.AccountDtos.ChartColors;
 import br.com.fynavero.account.AccountDtos.ContributionDto;
 import br.com.fynavero.account.AccountDtos.DeleteAccountReq;
 import br.com.fynavero.account.AccountDtos.PasswordReq;
@@ -21,6 +22,7 @@ import br.com.fynavero.ledger.LedgerDtos.TxDto;
 import br.com.fynavero.ledger.Recurrence.RecurrenceRepository;
 import br.com.fynavero.ledger.Transaction.Kind;
 import br.com.fynavero.ledger.Transaction.TransactionRepository;
+import br.com.fynavero.shared.Formats;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -95,6 +97,14 @@ public class AccountService {
     }
 
     @Transactional
+    public Profile updateChartColors(Long userId, ChartColors req) {
+        Profile p = require(userId);
+        p.colorIncome = Formats.paletteColor(req.income());
+        p.colorExpense = Formats.paletteColor(req.expense());
+        p.colorInvest = Formats.paletteColor(req.invest());
+        return p;
+    }
+
     public Profile updateContribution(Long userId, ContributionDto req) {
         Profile p = require(userId);
         if (req.categoryId() != null) {

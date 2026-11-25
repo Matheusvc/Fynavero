@@ -81,7 +81,9 @@ public final class LedgerDtos {
     /** Resultado da busca: lançamentos encontrados e quanto somam por tipo. */
     public record SearchDto(List<TxDto> items, long receitasCents, long despesasCents, long investidoCents, boolean truncated) {}
 
-    public record TagDto(String tag, int count) {}
+    public record TagDto(String tag, int count, String color) {}
+
+    public record TagColorReq(@NotBlank @Size(max = 40) String tag, @Size(max = 20) String color) {}
 
     public record IdsReq(@NotEmpty @Size(max = 500) List<Long> ids) {}
 

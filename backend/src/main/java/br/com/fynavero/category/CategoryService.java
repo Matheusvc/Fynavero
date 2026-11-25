@@ -7,6 +7,7 @@ import br.com.fynavero.category.Category.CategoryRepository;
 import br.com.fynavero.category.CategoryDtos.CatalogDto;
 import br.com.fynavero.category.CategoryDtos.CategoryReq;
 import br.com.fynavero.ledger.Transaction.Kind;
+import br.com.fynavero.shared.Formats;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -89,6 +90,15 @@ public class CategoryService {
         return repo.save(c);
     }
 
+    /** Nova categoria pela tela, com a cor escolhida (sem cor, a próxima da paleta). */
+    @Transactional
+    public Category create(Long userId, CategoryReq req) {
+        Category c = create(userId, req.name(), req.kind(), req.group(), req.icon(), req.goalCents());
+        String color = Formats.paletteColor(req.color());
+        if (color != null) c.color = color;
+        return c;
+    }
+
     /** Receita "Empréstimo": entra no saldo, mas aparece separada da renda. */
     @Transactional
     public Category ensureLoanCategory(Long userId) {
@@ -120,6 +130,7 @@ public class CategoryService {
         if (req.group() != null) c.group = normalizeGroup(c.kind, req.group());
         if (req.icon() != null && !req.icon().isBlank()) c.icon = req.icon();
         if (req.hidden() != null) c.hidden = req.hidden();
+        if (req.color() != null && !req.color().isBlank()) c.color = Formats.paletteColor(req.color());
         if (c.kind != Kind.RECEITA && req.goalCents() != null) c.goalCents = req.goalCents() > 0 ? req.goalCents() : null;
         if (c.goalCents == null) c.goalDeadline = null;
         return c;

@@ -1,5 +1,6 @@
 package br.com.fynavero.account;
 
+import br.com.fynavero.account.AccountDtos.ChartColors;
 import br.com.fynavero.account.AccountDtos.ContributionDto;
 import br.com.fynavero.account.AccountDtos.DeleteAccountReq;
 import br.com.fynavero.account.AccountDtos.EmailReq;
@@ -184,6 +185,11 @@ public class AccountController {
     @PutMapping("/api/profile/contribution")
     public Me contribution(@AuthenticationPrincipal AuthUser u, @Valid @RequestBody ContributionDto body) {
         return Me.of(accounts.updateContribution(u.id(), body));
+    }
+
+    @PutMapping("/api/profile/chart-colors")
+    public Me chartColors(@AuthenticationPrincipal AuthUser u, @Valid @RequestBody ChartColors body) {
+        return Me.of(accounts.updateChartColors(u.id(), body));
     }
 
     @PutMapping("/api/profile/password")

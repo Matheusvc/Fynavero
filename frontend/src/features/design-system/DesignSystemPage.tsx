@@ -21,7 +21,7 @@ const colorGroups: { title: string; tokens: string[] }[] = [
   { title: "Marca", tokens: ["primary", "primary-text", "secondary", "accent", "foreground", "background"] },
   { title: "Superfícies", tokens: ["card", "popover", "muted", "muted-foreground", "border", "input", "ring"] },
   { title: "Semânticas financeiras", tokens: ["positive", "positive-subtle", "negative", "negative-subtle", "forecast", "forecast-subtle"] },
-  { title: "Gráficos", tokens: ["chart-1", "chart-2", "chart-3", "chart-4", "chart-5", "chart-6", "chart-other"] },
+  { title: "Gráficos", tokens: ["chart-1", "chart-2", "chart-3", "chart-4", "chart-5", "chart-6", "chart-7", "chart-8", "chart-9", "chart-10", "chart-11", "chart-12", "chart-other"] },
   { title: "Séries", tokens: ["series-income", "series-expense", "series-invest"] },
 ];
 

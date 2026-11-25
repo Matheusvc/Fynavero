@@ -10,6 +10,7 @@ import br.com.fynavero.ledger.LedgerDtos.PlanResizeReq;
 import br.com.fynavero.ledger.LedgerDtos.RecurrenceDto;
 import br.com.fynavero.ledger.LedgerDtos.RecurrenceReq;
 import br.com.fynavero.ledger.LedgerDtos.SearchDto;
+import br.com.fynavero.ledger.LedgerDtos.TagColorReq;
 import br.com.fynavero.ledger.LedgerDtos.TagDto;
 import br.com.fynavero.ledger.LedgerDtos.TxDto;
 import br.com.fynavero.ledger.LedgerDtos.TxReq;
@@ -86,7 +87,12 @@ public class LedgerController {
 
     @GetMapping("/api/transactions/tags")
     public List<TagDto> tags(@AuthenticationPrincipal AuthUser u) {
-        return transactions.tags(u.id()).stream().map(e -> new TagDto(e.getKey(), e.getValue())).toList();
+        return transactions.tags(u.id());
+    }
+
+    @PutMapping("/api/transactions/tags/color")
+    public TagDto tagColor(@AuthenticationPrincipal AuthUser u, @Valid @RequestBody TagColorReq body) {
+        return transactions.setTagColor(u.id(), body.tag(), body.color());
     }
 
     @PostMapping("/api/transactions")

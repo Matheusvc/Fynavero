@@ -1,5 +1,7 @@
-import { useState, type KeyboardEvent } from "react";
+import { useState, type CSSProperties, type KeyboardEvent } from "react";
 import { Hash, X } from "lucide-react";
+import { ColorDot } from "@/components/ColorPicker";
+import { cssColor, useTagColors } from "@/lib/colors";
 import { cn } from "@/lib/utils";
 
 const MAX_TAGS = 10;
@@ -30,6 +32,7 @@ export function TagInput({
   "aria-describedby"?: string;
 }) {
   const [draft, setDraft] = useState("");
+  const colorOf = useTagColors();
 
   /** Adiciona uma ou mais etiquetas de uma vez (ex.: "viagem, praia" colado de outro lugar). */
   const add = (raw: string, rest = "") => {
@@ -66,8 +69,10 @@ export function TagInput({
           "focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-ring",
         )}
       >
-        {value.map((t) => (
-          <span key={t} className="inline-flex items-center gap-0.5 rounded-full bg-accent py-0.5 pr-1 pl-2 text-sm text-accent-foreground">
+        {value.map((t) => {
+          const look = tagLook(colorOf(t));
+          return (
+          <span key={t} className={cn("inline-flex items-center gap-0.5 rounded-full py-0.5 pr-1 pl-2 text-sm", look.className)} style={look.style}>
             #{t}
             <button
               type="button"
@@ -78,7 +83,8 @@ export function TagInput({
               <X className="size-3.5" aria-hidden="true" />
             </button>
           </span>
-        ))}
+          );
+        })}
         <input
           {...aria}
           id={id}
@@ -117,8 +123,26 @@ export function TagInput({
   );
 }
 
-/** Etiquetas como chips pequenos, para listas. */
+/** Classe e estilo de uma etiqueta: tingida pela cor escolhida, ou neutra. */
+export function tagLook(color?: string | null): { className: string; style?: CSSProperties } {
+  return color
+    ? { className: "tag-tinted border text-foreground", style: { "--tag-color": cssColor(color) } as CSSProperties }
+    : { className: "border border-transparent bg-accent text-accent-foreground" };
+}
+
+/** Uma etiqueta, só para mostrar (com a cor escolhida). */
+export function TagChipView({ tag, color, className }: { tag: string; color?: string | null; className?: string }) {
+  const look = tagLook(color);
+  return (
+    <span className={cn("inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium", look.className, className)} style={look.style}>
+      {color && <ColorDot token={color} className="size-2" />}#{tag}
+    </span>
+  );
+}
+
+/** Etiquetas como chips pequenos, para listas (com a cor que a pessoa escolheu em Ajustes › Etiquetas). */
 export function TagList({ tags, onSelect, className }: { tags: string[]; onSelect?: (t: string) => void; className?: string }) {
+  const colorOf = useTagColors();
   if (!tags.length) return null;
   return (
     <span className={cn("inline-flex flex-wrap gap-1", className)}>
@@ -131,14 +155,12 @@ export function TagList({ tags, onSelect, className }: { tags: string[]; onSelec
               e.stopPropagation();
               onSelect(t);
             }}
-            className="rounded-md bg-accent px-1.5 py-0.5 text-xs font-medium text-accent-foreground hover:underline"
+            className="rounded-md hover:underline"
           >
-            #{t}
+            <TagChipView tag={t} color={colorOf(t)} />
           </button>
         ) : (
-          <span key={t} className="rounded-md bg-accent px-1.5 py-0.5 text-xs font-medium text-accent-foreground">
-            #{t}
-          </span>
+          <TagChipView key={t} tag={t} color={colorOf(t)} />
         ),
       )}
     </span>

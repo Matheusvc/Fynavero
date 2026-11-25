@@ -38,6 +38,10 @@ public class Profile {
     @Column(name = "notify_summary") public boolean notifySummary = true;
     /** Quando a pessoa confirmou o e-mail (nulo = ainda não confirmou). Avisos por e-mail só saem confirmados. */
     @Column(name = "email_verified_at") public Instant emailVerifiedAt;
+    /** Cores escolhidas para as linhas dos gráficos (token da paleta; nulo = padrão). */
+    @Column(name = "color_income") public String colorIncome;
+    @Column(name = "color_expense") public String colorExpense;
+    @Column(name = "color_invest") public String colorInvest;
     @Column(name = "terms_accepted_at") public Instant termsAcceptedAt;
     @Column(name = "created_at") public Instant createdAt;
 

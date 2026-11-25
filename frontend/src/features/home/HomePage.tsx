@@ -14,6 +14,7 @@ import { formatShortDay } from "@/lib/format";
 import { CategoryIcon } from "@/lib/icons";
 import { useMonth } from "@/lib/month";
 import { useCategories, useDashboard, useMe } from "@/lib/queries";
+import { useSeriesColors } from "@/lib/colors";
 import { useUndoable } from "@/features/transactions/quick-add/useUndoable";
 import { maskMoney, useHideValues } from "@/lib/privacy";
 import type { Slice } from "@/lib/types";
@@ -30,6 +31,7 @@ export default function HomePage() {
   const { openNew } = useQuickAdd();
   const undoable = useUndoable();
   const [hidden] = useHideValues();
+  const series = useSeriesColors();
   const navigate = useNavigate();
   const [panel, setPanel] = useState<Slice | null>(null);
   const closePanel = useCallback(() => setPanel(null), []);
@@ -183,9 +185,9 @@ export default function HomePage() {
           title="Receitas, despesas e investido nos últimos 6 meses"
           data={d.lastMonths}
           series={[
-            { key: "receitas", label: "Receitas", color: "series-income" },
-            { key: "despesas", label: "Despesas", color: "series-expense" },
-            { key: "investido", label: "Investido", color: "series-invest" },
+            { key: "receitas", label: "Receitas", color: series.income },
+            { key: "despesas", label: "Despesas", color: series.expense },
+            { key: "investido", label: "Investido", color: series.invest },
           ]}
         />
       </Card>

@@ -19,15 +19,18 @@ import { centsToInput, monthName, parseMoneyInput } from "@/lib/format";
 import { CategoryIcon } from "@/lib/icons";
 import { useMonth } from "@/lib/month";
 import { invalidateFinance, useInvestments } from "@/lib/queries";
+import { useSeriesColors } from "@/lib/colors";
+import { ColorPicker } from "@/components/ColorPicker";
 import type { InvestmentCategory } from "@/lib/types";
 import { SavingsHistoryDialog } from "./SavingsHistoryDialog";
 import { InvestmentHistory } from "./InvestmentHistory";
 
-type Draft = { id?: number; name: string; goal: string; icon: string };
+type Draft = { id?: number; name: string; goal: string; icon: string; color?: string };
 
 export default function InvestmentsPage() {
   const { month } = useMonth();
   const data = useInvestments(month);
+  const series = useSeriesColors();
   const qc = useQueryClient();
   const { openNew } = useQuickAdd();
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -39,7 +42,7 @@ export default function InvestmentsPage() {
     setSaving(true);
     const goalCents = draft.goal ? parseMoneyInput(draft.goal) : null;
     try {
-      const body = { name: draft.name.trim(), kind: "INVESTIMENTO", icon: draft.icon, goalCents: goalCents ?? 0 };
+      const body = { name: draft.name.trim(), kind: "INVESTIMENTO", icon: draft.icon, goalCents: goalCents ?? 0, color: draft.color };
       if (draft.id) await api(`/api/categories/${draft.id}`, { method: "PUT", body });
       else await api("/api/categories", { method: "POST", body });
       await qc.invalidateQueries({ queryKey: ["categories"] });
@@ -54,7 +57,7 @@ export default function InvestmentsPage() {
   }
 
   const edit = (c: InvestmentCategory) =>
-    setDraft({ id: c.categoryId, name: c.name, icon: c.icon, goal: c.goalCents ? centsToInput(c.goalCents) : "" });
+    setDraft({ id: c.categoryId, name: c.name, icon: c.icon, goal: c.goalCents ? centsToInput(c.goalCents) : "", color: c.color });
 
   return (
     <div className="space-y-4">
@@ -166,7 +169,7 @@ export default function InvestmentsPage() {
             <Bars
               title="Valor investido por mês nos últimos 12 meses"
               data={data.data.history}
-              series={[{ key: "investido", label: "Investido", color: "series-invest" }]}
+              series={[{ key: "investido", label: "Investido", color: series.invest }]}
             />
           </Card>
           <InvestmentHistory />
@@ -202,6 +205,9 @@ export default function InvestmentsPage() {
               <CurrencyInput value={draft.goal} onChange={(goal) => setDraft({ ...draft, goal })} />
             </Field>
             <IconPicker value={draft.icon} onChange={(icon) => setDraft({ ...draft, icon })} />
+            <Field label="Cor nos gráficos">
+              <ColorPicker label="Cor da categoria" value={draft.color} onChange={(color) => setDraft({ ...draft, color: color ?? undefined })} />
+            </Field>
           </div>
         )}
       </Modal>

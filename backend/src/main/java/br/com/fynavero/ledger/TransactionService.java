@@ -1,6 +1,7 @@
 package br.com.fynavero.ledger;
 
 import br.com.fynavero.ledger.Transaction.TransactionRepository;
+import br.com.fynavero.ledger.TagColor.TagColorRepository;
 
 import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
@@ -11,6 +12,7 @@ import br.com.fynavero.ledger.Transaction.Scope;
 import br.com.fynavero.ledger.Transaction.Status;
 import br.com.fynavero.ledger.LedgerDtos.InstallmentConvertReq;
 import br.com.fynavero.ledger.LedgerDtos.LoanRepayment;
+import br.com.fynavero.ledger.LedgerDtos.TagDto;
 import br.com.fynavero.ledger.LedgerDtos.TxReq;
 import br.com.fynavero.ledger.LedgerDtos.TxUpdateReq;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -41,14 +43,17 @@ public class TransactionService {
     private final InstallmentService installments;
     private final CategoryService categories;
     private final LedgerCalendar calendar;
+    private final TagColorRepository tagColors;
 
     public TransactionService(TransactionRepository transactions, RecurrenceService recurrences,
-                              InstallmentService installments, CategoryService categories, LedgerCalendar calendar) {
+                              InstallmentService installments, CategoryService categories, LedgerCalendar calendar,
+                              TagColorRepository tagColors) {
         this.transactions = transactions;
         this.recurrences = recurrences;
         this.installments = installments;
         this.categories = categories;
         this.calendar = calendar;
+        this.tagColors = tagColors;
     }
 
     // ------------------------------------------------------------------ consulta
@@ -115,14 +120,37 @@ public class TransactionService {
     public record SearchResult(List<Transaction> items, long receitas, long despesas, long investido, boolean truncated) {}
 
     /** Etiquetas já usadas pela pessoa, das mais usadas para as menos usadas. */
-    public List<Map.Entry<String, Integer>> tags(Long userId) {
+    /** Etiquetas em uso, das mais usadas para as menos, com a cor escolhida (nula = neutra). */
+    public List<TagDto> tags(Long userId) {
         Map<String, Integer> count = new HashMap<>();
         for (Transaction t : transactions.findAllActive(userId)) {
             for (String tag : Tags.list(t.tags)) count.merge(tag, 1, Integer::sum);
         }
+        Map<String, String> colors = new HashMap<>();
+        tagColors.findByUserId(userId).forEach(c -> colors.put(c.tag, c.color));
         return count.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed().thenComparing(Map.Entry.comparingByKey()))
+                .map(e -> new TagDto(e.getKey(), e.getValue(), colors.get(e.getKey())))
                 .toList();
+    }
+
+    /** Escolhe (ou tira, com cor nula) a cor de uma etiqueta. */
+    @Transactional
+    public TagDto setTagColor(Long userId, String rawTag, String rawColor) {
+        String tag = Tags.clean(rawTag);
+        if (tag == null) throw badRequest("Informe a etiqueta.");
+        String color = br.com.fynavero.shared.Formats.paletteColor(rawColor);
+        var current = tagColors.findByUserIdAndTag(userId, tag);
+        if (color == null) current.ifPresent(tagColors::delete);
+        else {
+            TagColor c = current.orElseGet(TagColor::new);
+            c.userId = userId;
+            c.tag = tag;
+            c.color = color;
+            tagColors.save(c);
+        }
+        int uses = (int) transactions.findAllActive(userId).stream().filter(t -> Tags.list(t.tags).contains(tag)).count();
+        return new TagDto(tag, uses, color);
     }
 
     /** Todos os lançamentos de uma categoria, do mais novo para o mais antigo (ex.: o que já foi guardado num objetivo). */

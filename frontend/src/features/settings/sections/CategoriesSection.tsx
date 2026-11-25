@@ -5,6 +5,7 @@ import { ArrowDown, ArrowUp, Eye, EyeOff, Pencil, Plus } from "lucide-react";
 import { Money } from "@/components/Money";
 import { CurrencyInput } from "@/components/CurrencyInput";
 import { IconPicker } from "@/components/IconPicker";
+import { ColorPicker } from "@/components/ColorPicker";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/dialog";
 import { Field, Input, Select } from "@/components/ui/field";
@@ -19,7 +20,7 @@ import { invalidateFinance, useCategories } from "@/lib/queries";
 import type { Category, Kind } from "@/lib/types";
 import { Section, useSave } from "../shared";
 
-type CatDraft = { id?: number; name: string; kind: Kind; group: string; icon: string; goal: string };
+type CatDraft = { id?: number; name: string; kind: Kind; group: string; icon: string; goal: string; color?: string };
 
 export function CategoriesSection() {
   const qc = useQueryClient();
@@ -61,7 +62,7 @@ export function CategoriesSection() {
   async function save() {
     if (!draft) return;
     const goalCents = draft.goal ? parseMoneyInput(draft.goal) ?? 0 : 0;
-    const body = { name: draft.name.trim(), kind: draft.kind, group: draft.group, icon: draft.icon, goalCents };
+    const body = { name: draft.name.trim(), kind: draft.kind, group: draft.group, icon: draft.icon, goalCents, color: draft.color };
     const ok = await s.run(
       () => (draft.id ? api(`/api/categories/${draft.id}`, { method: "PUT", body }) : api("/api/categories", { method: "POST", body })),
       draft.id ? "Categoria atualizada" : "Categoria criada",
@@ -111,7 +112,7 @@ export function CategoriesSection() {
               variant="ghost"
               size="icon"
               aria-label={`Editar ${c.name}`}
-              onClick={() => setDraft({ id: c.id, name: c.name, kind: c.kind, group: c.group, icon: c.icon, goal: c.goalCents ? centsToInput(c.goalCents) : "" })}
+              onClick={() => setDraft({ id: c.id, name: c.name, kind: c.kind, group: c.group, icon: c.icon, goal: c.goalCents ? centsToInput(c.goalCents) : "", color: c.color })}
             >
               <Pencil />
             </Button>
@@ -149,6 +150,9 @@ export function CategoriesSection() {
               </Field>
             )}
             <IconPicker value={draft.icon} onChange={(icon) => setDraft({ ...draft, icon })} />
+            <Field label="Cor nos gráficos" hint={draft.id ? undefined : "Sem escolher, usamos a próxima cor da paleta."}>
+              <ColorPicker label="Cor da categoria" value={draft.color} onChange={(color) => setDraft({ ...draft, color: color ?? undefined })} />
+            </Field>
           </div>
         )}
       </Modal>

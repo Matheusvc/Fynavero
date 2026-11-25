@@ -95,7 +95,7 @@ public class GoalService {
     public GoalDto update(Long userId, Long id, GoalReq req) {
         Category c = requireGoal(userId, id);
         if (req.deadline() != null && !req.deadline().equals(c.goalDeadline)) validateDeadline(req.deadline());
-        categories.update(userId, id, new CategoryReq(req.name(), null, null, req.icon(), null, req.targetCents()));
+        categories.update(userId, id, new CategoryReq(req.name(), null, null, req.icon(), null, req.targetCents(), null));
         c.goalDeadline = req.deadline();
         return list(userId).stream().filter(g -> g.id().equals(id)).findFirst().orElseThrow();
     }

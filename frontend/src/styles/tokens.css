@@ -46,13 +46,20 @@
   --destructive: #b91c1c;
   --destructive-foreground: #ffffff;
 
-  /* Gráficos: 6 categorias + "Outros" (a cor acompanha a categoria) */
+  /* Gráficos: paleta de 12 cores que a pessoa escolhe (categorias, etiquetas e linhas) + "Outros".
+     1–6 são a identidade Fynavero (usadas automaticamente); 7–12 são opções extras. */
   --chart-1: #e85002;
   --chart-2: #333333;
   --chart-3: #f29b66;
   --chart-4: #8a8a8a;
   --chart-5: #8f3100;
   --chart-6: #c4c4c4;
+  --chart-7: #2563eb;
+  --chart-8: #15803d;
+  --chart-9: #7c3aed;
+  --chart-10: #0f766e;
+  --chart-11: #b45309;
+  --chart-12: #be185d;
   --chart-other: #dcdcdc;
   --chart-grid: #e8e8e8;
   --series-income: #333333;
@@ -164,6 +171,12 @@
   --chart-4: #8a8a8a;
   --chart-5: #c24400;
   --chart-6: #5c5c5c;
+  --chart-7: #60a5fa;
+  --chart-8: #4ade80;
+  --chart-9: #a78bfa;
+  --chart-10: #2dd4bf;
+  --chart-11: #fbbf24;
+  --chart-12: #f472b6;
   --chart-other: #3d3d3d;
   --chart-grid: #262626;
   --series-income: #f9f9f9;
@@ -173,4 +186,10 @@
   --elevation-1: 0 1px 2px 0 rgb(0 0 0 / 0.6);
   --elevation-2: 0 4px 16px -4px rgb(0 0 0 / 0.7);
   --elevation-3: 0 16px 40px -12px rgb(0 0 0 / 0.8);
+}
+
+/* Etiqueta com a cor escolhida (--tag-color = uma cor da paleta): fundo e borda tingidos, texto normal. */
+.tag-tinted {
+  background-color: color-mix(in srgb, var(--tag-color) 16%, transparent);
+  border-color: color-mix(in srgb, var(--tag-color) 50%, transparent);
 }

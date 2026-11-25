@@ -10,6 +10,7 @@ import { useMe } from "@/lib/queries";
 import { Section } from "./shared";
 import { ProfileSection } from "./sections/ProfileSection";
 import { CategoriesSection } from "./sections/CategoriesSection";
+import { TagsSection } from "./sections/TagsSection";
 import { IncomeSection } from "./sections/IncomeSection";
 import { BillsSection } from "./sections/BillsSection";
 import { ContributionSection } from "./sections/ContributionSection";
@@ -21,6 +22,7 @@ import { PrivacySection } from "./sections/PrivacySection";
 const SECTIONS = [
   ["perfil", "Perfil"],
   ["categorias", "Categorias"],
+  ["etiquetas", "Etiquetas"],
   ["renda", "Fontes de renda"],
   ["contas-fixas", "Contas fixas"],
   ["contribuicao", "Contribuição"],
@@ -54,6 +56,7 @@ export default function SettingsPage() {
       <div className="space-y-4">
         <ProfileSection me={me.data} />
         <CategoriesSection />
+        <TagsSection />
         <IncomeSection />
         <BillsSection />
         <ContributionSection me={me.data} />

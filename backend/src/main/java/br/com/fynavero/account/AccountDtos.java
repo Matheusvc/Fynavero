@@ -35,12 +35,16 @@ public final class AccountDtos {
     /** Contribuição automática (dízimo ou doação); bps em pontos-base: 1000 = 10%. */
     public record ContributionDto(boolean enabled, @Min(1) @Max(10000) int bps, Long categoryId) {}
 
+    /** Cores das linhas dos gráficos: Receitas, Despesas e Investido (nulo = cor padrão). */
+    public record ChartColors(@Size(max = 20) String income, @Size(max = 20) String expense, @Size(max = 20) String invest) {}
+
     public record Me(Long id, String name, String email, List<Objective> objectives, boolean onboardingDone,
-                     ContributionDto contribution, boolean hasPassword, boolean emailVerified) {
+                     ContributionDto contribution, boolean hasPassword, boolean emailVerified, ChartColors chartColors) {
         public static Me of(Profile p) {
             return new Me(p.id, p.name, p.email, p.objectives(), p.onboardingDone,
                     new ContributionDto(p.contributionEnabled, p.contributionBps, p.contributionCategoryId),
-                    p.passwordHash != null, p.emailVerifiedAt != null);
+                    p.passwordHash != null, p.emailVerifiedAt != null,
+                    new ChartColors(p.colorIncome, p.colorExpense, p.colorInvest));
         }
     }
 

@@ -19,8 +19,9 @@ import { useMonth } from "@/lib/month";
 import { useCategories, useMe, useSearch, useTags, useTransactions, type TxFilters } from "@/lib/queries";
 import type { Category, Kind, PaymentMethod, Tx } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { ColorDot } from "@/components/ColorPicker";
 
-function TagChip({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
+function TagChip({ label, color, selected, onClick }: { label: string; color?: string | null; selected: boolean; onClick: () => void }) {
   return (
     <button
       type="button"
@@ -31,7 +32,7 @@ function TagChip({ label, selected, onClick }: { label: string; selected: boolea
         selected ? "border-primary bg-accent font-medium text-accent-foreground" : "bg-card text-muted-foreground hover:bg-muted",
       )}
     >
-      #{label}
+      {color && <ColorDot token={color} className="mr-1.5" />}#{label}
     </button>
   );
 }
@@ -189,7 +190,7 @@ export default function TransactionsPage() {
           <div className="flex gap-1.5 overflow-x-auto pb-1" role="group" aria-label="Filtrar por etiqueta">
             {tag && !tags.data?.some((t) => t.tag === tag) && <TagChip label={tag} selected onClick={() => setTag(undefined)} />}
             {(tags.data ?? []).slice(0, 12).map((t) => (
-              <TagChip key={t.tag} label={t.tag} selected={tag === t.tag} onClick={() => setTag(tag === t.tag ? undefined : t.tag)} />
+              <TagChip key={t.tag} label={t.tag} color={t.color} selected={tag === t.tag} onClick={() => setTag(tag === t.tag ? undefined : t.tag)} />
             ))}
           </div>
         )}

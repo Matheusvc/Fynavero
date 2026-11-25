@@ -324,6 +324,30 @@ class AcceptanceTest {
     }
 
     @Test
+    void coresEscolhidasParaCategoriaEtiquetaEGraficos() throws Exception {
+        MockHttpSession s = newUser("null");
+        long mercado = category(s, "Mercado");
+        launch(s, "DESPESA", 1_000, mercado, ",\"tags\":[\"viagem\"]");
+
+        JsonNode cat = call(s, put("/api/categories/" + mercado), "{\"name\":\"Mercado\",\"color\":\"chart-9\"}", 200);
+        assertThat(cat.get("color").asText()).isEqualTo("chart-9");
+        call(s, put("/api/categories/" + mercado), "{\"name\":\"Mercado\",\"color\":\"#ff0000\"}", 400);
+
+        JsonNode tag = call(s, put("/api/transactions/tags/color"), "{\"tag\":\"#Viagem\",\"color\":\"chart-7\"}", 200);
+        assertThat(tag.get("tag").asText()).isEqualTo("viagem");
+        assertThat(tag.get("count").asInt()).isEqualTo(1);
+        assertThat(call(s, get("/api/transactions/tags"), null, 200).get(0).get("color").asText()).isEqualTo("chart-7");
+        call(s, put("/api/transactions/tags/color"), "{\"tag\":\"viagem\",\"color\":null}", 200);
+        assertThat(call(s, get("/api/transactions/tags"), null, 200).get(0).get("color").isNull()).isTrue();
+
+        JsonNode me = call(s, put("/api/profile/chart-colors"), "{\"income\":\"chart-8\",\"expense\":null,\"invest\":\"chart-12\"}", 200);
+        assertThat(me.get("chartColors").get("income").asText()).isEqualTo("chart-8");
+        assertThat(me.get("chartColors").get("expense").isNull()).isTrue();
+        assertThat(call(s, get("/api/auth/me"), null, 200).get("chartColors").get("invest").asText()).isEqualTo("chart-12");
+        call(s, put("/api/profile/chart-colors"), "{\"income\":\"chart-13\"}", 400);
+    }
+
+    @Test
     void etiquetasEBuscaNoAnoTodo() throws Exception {
         MockHttpSession s = newUser("null");
         long mercado = category(s, "Mercado");
