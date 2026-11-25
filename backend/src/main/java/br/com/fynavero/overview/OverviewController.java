@@ -25,16 +25,14 @@ public class OverviewController {
             MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
     private final DashboardService dashboard;
-    private final InstallmentOverviewService installments;
-    private final InvestmentOverviewService investments;
+    private final ScreensService screens;
     private final AppProperties props;
     private final ReportService reports;
     private final ReportExporter exporter;
 
-    public OverviewController(DashboardService dashboard, InstallmentOverviewService installments, InvestmentOverviewService investments, AppProperties props, ReportService reports, ReportExporter exporter) {
+    public OverviewController(DashboardService dashboard, ScreensService screens, AppProperties props, ReportService reports, ReportExporter exporter) {
         this.dashboard = dashboard;
-        this.installments = installments;
-        this.investments = investments;
+        this.screens = screens;
         this.props = props;
         this.reports = reports;
         this.exporter = exporter;
@@ -48,12 +46,12 @@ public class OverviewController {
 
     @GetMapping("/api/installments")
     public InstallmentsDto installments(@AuthenticationPrincipal AuthUser u, @RequestParam(required = false) String month) {
-        return installments.overview(u.id(), parseMonth(month, props.zoneId()));
+        return screens.installments(u.id(), parseMonth(month, props.zoneId()));
     }
 
     @GetMapping("/api/investments")
     public InvestmentsDto investments(@AuthenticationPrincipal AuthUser u, @RequestParam(required = false) String month) {
-        return investments.overview(u.id(), parseMonth(month, props.zoneId()));
+        return screens.investments(u.id(), parseMonth(month, props.zoneId()));
     }
 
     // ---------------------------------------------------------------- /api/reports

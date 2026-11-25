@@ -55,10 +55,10 @@ public class AccountController {
     private final ObjectProvider<ClientRegistrationRepository> oauth;
     private final AccountLinks emails;
     private final RateLimiter limiter;
-    private final PrivacyService privacy;
+    private final AccountService privacy;
     private final OnboardingService onboarding;
 
-    public AccountController(AccountService accounts, AuthenticationManager authManager, SessionAuthenticator sessions, ObjectProvider<ClientRegistrationRepository> oauth, AccountLinks emails, RateLimiter limiter, PrivacyService privacy, OnboardingService onboarding) {
+    public AccountController(AccountService accounts, AuthenticationManager authManager, SessionAuthenticator sessions, ObjectProvider<ClientRegistrationRepository> oauth, AccountLinks emails, RateLimiter limiter, AccountService privacy, OnboardingService onboarding) {
         this.accounts = accounts;
         this.authManager = authManager;
         this.sessions = sessions;

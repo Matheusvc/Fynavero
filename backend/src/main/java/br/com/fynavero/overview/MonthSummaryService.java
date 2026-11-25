@@ -16,7 +16,7 @@ import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
 
-import static br.com.fynavero.overview.LedgerFigures.entries;
+import static br.com.fynavero.ledger.FinanceCalculator.entries;
 
 /** Resumo de um mês fechado (usado no e-mail do dia 1): quanto entrou, saiu, foi investido e sobrou. */
 @Service

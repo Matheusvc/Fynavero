@@ -12,7 +12,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
-import br.com.fynavero.notification.ActionService;
+import br.com.fynavero.notification.NotificationService;
 import br.com.fynavero.notification.NotificationMailer;
 import br.com.fynavero.overview.MonthSummaryService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -42,7 +42,7 @@ class AcceptanceTest {
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
     @Autowired NotificationMailer notificationMailer;
-    @Autowired ActionService actionService;
+    @Autowired NotificationService actionService;
     @Autowired TransactionRepository transactionRepository;
     @Autowired MonthSummaryService monthSummaryService;
     @MockitoSpyBean Mailer mailer;

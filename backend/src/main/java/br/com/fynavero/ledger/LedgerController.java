@@ -43,9 +43,9 @@ public class LedgerController {
     private final AppProperties props;
     private final RecurrenceService recurrences;
     private final InstallmentService installments;
-    private final IncomeSourceService incomes;
+    private final RecurrenceService incomes;
 
-    public LedgerController(TransactionService transactions, CategoryService categories, AppProperties props, RecurrenceService recurrences, InstallmentService installments, IncomeSourceService incomes) {
+    public LedgerController(TransactionService transactions, CategoryService categories, AppProperties props, RecurrenceService recurrences, InstallmentService installments, RecurrenceService incomes) {
         this.transactions = transactions;
         this.categories = categories;
         this.props = props;

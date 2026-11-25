@@ -31,8 +31,8 @@ import java.util.function.ToLongFunction;
 
 import static br.com.fynavero.shared.Errors.badRequest;
 import static br.com.fynavero.shared.Formats.monthShort;
-import static br.com.fynavero.overview.LedgerFigures.byMonth;
-import static br.com.fynavero.overview.LedgerFigures.entries;
+import static br.com.fynavero.ledger.FinanceCalculator.byMonth;
+import static br.com.fynavero.ledger.FinanceCalculator.entries;
 
 /** Relatório anual (categorias × meses) e comparativo (mês atual × anterior × média). */
 @Service

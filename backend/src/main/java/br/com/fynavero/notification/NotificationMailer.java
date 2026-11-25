@@ -46,14 +46,14 @@ public class NotificationMailer {
     private final BudgetService budgets;
     private final MonthSummaryService summaries;
     private final CategoryService categories;
-    private final ActionService actions;
+    private final NotificationService actions;
     private final NotificationLogRepository log;
     private final LedgerCalendar calendar;
     private final Mailer mailer;
     private final AppProperties props;
 
     public NotificationMailer(AccountService accounts, NotificationService notifications, BudgetService budgets,
-                              MonthSummaryService summaries, CategoryService categories, ActionService actions,
+                              MonthSummaryService summaries, CategoryService categories, NotificationService actions,
                               NotificationLogRepository log, LedgerCalendar calendar, Mailer mailer,
                               AppProperties props) {
         this.accounts = accounts;

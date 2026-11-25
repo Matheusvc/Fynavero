@@ -23,11 +23,11 @@ import java.util.List;
 public class NotificationController {
     private final NotificationService notifications;
     private final NotificationMailer mailer;
-    private final ActionService actions;
+    private final NotificationService actions;
     private final LedgerCalendar calendar;
     private final Mailer mail;
 
-    public NotificationController(NotificationService notifications, NotificationMailer mailer, ActionService actions,
+    public NotificationController(NotificationService notifications, NotificationMailer mailer, NotificationService actions,
                                   LedgerCalendar calendar, Mailer mail) {
         this.notifications = notifications;
         this.mailer = mailer;

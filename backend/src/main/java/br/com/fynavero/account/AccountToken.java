@@ -16,7 +16,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-/** Link de uso único enviado por e-mail. No banco fica só o hash SHA-256 do token. Ver {@link OneTimeLinks}. */
+/** Link de uso único enviado por e-mail. No banco fica só o hash SHA-256 do token. Ver {@link AccountLinks}. */
 @Entity
 @Table(name = "account_tokens")
 public class AccountToken {

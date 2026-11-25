@@ -16,7 +16,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import static br.com.fynavero.overview.LedgerFigures.entries;
+import static br.com.fynavero.ledger.FinanceCalculator.entries;
 
 /**
  * Limite de gasto do mês por categoria de despesa (a "meta" da categoria). Conta tudo o que está lançado

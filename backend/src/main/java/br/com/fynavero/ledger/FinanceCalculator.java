@@ -23,6 +23,18 @@ public final class FinanceCalculator {
     /** Chave usada para a contribuição quando ela não está ligada a uma categoria. */
     public static final long CONTRIBUTION_KEY = -1L;
 
+    /** Converte lançamentos na entrada do cálculo (loanCategories: receitas que são empréstimo recebido). */
+    public static List<Entry> entries(Collection<Transaction> list, Set<Long> loanCategories) {
+        return list.stream()
+                .map(t -> new Entry(t.kind, t.amountCents, t.categoryId, loanCategories.contains(t.categoryId)))
+                .toList();
+    }
+
+    /** Agrupa lançamentos por mês. */
+    public static Map<java.time.YearMonth, List<Transaction>> byMonth(Collection<Transaction> list) {
+        return list.stream().collect(java.util.stream.Collectors.groupingBy(t -> java.time.YearMonth.from(t.date)));
+    }
+
     /** loan = receita que é empréstimo recebido: entra no saldo, mas não é renda nem base da contribuição. */
     public record Entry(Kind kind, long amountCents, Long categoryId, boolean loan) {
         public Entry(Kind kind, long amountCents, Long categoryId) {

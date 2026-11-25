@@ -6,9 +6,8 @@ import br.com.fynavero.category.Category;
 import br.com.fynavero.category.CategoryService;
 import br.com.fynavero.ledger.Transaction.Kind;
 import br.com.fynavero.ledger.LedgerDtos.IncomeSourceReq;
-import br.com.fynavero.ledger.IncomeSourceService;
-import br.com.fynavero.ledger.LedgerCalendar;
 import br.com.fynavero.ledger.RecurrenceService;
+import br.com.fynavero.ledger.LedgerCalendar;
 import br.com.fynavero.account.AccountDtos.CustomCategoryInput;
 import br.com.fynavero.account.AccountDtos.FixedBillInput;
 import br.com.fynavero.account.AccountDtos.IncomeInput;
@@ -32,12 +31,12 @@ public class OnboardingService {
     private final AccountService accounts;
     private final CatalogItemRepository catalog;
     private final CategoryService categories;
-    private final IncomeSourceService incomes;
+    private final RecurrenceService incomes;
     private final RecurrenceService recurrences;
     private final LedgerCalendar calendar;
 
     public OnboardingService(AccountService accounts, CatalogItemRepository catalog, CategoryService categories,
-                             IncomeSourceService incomes, RecurrenceService recurrences, LedgerCalendar calendar) {
+                             RecurrenceService incomes, RecurrenceService recurrences, LedgerCalendar calendar) {
         this.accounts = accounts;
         this.catalog = catalog;
         this.categories = categories;
