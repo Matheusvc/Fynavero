@@ -15,6 +15,14 @@
 
 @theme inline {
   --color-background: var(--background);
+  --color-auth-surface: var(--auth-surface);
+  --color-auth-ink: var(--auth-ink);
+  --color-auth-field: var(--auth-field);
+  --color-auth-field-foreground: var(--auth-field-foreground);
+  --color-auth-placeholder: var(--auth-placeholder);
+  --color-auth-hint: var(--auth-hint);
+  --color-auth-pill: var(--auth-pill);
+  --color-auth-button-foreground: var(--auth-button-foreground);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
@@ -91,10 +99,13 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --radius-full: 9999px;
+  --radius-auth: var(--auth-radius-card);
 
   --shadow-sm: var(--elevation-1);
   --shadow-md: var(--elevation-2);
   --shadow-lg: var(--elevation-3);
+  --shadow-auth-button: var(--auth-shadow-button);
+  --shadow-auth-pill: var(--auth-shadow-pill);
 
   --spacing-touch: var(--touch-target);
   --spacing-sidebar: var(--sidebar-width);

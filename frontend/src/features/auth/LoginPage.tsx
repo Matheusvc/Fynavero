@@ -1,13 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
-import { Mail } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Field, Input } from "@/components/ui/field";
-import { Spinner } from "@/components/ui/feedback";
 import { api, errorMessage } from "@/lib/api";
 import { useProviders, useSetMe } from "@/lib/queries";
 import type { Me } from "@/lib/types";
-import { AuthLayout, GoogleButton, PasswordInput } from "./AuthLayout";
+import { AuthError, AuthInput, AuthLayout, AuthPasswordInput, AuthSubmit, GoogleButton } from "./AuthLayout";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -52,53 +48,53 @@ export function LoginPage() {
   }
 
   return (
-    <AuthLayout title="Entrar" subtitle="Bom te ver de novo.">
-      <form onSubmit={submit} className="space-y-4" noValidate>
-        <Field label="E-mail">
-          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
-        </Field>
-        <Field label="Senha">
-          <PasswordInput value={password} onChange={setPassword} autoComplete="current-password" />
-        </Field>
-        <p className="-mt-2 text-right text-sm">
-          <Link to="/esqueci-senha" className="text-primary-text underline-offset-4 hover:underline">
+    <AuthLayout tab="login">
+      <form onSubmit={submit} noValidate>
+        <div className="space-y-[1.25rem]">
+          <AuthInput
+            label="E-mail"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onClear={() => setEmail("")}
+            autoComplete="email"
+            required
+          />
+          <AuthPasswordInput value={password} onChange={setPassword} autoComplete="current-password" />
+        </div>
+        <p className="mt-3 text-right">
+          <Link to="/esqueci-senha" className="text-sm font-medium tracking-[0.1em] text-auth-hint hover:text-primary-text hover:underline">
             Esqueci minha senha
           </Link>
         </p>
         {error && (
-          <p role="alert" className="rounded-lg bg-negative-subtle px-3 py-2 text-sm text-negative">
-            {error}
-          </p>
+          <div className="mt-4">
+            <AuthError>{error}</AuthError>
+          </div>
         )}
-        <Button type="submit" size="lg" className="w-full" disabled={busy}>
-          {busy && <Spinner />} Entrar
-        </Button>
+        <div className="mt-[3.25rem]">
+          <AuthSubmit busy={busy}>Entrar</AuthSubmit>
+        </div>
       </form>
 
-      <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
-        <span className="h-px flex-1 bg-border" /> ou <span className="h-px flex-1 bg-border" />
-      </div>
-
-      <div className="space-y-3">
-        {providers.data?.magicLink && (
-          <Button variant="outline" size="lg" className="w-full" onClick={sendMagic} disabled={magic === "sending"}>
-            {magic === "sending" ? <Spinner /> : <Mail />} Receber link de acesso por e-mail
-          </Button>
+      <div className="mt-6 space-y-3 text-center">
+        {providers.data?.magicLink && magic !== "sent" && (
+          <button
+            type="button"
+            onClick={sendMagic}
+            disabled={magic === "sending"}
+            className="text-sm font-medium text-auth-hint underline-offset-4 hover:text-primary-text hover:underline disabled:opacity-60"
+          >
+            {magic === "sending" ? "Enviando link…" : "Prefiro receber um link de acesso por e-mail"}
+          </button>
         )}
         {magic === "sent" && (
-          <p role="status" className="rounded-lg bg-positive-subtle px-3 py-2 text-sm text-positive">
+          <p role="status" className="rounded-md bg-positive-subtle px-3 py-2 text-sm text-positive">
             Se houver uma conta com esse e-mail, enviamos um link que vale por 15 minutos.
           </p>
         )}
         {providers.data?.google && <GoogleButton />}
       </div>
-
-      <p className="mt-8 text-center text-sm">
-        Ainda não tem conta?{" "}
-        <Link to="/cadastro" className="font-semibold text-primary-text underline-offset-4 hover:underline">
-          Criar conta grátis
-        </Link>
-      </p>
     </AuthLayout>
   );
 }

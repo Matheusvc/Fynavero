@@ -106,6 +106,19 @@
   --sidebar-width: 15.5rem;
   --bottom-nav-height: 4.25rem;
   --content-max-width: 72rem;
+
+  /* Telas de entrar e criar conta (Figma "Login"): sempre claras, como no layout */
+  --auth-surface: #f6f6f6;
+  --auth-ink: #000000;
+  --auth-field: #eaf0f7;
+  --auth-field-foreground: #4f555a;
+  --auth-placeholder: #667085;
+  --auth-hint: #646464; /* no layout era #c7c7c7; escurecido para ter contraste legível (WCAG AA) */
+  --auth-pill: #ffffff;
+  --auth-button-foreground: #ffffff; /* texto grande e em negrito: contraste AA para texto grande (3:1) */
+  --auth-shadow-button: 0 12px 21px 4px rgb(68 97 242 / 0.15);
+  --auth-shadow-pill: 0 4px 4px 0 rgb(0 0 0 / 0.05);
+  --auth-radius-card: 2.5rem;
 }
 
 .dark {
