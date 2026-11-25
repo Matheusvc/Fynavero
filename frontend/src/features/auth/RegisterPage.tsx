@@ -50,7 +50,7 @@ export function RegisterPage() {
   return (
     <AuthLayout tab="register">
       <form onSubmit={submit} noValidate>
-        <div className="space-y-[1.25rem]">
+        <div className="space-y-[clamp(1rem,1.04vw,1.25rem)]">
           <AuthInput
             label="Como podemos te chamar?"
             value={name}

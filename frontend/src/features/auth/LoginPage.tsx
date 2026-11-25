@@ -50,7 +50,7 @@ export function LoginPage() {
   return (
     <AuthLayout tab="login">
       <form onSubmit={submit} noValidate>
-        <div className="space-y-[1.25rem]">
+        <div className="space-y-[clamp(1rem,1.04vw,1.25rem)]">
           <AuthInput
             label="E-mail"
             type="email"
@@ -72,7 +72,7 @@ export function LoginPage() {
             <AuthError>{error}</AuthError>
           </div>
         )}
-        <div className="mt-[3.25rem]">
+        <div className="mt-[clamp(2rem,2.7vw,3.25rem)]">
           <AuthSubmit busy={busy}>Entrar</AuthSubmit>
         </div>
       </form>
